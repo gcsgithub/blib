@@ -4,10 +4,13 @@
 #include <string.h>
 #include <time.h>
 
-static char *rcsCALTIME="@(#)$Id:$";
+static char *rcsCALTIME="@(#)$Id: caltime.c,v 1.1 2000/04/07 05:39:54 garrettm Exp garrettm $";
 
 /* Calc time functions
-** $Log:$
+** $Log: caltime.c,v $
+ * Revision 1.1  2000/04/07  05:39:54  garrettm
+ * Initial revision
+ *
 **
 */
 
@@ -20,7 +23,7 @@ char	*argv[];
 	struct	tm *newtm;
 
 	static	char *sMon[] = {
-	"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Oct","Nov","Dec" };
+	"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec" };
 
 	if ( argc < 2 ) {
 		printf("Usage: %s days\nreturn VMS delta time format days hence\n", argv[0]);
