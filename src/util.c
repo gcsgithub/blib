@@ -1,4 +1,7 @@
+static char *rcsid="@(#) $Id:$";
 /*
+ *  $Log:$
+ *
  *  util.c
  *  blib
  *

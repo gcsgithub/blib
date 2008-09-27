@@ -1,5 +1,8 @@
 #ifndef __APPLE__
 /*
+ * @(#) $Id:$
+ * $Log:$
+ *
  *  strsep.h
  *  blib
  *

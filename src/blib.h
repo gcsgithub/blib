@@ -1,8 +1,10 @@
 #ifndef __BLIB_H__
 #define __BLIB_H__
 /*
- * @(#)$Id:$
- * @(#)$Log:$
+ * @(#)$Id: blib.h,v 1.1 2008/09/27 13:05:59 mark Exp mark $
+ * $Log: blib.h,v $
+ * Revision 1.1  2008/09/27 13:05:59  mark
+ * Initial revision
  *
  *  blib.h
  *  blib

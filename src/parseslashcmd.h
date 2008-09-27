@@ -1,6 +1,9 @@
 #ifndef __PARSESLASHCMD_H__
 #define __PARSESLASHCMD_H__
 /*
+ * @(#) $Id:$
+ *  $Log:$
+ *
  *  parseslashcmd.h
  *  blib
  *

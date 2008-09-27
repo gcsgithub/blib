@@ -1,4 +1,7 @@
+static char *rcsid="@(#) $Id:$";
 /*
+ * $Log:$
+ *
  *  parseslashcmd.c
  *  blib
  *

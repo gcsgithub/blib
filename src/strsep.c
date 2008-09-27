@@ -1,5 +1,8 @@
 #ifndef __APPLE__
+static char *rcsid="@(#) $Id:$";
 /*
+ *  * $Log:$
+ *
  *  strsep.c
  *  blib
  *

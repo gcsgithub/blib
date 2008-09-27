@@ -1,8 +1,10 @@
 #ifndef __UTIL_H__
 #define __UTIL_H__
 /*
- *  util.h
- *  blib
+ * @(#) $Id:$
+ * $Log:$
+ * util.h
+ * blib
  *
  *  Created by mark on 26/09/2008.
  *  Copyright 2008 Garetech Computer Solutions. All rights reserved.
