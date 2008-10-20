@@ -1,8 +1,11 @@
 #ifndef __BLIB_H__
 #define __BLIB_H__
 /*
- * @(#)$Id: blib.h,v 1.1 2008/09/27 13:05:59 mark Exp mark $
+ * @(#)$Id: blib.h,v 1.2 2008/09/27 13:11:21 mark Exp mark $
  * $Log: blib.h,v $
+ * Revision 1.2  2008/09/27 13:11:21  mark
+ * initial checkin
+ *
  * Revision 1.1  2008/09/27 13:05:59  mark
  * Initial revision
  *
@@ -44,12 +47,16 @@ typedef struct tm       tm_t;
 #include    <unistd.h>
 #include    <getopt.h>
 #include    <locale.h>
-#include    <ndbm.h>
 #include    <sys/stat.h>
+#include    <fcntl.h>
+#include    <limits.h>
+
 
 #include "strsep.h"
 #include "util.h"
 #include "parseslashcmd.h"
+#include "execute_cmds.h"
+#include "data_access.h"
 
 #define    NL   (char *) NULL
 
@@ -59,35 +66,14 @@ struct blib_global_s {
     char    *blib_group;    // getenv("MYBLIB_GROUP") or hostname
     char    *default_media; // getenv("DAILYMEDIA") or "TZ89"
     char    *library_name;  // getenv("TAPELIB") or {nodename}TL1
+    char    *progid;
+    int	    debug;
+    int	    quiet;
+    int	    verbose;
 };
 
 void setup_blib(blib_global_t *blib_gp);
 
 // ${BLIB_VOLUME}|${BLIB_FILENO}|${BLIB_STATE}|${BLIB_MEDIA}|${BLIB_USAGE}|${BLIB_GROUP}|${BLIB_LOCATION}|${BLIB_LIBRARYDATE}|${BLIB_RECORDDATE}|${BLIB_OFFSITEDATE}|${BLIB_EXPIREDATE}|${BLIB_DESC}
-
-typedef struct blib_vol_s   blib_vol_t;
-struct blib_vol_s {
-    char    *blib_volume;   // should be 1-13 chars typically a barcode would be 7 chars XXX999X
-    int	    blib_fileno;    // current max file no used
-    char    blib_state;	    // A,F ALLOCATED, FREE
-    char    *blib_media;    // eg TZ89
-    int	    blib_usage;	    // record of how many times we have written this tape during its life time
-    char    *blib_group;    // what group aka pool does this take belong to
-    char    *blib_location; // where is it
-    time_t  blib_library_date; // when did this volume get added to blib should represent purchase date
-    time_t  blib_recorddate;	// what was the date we wrote this backup
-    time_t  blib_offsitedate;	// nominally the same as record date +1days
-    time_t  blib_expiredate;	// date the tape will be ready to expire and reuse
-    char    *blib_desc;	    // description of this backup
-    
-};
-typedef	struct blib_evt_s blib_evt_t;
-struct blib_evt_s {
-    blib_vol_t	*blib_vol_p;	// pointer to the blib volume structure
-    time_t  blib_recorddate;	// this will be the completion time for this event not the same of that in the volume structure
-    int	    fileno;		// file number on tape of this file set
-    char    *fsetname;		// name of this fileset eg "/usr"
-};
-
 
 #endif /* __BLIB_H__ */

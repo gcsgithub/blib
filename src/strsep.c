@@ -1,7 +1,10 @@
 #ifndef __APPLE__
-static char *rcsid="@(#) $Id:$";
+static char *rcsid="@(#) $Id: strsep.c,v 1.2 2008/09/27 13:11:22 mark Exp mark $";
 /*
- *  * $Log:$
+ *  * $Log: strsep.c,v $
+ *  * Revision 1.2  2008/09/27 13:11:22  mark
+ *  * initial checkin
+ *  *
  *
  *  strsep.c
  *  blib
@@ -62,7 +65,7 @@ char *strsep(char **stringp, const char *delim)
     register int c, sc;
     char *tok;
     
-    if ((s = *stringp) == NULL)
+    if ((s = *stringp) == (char *) NULL)
         return (NULL);
     for (tok = s;;) {
         c = *s++;

@@ -1,12 +1,15 @@
-static char *rcsid="@(#) $Id:$";
+static char *rcsid="@(#) $Id: blib.c,v 1.1 2008/09/27 13:05:59 mark Exp $";
 /*
- * $Log:$
+ * $Log: blib.c,v $
+ * Revision 1.1  2008/09/27 13:05:59  mark
+ * Initial revision
+ *
  *
  */
 #include "blib.h"
 
 
-static blib_global_t BLIB;
+blib_global_t BLIB;
 
 void    usage(const char *prg)
 {
@@ -25,48 +28,66 @@ int main(int argc,  char *argv[])
     extern int      opterr;
     extern int      optreset; 
     cmd_t	    *cmds;
-    DBM		    *dbmf;
-    mode_t	    saved_umask;
+    
+    
+    
+#ifdef DEBUG_ONMAC
+    // check why /report /add=obh0123D didnt issue an error?
+    argc=2;
+    // argv[1] = "/display=tstldate1";
+    // argv[1] = "/remove=tstldate1";
+
+    
+    argc=3;
+    argv[1] ="/import=/Users/mark/blib_prod.dat";
+    argv[2] ="/new";
+    //argv[1] = "/modify=OBG123D";
+    // argv[2] = "/state=FREE";
+    // argv[2] = "/media=TK50";
+    //argv[2] = "/incfileno";
+    
+
+#endif /* DEBUG_ONMAC */
     
     (void)setlocale(LC_ALL, "");
     setup_blib(&BLIB);
+    BLIB.progid = newstr(argv[0]);
    
     optarg = NULL;
-    while (!dousage && ((c = getopt(argc, argv, "v?")) != -1)) {
+    while (!dousage && ((c = getopt(argc, argv, "qdvVf:?")) != -1)) {
         switch (c) {
-            case 'v':
-                dousage++;
+	    case 'q':
+		BLIB.quiet++;
+		break;
+	    case 'd':
+		BLIB.debug++;
+		break;
+	    case 'v':
+		BLIB.verbose++;
+		break;
+            case 'V':
+                fprintf(stderr, "Version: %s\n", rcsid+8);
+		exit(0);
                 break;
+	    case 'f':
+		nzfree(BLIB.blibdb_name);
+		BLIB.blibdb_name = newstr(optarg);
+		break;
             default:
                 dousage++;
                 break;
         }
     }
     
-    argc -= optind;
-    argv += optind;
+    argc -= (optind-1);
+    argv += (optind-1);
 
-    if (dousage) usage(rcsid+8); // will exit via usage
-    if ((cmds = parseslashcmd(argc,argv)) == (cmd_t *) NULL ) usage(rcsid+8);
+    if (dousage) usage(BLIB.progid); // will exit via usage
+    if ((cmds = parseslashcmd(argc,argv)) == (cmd_t *) NULL ) usage(BLIB.progid);
+    if (BLIB.debug ) dump_cmd(cmds);
     
-#ifdef DEBUG_ONMAC
-
-#endif /* DEBUG_ONMAC */
-    
-    
-
-    
-    saved_umask = umask(007);
-    
-    dbmf = dbm_open("/tmp/test",O_RDWR|O_CREAT|O_EXLOCK, 0660);
-    if ( dbmf == (DBM *) NULL ) {
-	err =errno;
-	fprintf(stderr, "Error opening dbm file %d:%s\n", err, strerror(err));
-	saved_umask = umask(saved_umask);
-	exit(err);
-    }
-    dbm_close(dbmf);
-    saved_umask = umask(saved_umask);
+    err = execute_cmds(cmds);
+    exit(err);
 }
 
 
@@ -83,14 +104,14 @@ void setup_blib(blib_global_t *blib_gp)
 
 //============================================================================   
         if ((sp=getenv("MYBLIB_GROUP")) == NL ) {
-	snprintf(blibgrpstr, sizeof(blibgrpstr),"%sTL1", this_host);
+	snprintf(blibgrpstr, sizeof(blibgrpstr),"%s", this_host);
 	sp = blibgrpstr;
     }
     blib_gp->blib_group = newstr(sp);
  
 //============================================================================   
-    if ((sp=getenv("BLIBDB")) == NL ) {
-	snprintf(dbnamestr, sizeof(dbnamestr),"/usr/local/etc/dat/blib_%s", blib_gp->blib_group );
+    if ((sp=getenv("BLIBDBS")) == NL ) {
+	snprintf(dbnamestr, sizeof(dbnamestr),"/usr/local/etc/dat/blib_%s.sqlite3", blib_gp->blib_group );
 	sp = dbnamestr;
     }
     blib_gp->blibdb_name = newstr(sp);
@@ -106,7 +127,6 @@ void setup_blib(blib_global_t *blib_gp)
 	sp = library_namestr;
     }
     blib_gp->library_name = newstr(sp);
-//============================================================================   
     
 }
 
