@@ -1,6 +1,9 @@
-static char *rcsid="@(#) $Id:$";
+static char *rcsid="@(#) $Id: execute_cmds.c,v 1.1 2008/10/19 22:18:58 root Exp root $";
 /*
- * $Log:$
+ * $Log: execute_cmds.c,v $
+ * Revision 1.1  2008/10/19  22:18:58  root
+ * Initial revision
+ *
  *
  *  execute_cmds.c
  *  blib
@@ -201,6 +204,15 @@ int execute_cmds(cmd_t *cmds)
 		}
 		dbrstatus = db_find_dbrec(dbh, &db_read, &db_read, FND_NEXT);
 	    }
+	    break;
+	    
+	case CMD_REPORTFRE:
+	    break;
+	    
+	case CMD_REPORTEXP:
+	    break;
+	    
+	case CMD_DOEXPIRE: // change all expired tapes to free or a given number of them
 	    break;
 	    
 	case CMD_EXPORT:
@@ -588,3 +600,4 @@ int filter_rec(filt_t *filtrec, dbrec_t *rec)
     return(1); // default to display record
     
 }
+//

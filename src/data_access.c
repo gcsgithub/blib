@@ -1,11 +1,14 @@
-static char *rcsid="@(#) $Id:$";
+static char *rcsid="@(#) $Id: data_access.c,v 1.1 2008/10/19 22:18:58 root Exp root $";
 /*
  *  data_access.c
  *  blib
  *
  *  Created by mark on 08/10/2008.
  *  Copyright 2008 Garetech Computer Solutions. All rights reserved.
- * $Log:$
+ * $Log: data_access.c,v $
+ * Revision 1.1  2008/10/19  22:18:58  root
+ * Initial revision
+ *
  *
  */
 
@@ -286,7 +289,7 @@ int db_find_dbrec(DBH *dbh,dbrec_t *key, dbrec_t *rec, find_type_t flag)
 		break;
 	    case FND_FIRST:
 		// select * from volumes where label >= rec->label;
-		dbh->sqllen =  replace_dynstr(&dbh->sqltxt, newstr("select * from main.volumes where v_label >= ?"));
+		dbh->sqllen =  replace_dynstr(&dbh->sqltxt, newstr("select * from main.volumes where v_label >= ? order by main.v_expiredate"));
 		break;
 	    default: // shouldnt be possible but
 		fprintf(stderr, "Unknown flag value %d passed to %s\n", flag,__PRETTY_FUNCTION__);
