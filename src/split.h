@@ -1,8 +1,11 @@
 #ifndef __SPLIT_H__
 #define	__SPLIT_H__
 /*
- * @(#) $Id:$
- * $Log:$
+ * @(#) $Id: split.h,v 1.1 2008/10/19 22:18:59 root Exp mark $
+ * $Log: split.h,v $
+ * Revision 1.1  2008/10/19  22:18:59  root
+ * Initial revision
+ *
  *
  *  split.h
  *  blib
@@ -25,10 +28,11 @@
 #endif
 
 int	split(char *buf,char *sep, list_t **flds);
+char 	*newfld(char *fldptr);
 
 #define	SPLIT_OK	0	// no errors
 #define	SPLIT_BADSEP    1	// " or ' used as sep
-#define	SPLIT_ENOMEM	2	// out of memory during malloc
+#define	SPLIT_ENOMEM	2	// out of memory during malloc, just exit no point trying
 #define	SPLIT_MISSQUOT	3
 #define	SPLIT_TRAILJNK	4
 

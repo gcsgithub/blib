@@ -1,8 +1,11 @@
 #ifndef __DATA_ACCESS_H__
 #define	__DATA_ACCESS_H__
 /*
- * @(#) $Id:$
- * $Log:$
+ * @(#) $Id: data_access.h,v 1.1 2008/10/19 22:18:58 root Exp mark $
+ * $Log: data_access.h,v $
+ * Revision 1.1  2008/10/19  22:18:58  root
+ * Initial revision
+ *
  *  data_access.h
  *  blib
  *
@@ -33,99 +36,128 @@
 #include    <syslog.h>
 #include    <time.h>
 #include    <unistd.h>
+#ifndef __hpux
 #include    <getopt.h>
+#endif
 #include    <locale.h>
 #include    <sys/stat.h>
 typedef struct stat stat_t;
 
 #include    <fcntl.h>
 #include    <limits.h>
-#include    <sqlite3.h>
+
+#define	    BLIBDB_OK		SQLITE_OK
+#define     BLIBDB_ROW		SQLITE_ROW
+#define	    BLIBDB_DONE		SQLITE_DONE
+#define     BLIBDB_CONSTRAINT	SQLITE_CONSTRAINT
+
 #include    "blib.h"
 #include    "util.h"
+#include    "list.h"
+#include    "parseslashcmd.h"
+#include    "data_structures.h"
 
 
-typedef struct {
-    mode_t	  saved_umask;
-    bool_t	  open;
-    int		  status;
-    char	  *errmsg;
-    char	  *fnm;
-    sqlite3	  *dbf;
-    sqlite3_stmt  *stmt;
-    int		  sqllen;
-    char	  *sqltxt;
-} DBH;
+int     db_busy_handler(void *tag,int lockoccurence);
+int     db_newdb(dbh_t **dbh, char *fnm);
+int     db_open(dbh_t **dbh, char *fnm);
+int     db_close(dbh_t *dbh);
+void    db_finish(dbh_t *dbh);
+int     dbcheck(dbh_t *dbh, char *errmsg, ...);
 
-typedef enum {
-    FND_EQUAL, 
-    FND_FIRST,
-    FND_NEXT
-} find_type_t;
+sqlcmd_t *sqlstack_push(dbh_t *dbh);
+sqlcmd_t *sqlstack_pop(dbh_t *dbh);
+
+int     db_prepare_sql(dbh_t *dbh, sqlcmd_t *sqlcmd, char *sqltextfld, ...);
+int 	db_finalize_stmt(dbh_t *dbh);
+
+objid_t db_get_obj_instance(dbh_t *dbh, bckid_t bck_id, objname_t *objname );
+
+int     db_exec_sql(dbh_t *dbh, char *sqltext);
+int     db_exec_sql_flds(dbh_t *dbh, char *sqltext, list_t *flds);
+int	db_exec_sql_flds_pushpop(dbh_t *dbh, char *sqltext, list_t *flds);
+int     db_exec_sql_flds_pop(dbh_t *dbh, char *sqltext, list_t *flds);
+
+int     db_exec_sql_bckid(dbh_t *dbh, char *sqltext, bckid_t bck_id);
+
+dbfld_t *db_fldsmklist(list_t **fldhead,const char *fldname,  fld_type_t fldtype, void * fldptr);
+void	 db_fldsfreelist(list_t **listp);
+
+int	 db_fldsdump(list_t *flds);
+void	 db_flds_display(dbfld_t *fld);
+dbfld_t *db_flds_byname(list_t *flds, const char *fldname);
+char	*db_flds_textbyname(list_t *flds, const char *fldname);
+uint64_t db_flds_int64byname(list_t *flds, const char *fldname);
+
+dbfld_t *db_flds_new(void);
+int 	 db_flds_bind(dbh_t *dbh, sqlcmd_t *sqlcmd);
+int 	 db_columns(dbh_t *dbh);
+
+const char *fldtype_name(fld_type_t fldtype);
+fld_type_t db_fldtype_from_valtype(valtype_e valtype);
+
+int     db_find(dbh_t *dbh, char *sqltext, list_t *key, void *results, int (*copyresult)(dbh_t *dbh, void *rsp), find_type_t flag);
+int     db_find_vol_free(dbh_t *dbh, vol_t *rec, find_type_t flag);
+int     db_find_vol_expired(dbh_t *dbh, vol_t *rec, find_type_t flag);
+int     db_find_volume_free(dbh_t *dbh, vol_t *rec, find_type_t flag);
+int     db_find_volume_expired(dbh_t *dbh, vol_t *rec, find_type_t flag);
+int     db_find_volumes_label(dbh_t *dbh,vol_t *key, vol_t *rec, find_type_t flag);
+int     db_find_volume_bylabel(dbh_t *dbh,blabel_t *label, vol_t *rec, find_type_t flag);
+int     db_find_vol_obj_id_notbckid_label(dbh_t *dbh, list_t *key_bck_id, vol_obj_t *volobj2del,find_type_t flag);
+int     db_find_current_volobj(dbh_t *dbh, vol_obj_t *volobjrec);
+time_t	db_find_vol_obj_end(dbh_t *dbh,bckid_t bck_id);
+int	db_find_backups_orderbckid(dbh_t *dbh, backups_t *bckrec, bckid_t bckid, find_type_t flag);
+int	db_find_backups_by_expire(dbh_t *dbh, backups_t *bckrec, find_type_t flag);
+int     db_find_bck_objects_by_bckid(dbh_t *dbh, bckid_t bck_id,bckobj_t *bckobjrec, find_type_t flag);
+int     db_find_vol_obj_from_objects(dbh_t *dbh, bckobj_t *key, vol_obj_t *volobjrec, find_type_t flag);
+int     db_find_bck_errors(dbh_t *dbh, bckid_t bck_id, objname_t *objname, blabel_t *label, bck_errors_t *bckerrrec, find_type_t flag);
+int     db_find_volumes_by_bckid(dbh_t *dbh, bckid_t bck_id, vol_t *volrec, find_type_t flag);
+int     db_find_backups_by_bck_id(dbh_t *dbh, bckid_t key_bckid, backups_t *bck_rec);
+int	db_find_bck_objects_by_name(dbh_t *dbh, objname_t *objname, bckobj_t *bckobjrec, find_type_t flag);
+int	db_find_vol_obj_for_bck_object(dbh_t *dbh, bckobj_t *bckobjrec, vol_obj_t *volobjrec, find_type_t flag);
+int 	db_find_volume_for_vol_obj(dbh_t *dbh, vol_obj_t *volobjrec, vol_t *volrec, find_type_t flag);
+
+int     do_upd_vol(dbh_t *dbh, char *label, cmd_t *cmd );
+int     db_setvolume_free(dbh_t *dbh, char *label);
+int     db_setvolume_used(dbh_t *dbh, blabel_t *label, bckid_t bckid);
+void	db_update_volume(dbh_t *dbh,filt_t *filtrec, vol_t *rec);
+int     db_end_vol_obj(dbh_t *dbh, vol_obj_t *volobjrec); // update end and size
+bcount_t db_vol_obj_sumsize(dbh_t *dbh, vol_obj_t *volobjrec);
+int     db_update_bck_object_size_end(dbh_t *dbh, bckid_t bckid, objname_t *objname, objid_t obj_instance,  time_t end, bcount_t totalsize);
+int     db_inc_volume_usage(dbh_t *dbh, bckid_t bck_id);
+int     db_update_backups_end(dbh_t *dbh, bckid_t bck_id, time_t end);
+int     db_update_backups(dbh_t *dbh,backups_t *bckrec);
 
 
-typedef struct dbrec_s dbrec_t;
-struct dbrec_s {
-    char	v_label[13];	// the volume label eg ABC123D
-    char	v_state;
-    char	v_media[13];
-    int		v_usage;
-    int		v_fileno;	    // max fileno on tape 0..fileno
-    char	v_group[256];
-    char	v_location[64];
-    time_t	v_librarydate;
-    time_t	v_recorddate;
-    time_t	v_offsitedate;
-    time_t	v_expiredate;
-    uint64_t	v_bytesontape;
-    char	v_desc[256];
-};
-
-typedef struct filt_s filt_t;
-struct filt_s {
-    cmd_t	*v_label;
-    cmd_t	*v_state;
-    cmd_t	*v_media;
-    cmd_t	*v_usage;
-    cmd_t	*v_fileno;
-    cmd_t	*v_group;
-    cmd_t	*v_location;
-    cmd_t	*v_librarydate;
-    cmd_t	*v_recorddate;
-    cmd_t	*v_offsitedate;
-    cmd_t	*v_expiredate;
-    cmd_t	*v_bytesontape;
-    cmd_t	*v_desc;
-};
+int     db_delete_volume(dbh_t *dbh, vol_t *vol2del);
+int     db_delete_backup_id(dbh_t *dbh, bckid_t bck_id);
 
 
-typedef struct dbevt_s	dbevt_t;
-struct dbevt_s {
-    char	e_label[13];	// the volume label eg ABC123D
-    int		e_fileno;
-    time_t	e_recorddate;
-    uint64_t	e_bytesinfset;
-    char	e_fsetname[256];
-};
 
-int	db_newdb(DBH **dbh, char *fnm);
-int	db_open(DBH **dbh, char *fnm);
-int	db_close(DBH *dbh);
-void	db_finish(DBH *dbh);
+int     db_insert_volumes(dbh_t *dbh, vol_t *rec);
+int     db_insert_backups(dbh_t *dbh, backups_t *bck_rec);
+objid_t	db_insert_bck_objects(dbh_t *dbh, bckobj_t *bckobjrec);
+int     db_insert_vol_obj(dbh_t *dbh, vol_obj_t *volobjrec);
+int     db_insert_bckerror(dbh_t *dbh, bck_errors_t *bckerror);
 
-int	db_insert_dbrec(DBH *dbh, dbrec_t *rec);
-int	db_find_dbrec(DBH *dbh,dbrec_t *key, dbrec_t *rec, find_type_t flag);
-int	db_update_dbrec(DBH *dbh,filt_t *filtrec, dbrec_t *rec);
-int	db_delete_dbrec(DBH *dbh, dbrec_t *key);
-dbrec_t *default_dbrec(dbrec_t *rec);
+int 	db_count_vol_obj_label(dbh_t *dbh, bckid_t bck_id, blabel_t *label);
 
-int	db_insert_dbevt(DBH *dbh, dbevt_t *rec);
-int	db_find_dbevt(DBH *dbh,dbevt_t *key, dbevt_t *rec, find_type_t flag);
-int	db_update_dbevt(DBH *dbh, dbevt_t *rec);
-int	db_delete_dbevt(DBH *dbh, dbevt_t *key);
+bcount_t db_count_volumes_in_backup_id(dbh_t *dbh, bckid_t bck_id);
+bcount_t db_count_bck_errors(dbh_t *dbh, vol_obj_t *key);
 
-int	copy_volume_results(DBH *dbh, dbrec_t *rec);
-int	dbcheck(DBH *dbh, char *errmsg, ...);
-int	do_upd(DBH *dbh, char *v_label, cmd_t *cmd );
+#ifdef db_clear_old_back_for_label_tmp
+int     db_clear_old_back_for_label(dbh_t *dbh, vol_obj_t *volobjrec);
+#endif /* db_clear_old_back_for_label */
+
+int     copy_results_volume(dbh_t      *dbh, void *recp);
+int     copy_results_backup(dbh_t      *dbh, void *recp);
+int     copy_results_bck_objects(dbh_t *dbh, void *recp);
+int     copy_results_vol_obj(dbh_t     *dbh, void *recp);
+int     copy_results_bck_errors(dbh_t  *dbh, void *recp);
+
+
+bcount_t db_get_size(dbh_t *dbh, vol_t *volrec);
+int      db_get_duration(dbh_t *dbh, vol_t *volrec);
+
 
 #endif /* __DATA_ACCESS_H__ */

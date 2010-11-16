@@ -1,8 +1,11 @@
 #ifndef __BLIB_H__
 #define __BLIB_H__
 /*
- * @(#)$Id: blib.h,v 1.2 2008/09/27 13:11:21 mark Exp mark $
+ * @(#)$Id: blib.h,v 1.3 2008/10/20 13:01:36 mark Exp mark $
  * $Log: blib.h,v $
+ * Revision 1.3  2008/10/20  13:01:36  mark
+ * checkpoint
+ *
  * Revision 1.2  2008/09/27 13:11:21  mark
  * initial checkin
  *
@@ -19,8 +22,7 @@
 
 #ifndef __APPLE__
 char *strsep(char **stringp, const char *delim);
-#define _OSF_SOURCE     /* gets htons defines from machine/endian.h via in.h */
-#endif /* __APPLE__ */
+#endif /* ! __APPLE__ */
 
 #include    <arpa/inet.h>
 #include    <ctype.h>
@@ -42,10 +44,10 @@ char *strsep(char **stringp, const char *delim);
 #include    <sys/uio.h>
 #include    <sys/wait.h>
 #include    <syslog.h>
-#include    <time.h>
-typedef struct tm       tm_t;
 #include    <unistd.h>
+#ifndef __hpux
 #include    <getopt.h>
+#endif
 #include    <locale.h>
 #include    <sys/stat.h>
 #include    <fcntl.h>
@@ -54,26 +56,24 @@ typedef struct tm       tm_t;
 
 #include "strsep.h"
 #include "util.h"
-#include "parseslashcmd.h"
-#include "execute_cmds.h"
-#include "data_access.h"
+#include "fileio.h"
 
 #define    NL   (char *) NULL
 
 typedef struct blib_global_s blib_global_t;
 struct blib_global_s {
-    char    *blibdb_name;   // getenv("BLIBDB")
-    char    *blib_group;    // getenv("MYBLIB_GROUP") or hostname
-    char    *default_media; // getenv("DAILYMEDIA") or "TZ89"
-    char    *library_name;  // getenv("TAPELIB") or {nodename}TL1
-    char    *progid;
-    int	    debug;
-    int	    quiet;
-    int	    verbose;
+    char    	*progid;
+    int	    	debug;
+    int	   	quiet;
+    int	   	verbose;
+    fio_t	*blib_log;
+    uint32_t	volumes_inlib;
+    uint32_t	volumes_free;
+    uint32_t 	volumes_allocated;
+    uint32_t	volumes_other;
 };
-
-void setup_blib(blib_global_t *blib_gp);
 
 // ${BLIB_VOLUME}|${BLIB_FILENO}|${BLIB_STATE}|${BLIB_MEDIA}|${BLIB_USAGE}|${BLIB_GROUP}|${BLIB_LOCATION}|${BLIB_LIBRARYDATE}|${BLIB_RECORDDATE}|${BLIB_OFFSITEDATE}|${BLIB_EXPIREDATE}|${BLIB_DESC}
 
+#define	COPYRIGHT	"Copyright (c) 2008-2010 Garetech Computer Solutions Pty Ltd"
 #endif /* __BLIB_H__ */

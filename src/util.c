@@ -1,6 +1,9 @@
-static char *rcsid="@(#) $Id: util.c,v 1.2 2008/09/27 13:11:22 mark Exp mark $";
+static const char *rcsid="@(#) $Id: util.c,v 1.3 2008/10/20 13:01:39 mark Exp mark $";
 /*
  *  $Log: util.c,v $
+ * Revision 1.3  2008/10/20  13:01:39  mark
+ * checkpoint
+ *
  *  Revision 1.2  2008/09/27 13:11:22  mark
  *  initial checkin
  *
@@ -12,13 +15,17 @@ static char *rcsid="@(#) $Id: util.c,v 1.2 2008/09/27 13:11:22 mark Exp mark $";
  *  Copyright 2008 Garetech Computer Solutions. All rights reserved.
  *
  */
-static char *ver()
+static const char *ver()
 {
     return(rcsid);
 }
 
 #include "util.h"
-typedef struct tm tm_t;
+
+void dodbg(void)
+{
+    
+}
 
 char    *zapcrlf(char *bp)
 {
@@ -42,7 +49,7 @@ char    *newstr(char *fmt,...)
     slen = VASPRINTF(&dynstr, fmt,args);
     va_end(args);
     if ( dynstr  == (char *) NULL ) {
-        fprintf(stderr,"Out of memory allocating string %s\n", fmt);
+        fprintf(stderr,"#BLIB:  Out of memory allocating string %s size %llu\n", fmt,(llu_t) slen);
         errno = ENOMEM;
         exit(errno);
     }
@@ -61,7 +68,7 @@ int *newint(int val)
     int    *dynstr;
     
     if ((dynstr = (int *) malloc(sizeof(int))) == (int *) NULL ) {
-        fprintf(stderr,"Out of memory allocating for int %s\n", val);
+        fprintf(stderr,"Out of memory allocating for int %d\n",  val);
         errno = ENOMEM;
         exit(errno);
     }
@@ -69,45 +76,23 @@ int *newint(int val)
     return(dynstr);
 }
 
-
-time_t	*newdate(char *val)
+uint64_t *newuint64str(char *val)
 {
-    time_t  *dynstr;
+    return(newuint64(atoll(val)));
     
-    if (( dynstr = (time_t *) malloc(sizeof(time_t))) == (time_t *) NULL ) {
-	fprintf(stderr,"Out of memory allocating int %s\n", val);
-	errno = ENOMEM;
-	exit(errno);
-    }
-    
-    *(time_t *) dynstr = scandate(val);
-    return(dynstr);
 }
 
-time_t	scandate(char *datestr)
+uint64_t *newuint64(uint64_t val)
 {
-    tm_t    timetm;
-    time_t  timec;
-    int	err;
+    uint64_t    *dynstr;
     
-    timec=0;
-    if (datestr && datestr[0] ) {
-	bzero(&timetm, sizeof(tm_t));
-	if ((strncasecmp(datestr, D_NEVER,sizeof(D_NEVER)) != 0 ) &&
-	    (strncasecmp(datestr, D_VMS0, sizeof(D_VMS0)) !=0)) {
-	    bzero(&timetm,sizeof(tm_t));
-	    strptime(datestr, "%d-%b-%Y:%T", &timetm); 
-	    if ( ( timec = mktime( &timetm)) == -1 ) {
-		err = errno;
-		if ( err != ERANGE ) {
-		    fprintf(stderr,"Error in parsing date %s :%s\n", datestr, strerror(err));
-		    errno=err;
-		    timec=0;
-		}
-	    }
-	}
+    if ((dynstr = (uint64_t *) malloc(sizeof(uint64_t))) == (uint64_t *) NULL ) {
+        fprintf(stderr,"Out of memory allocating for int %lld\n",  val);
+        errno = ENOMEM;
+        exit(errno);
     }
-    return(timec);
+    *dynstr = val;
+    return(dynstr);
 }
 
 
@@ -141,44 +126,30 @@ char	*skipwspace(char *str)
     return(str);
 }
 
-
-char *fmtctime(time_t ctime)
+void    nzfree(char **p2ptr)
 {
-    tm_t      timetm;
-    static  char timestr[64];
+    void *ptr = NULL;
     
-    //  if (ctime == 0 )
-    // snprintf(timestr,sizeof(timestr), "Never");
-    bzero(&timetm,sizeof(tm_t));
-    
-    localtime_r(&ctime,&timetm);
-    if ( strftime(timestr,sizeof(timestr),"%d-%b-%Y:%T.00",&timetm ) == (size_t) 0) {
-        return(NULL);
+    if (p2ptr) {
+	ptr = *p2ptr;
+	if (ptr) {
+	    free(ptr);
+	}
+	*p2ptr = NULL;
     }
-    return ( timestr );
-}
-
-time_t	now(void)
-{      
-    return( time((time_t*)0 ));
-}
-
-void    nzfree(void *ptr)
-{
-    if (ptr) free(ptr);
 }
 
 int replace_dynstr(char **dynptr, char *newval)
 {
     if (!dynptr) return(0);	// passed in null give them what they deserve (null)
-    nzfree((char *) *dynptr);	// toss away any previous malloc'd value
+    nzfree(dynptr);		// toss away any previous malloc'd value
     *dynptr = newval;		// put in the new value
     return(strlen(newval));	// return new value length
 }
 
 char *ltrim(char *str,int len)
 {
-    /* check str of len bytes make the first white space a null */
+    /* check str of len bytes remove leading white space */
     
     char    *strend, *sp;
     
@@ -212,7 +183,7 @@ char *rtrim(char *str,int len)
 
 char	invalidchars(char *str, const char *validchars)
 { // return invalid char in str or null if we all ok
-    char    *sp, *match;
+    char    *sp;
     char    c;
     
     if (!str) {
@@ -221,10 +192,90 @@ char	invalidchars(char *str, const char *validchars)
     sp =str;
     
     while(c=*sp) {
-	if ((match=index(validchars, c)) == (char *) NULL ) {
+	if ((index(validchars, c)) == (char *) NULL ) {
 	    return(c);
 	}
 	sp++;
     }
     return(c);
+}
+
+
+char	*cvt2uppercase(char *str)
+{
+    char    *sp;
+    
+    if (str) {
+	sp=str;
+	while(*sp) {
+	    *sp = toupper(*sp);
+	    sp++;
+	}
+    }
+    
+    return(str);
+}
+
+char *pstr(char *str, char *def)
+{ // Protected string ie check if null and return "" if it is
+    if (str) {
+	return(str);
+    } else {
+	if (def) {
+	    return(def);
+	} else {
+	    return("");
+	}
+    }
+}
+
+int	safe_inc_int(int *iptr)
+{
+    int ival;
+    
+    ival = 0;
+    if (iptr) {
+	ival = *iptr;
+	ival++;
+	if (ival == 0 ) {
+	    ival = 1;	// looped around
+	}
+	*iptr=ival;
+    }
+    return(ival);
+}
+
+char	*shrink_string_by_middle(char *dst, int dstlen, char *src)
+{
+    size_t	srclen;
+    size_t	partlen;
+    srclen = strlen(src);
+    char	*part1;
+    char	*part2;
+    
+    partlen = dstlen/2 - 1; // how many char from start and end do we use;
+    
+    if (srclen > dstlen) {
+	part1 = src;
+	part2 = src+(srclen-partlen);
+	snprintf(dst, dstlen, "%*.*s..%s", (int) partlen, (int) partlen, part1, part2 );
+    } else {
+	snprintf(dst, dstlen,"%s",  src);
+    }
+    return(dst);
+}
+
+
+char *strdupz(char *str)
+{
+    char *rval = (char *) NULL;
+    
+    if (str) {
+	rval = strdup(str);
+	if (rval == (char *) NULL) {
+	    fprintf(stderr, "#BLIB:  Error allocating memory " __ATLINE__ "\n");
+	    exit(ENOMEM);
+	}
+    }
+    return(rval);
 }

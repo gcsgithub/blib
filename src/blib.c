@@ -1,23 +1,31 @@
-static char *rcsid="@(#) $Id: blib.c,v 1.1 2008/09/27 13:05:59 mark Exp $";
+static char *rcsid="@(#) $Id: blib.c,v 1.2 2008/10/20 13:01:35 mark Exp mark $";
 /*
  * $Log: blib.c,v $
+ * Revision 1.2  2008/10/20  13:01:35  mark
+ * checkpoint
+ *
  * Revision 1.1  2008/09/27 13:05:59  mark
  * Initial revision
  *
  *
  */
 #include "blib.h"
+#include "parseslashcmd.h"
+#include "data_access.h"
+#include "execute_cmds.h"
 
 
 blib_global_t BLIB;
 
 void    usage(const char *prg)
 {
-    fprintf(stderr,"Usage: %s [/cmd [/arg] \n", prg);
+    fprintf(stderr, "#BLIB:  Backup LIBrary (blib) %s\n", COPYRIGHT);
+    fprintf(stderr,"#BLIB:  Usage: %s\t[/cmd [/arg] \n", prg);
+    do_cmd_help(stderr);
     exit(EINVAL);
 }   
 
-int main(int argc,  char *argv[])
+int main(int argc,  char *argv[] /* , char *envp[] */)
 {   
     int             err;
     int             dousage=0;
@@ -27,34 +35,16 @@ int main(int argc,  char *argv[])
     extern int      optopt;
     extern int      opterr;
     extern int      optreset; 
-    cmd_t	    *cmds;
     
-    
-    
-#ifdef DEBUG_ONMAC
-    // check why /report /add=obh0123D didnt issue an error?
-    argc=2;
-    // argv[1] = "/display=tstldate1";
-    // argv[1] = "/remove=tstldate1";
-
-    
-    argc=3;
-    argv[1] ="/import=/Users/mark/blib_prod.dat";
-    argv[2] ="/new";
-    //argv[1] = "/modify=OBG123D";
-    // argv[2] = "/state=FREE";
-    // argv[2] = "/media=TK50";
-    //argv[2] = "/incfileno";
-    
-
-#endif /* DEBUG_ONMAC */
+    dbh_t	    *execdb;
+    char	    *cmdline;
     
     (void)setlocale(LC_ALL, "");
-    setup_blib(&BLIB);
     BLIB.progid = newstr(argv[0]);
+    setup_defaults();
    
     optarg = NULL;
-    while (!dousage && ((c = getopt(argc, argv, "qdvVf:?")) != -1)) {
+    while (!dousage && ((c = getopt(argc, argv, "qdvVf:h?")) != -1)) {
         switch (c) {
 	    case 'q':
 		BLIB.quiet++;
@@ -66,12 +56,15 @@ int main(int argc,  char *argv[])
 		BLIB.verbose++;
 		break;
             case 'V':
-                fprintf(stderr, "Version: %s\n", rcsid+8);
+                fprintf(stderr, "#BLIB:  Version: %s\n", rcsid+8);
 		exit(0);
                 break;
 	    case 'f':
-		nzfree(BLIB.blibdb_name);
-		BLIB.blibdb_name = newstr(optarg);
+		set_default(QUAL_DATABASE, optarg); // not sure why you would but /database will over rule -f
+		break;
+	    case 'h':
+		usage(BLIB.progid);
+		exit(0);
 		break;
             default:
                 dousage++;
@@ -81,53 +74,38 @@ int main(int argc,  char *argv[])
     
     argc -= (optind-1);
     argv += (optind-1);
+    
+    if (argc<=1) {
+	usage(BLIB.progid);
+	exit(0);
+    }
 
     if (dousage) usage(BLIB.progid); // will exit via usage
-    if ((cmds = parseslashcmd(argc,argv)) == (cmd_t *) NULL ) usage(BLIB.progid);
-    if (BLIB.debug ) dump_cmd(cmds);
-    
-    err = execute_cmds(cmds);
-    exit(err);
-}
-
-
-void setup_blib(blib_global_t *blib_gp)
-{
-    char    *sp;
-    char    *this_host;
-    char    dbnamestr[24+MAXHOSTNAMELEN+1];
-    char    blibgrpstr[MAXHOSTNAMELEN+1];
-    char    library_namestr[MAXHOSTNAMELEN+3+1];
-    
-    
-    this_host = get_hostname(NL);
-
-//============================================================================   
-        if ((sp=getenv("MYBLIB_GROUP")) == NL ) {
-	snprintf(blibgrpstr, sizeof(blibgrpstr),"%s", this_host);
-	sp = blibgrpstr;
-    }
-    blib_gp->blib_group = newstr(sp);
  
-//============================================================================   
-    if ((sp=getenv("BLIBDBS")) == NL ) {
-	snprintf(dbnamestr, sizeof(dbnamestr),"/usr/local/etc/dat/blib_%s.sqlite3", blib_gp->blib_group );
-	sp = dbnamestr;
+    cmdline = mkcmdline(argc, argv);
+    // cmdline = newstr("/newbackup '/desc=New backup test 1' /record=07-Nov-2010:00:57:20.00 /expire=14-Nov-2010:00:57:20.00");
+    // cmdline = newstr("/newbackup '/desc=New backup test 1' /record=07-Nov-2010:06:26:32.00 /expire=14-Nov-2010:06:26:32.00");
+
+    execdb = process_command_line(NULL, cmdline); // NULL because we not open yet
+    err = 0;
+    if (execdb) {
+	err = execdb->status;
+	if (err) {
+	    if (strcasecmp(execdb->errmsg, "not an error")) {
+		if (BLIB.debug) fprintf(stderr, "#BLIB:  status: %d ", err);
+		if (execdb->errmsg ) fputs(execdb->errmsg, stderr);
+		if ((BLIB.debug) || (execdb->errmsg )) fputc('\n', stderr);
+	    }
+	}
+    	if (execdb->open == YES ) {
+		db_close(execdb);
+	}
     }
-    blib_gp->blibdb_name = newstr(sp);
-    
-//============================================================================   
-    if ((sp=getenv("DAILYMEDIA")) == NL ) {
-	sp = "TZ89";
+    if ((err == BLIBDB_DONE) || (err == BLIBDB_ROW) || (err == BLIBDB_OK)) {
+	exit(0);
+    } else {
+   	 exit(err);
     }
-    blib_gp->default_media = newstr(sp);
-//============================================================================       
-    if ((sp=getenv("TAPELIB")) == NL ) {
-	snprintf(library_namestr, sizeof(library_namestr),"%sTL1", blib_gp->blib_group);
-	sp = library_namestr;
-    }
-    blib_gp->library_name = newstr(sp);
-    
 }
 
-	
+

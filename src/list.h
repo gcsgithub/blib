@@ -1,8 +1,11 @@
 #ifndef __LIST_H__
 #define __LIST_H__
 /*
- * @(#) $Id:$
- * $Log:$
+ * @(#) $Id: list.h,v 1.1 2008/10/19 22:18:59 root Exp mark $
+ * $Log: list.h,v $
+ * Revision 1.1  2008/10/19  22:18:59  root
+ * Initial revision
+ *
  *
  *  list.h
  *  blib
@@ -34,13 +37,13 @@ struct  list {
     entry_t *tail;
 };
 
-list_t *list_insert(list_t **lis, entry_t *ent);
+list_t *list_insert_tail(list_t **lis, entry_t *ent);
 int	list_delete(list_t *lis, entry_t *ent,int (*free_entry)(entry_t *ent));
 int	free_list(list_t **lis,int (*free_entry)(entry_t *ent));
 void	dump_list(list_t *lis);
 entry_t *new_entry(void *val);
-entry_t *snprintf_ent(char *val, size_t len,char *fmt, entry_t *ent, char *errmsg, ...);
-entry_t *atoi_ent(     int *val, entry_t *ent, char *errmsg, ...);
-entry_t	*time_ent(  time_t *val, entry_t *ent, char *errmsg, ...);
+entry_t *snprintf_ent(int *err, char *val, size_t len,char *fmt, entry_t *ent, char *errmsg, ...);
+entry_t *atoi_ent(int *err,unsigned int *val, entry_t *ent, char *errmsg, ...);
+entry_t	*time_ent(int *err, time_t *val, entry_t *ent, char *errmsg, ...);
 
 #endif /* __LIST_H__ */
