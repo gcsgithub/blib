@@ -1,6 +1,9 @@
-static char *rcsid="@(#) $Id: parseslashcmd.c,v 1.3 2008/10/20 13:01:37 mark Exp mark $";
+static char *rcsid="@(#) $Id: parseslashcmd.c,v 1.4 2010/11/16 04:09:52 mark Exp mark $";
 /*
  * $Log: parseslashcmd.c,v $
+ * Revision 1.4  2010/11/16 04:09:52  mark
+ * rc1
+ *
  * Revision 1.3  2008/10/20  13:01:37  mark
  * checkpoint
  *
@@ -191,7 +194,7 @@ cmd_t *parseslashcmd(char *cmdline)
     cmdp=cmdline;
     while (newcmd = getcmd(&cmdp)) {  // work through each argv entry until exausted
 	if (newcmd->param->cmdid == CMD_ERR) {
-	    fprintf(stderr, "#BLIB:  Syntax error no command found: \"%s\"\n", cmdp);
+	    fprintf(stderr, "#BLIB:  Syntax error no command found: \"%s\"\n", cmdline);
 	    head = (cmd_t *) NULL;
 	    break;
 	} else {
@@ -1013,7 +1016,7 @@ void	do_cmd_help(FILE *fd)
 	}
 	idx++;
     }
-    fprintf(fd, "\n\n\tWhen using commands /report or /export results can be filtered by most of the qualifiers eg. /state=FREE\n"
+    fprintf(fd, "\n\n\tWhen using command /report results can be filtered by most of the volume qualifiers eg. /state=FREE\n"
 	    "\tcomparisons other than equal are allowed to simplify keyboard input , can be used for < and . for >\n"
 	    "\t\totherwise < and > need to be escaped from the shell using them as input/output redireciton\n"
 	    "\tNOT is the symbol !  ie NOT equal  /state!=FREE for state not equal to free this can also be just /state!FREE\n"
