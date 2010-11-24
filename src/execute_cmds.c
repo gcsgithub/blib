@@ -1,6 +1,9 @@
-static char *rcsid="@(#) $Id: execute_cmds.c,v 1.2 2008/10/20 13:04:21 root Exp mark $";
+static char *rcsid="@(#) $Id: execute_cmds.c,v 1.3 2010/11/16 04:08:34 mark Exp mark $";
 /*
  * $Log: execute_cmds.c,v $
+ * Revision 1.3  2010/11/16 04:08:34  mark
+ * rc1
+ *
  * Revision 1.2  2008/10/20  13:04:21  root
  * checkpoint
  *
@@ -246,71 +249,98 @@ int   modify_vol(cmd_t *thecmd, filt_t  *filtrec, vol_t *volrec, cmd_t *qual_ptr
     int rval;
     
     rval = 0; // no error
-    bzero(filtrec, sizeof(filt_t));
-    
-    while(qual_ptr) {
-        switch(qual_ptr->param->cmdid) {
-            case QUAL_MEDIA:
-                filtrec->media = qual_ptr;
-                copy_media(&volrec->media		, qual_ptr->val);
-                break;
-            case QUAL_GROUP:
-                filtrec->groupname = qual_ptr;
-                copy_groupname(&volrec->groupname	, qual_ptr->val);
-                break;
-            case QUAL_LOCATION:
-                filtrec->location = qual_ptr;
-                copy_location(&volrec->location		, qual_ptr->val);
-                break;
-            case QUAL_STATE:
-		if (volrec->bck_id == 0 ) {
-		    copy_state(&volrec->state               , qual_ptr->val);
-		    filtrec->state = qual_ptr;
-		} else {
-		    fprintf(stderr, "#BLIB:  you may not modify STATE on volume %s as its part of a backup %llu\n", volrec->label.str, (llu_t) volrec->bck_id );
-		    exit(EPERM);
-		}
-                break;
+    if ((rval = make_filter_rec(qual_ptr, filtrec)) >= 0 ) {
+	if ((filtrec->media)  && (filtrec->media->valset == VAL_SET )) {
+	    copy_media(&volrec->media		, filtrec->media->val);
+	}
+
+    	if ((filtrec->groupname) && (filtrec->groupname->valset == VAL_SET)) {
+	    copy_groupname(&volrec->groupname	, filtrec->groupname->val);
+	}
+	
+	if ((filtrec->location) && (filtrec->location->valset == VAL_SET)) {
+	    copy_location(&volrec->location	, filtrec->location->val);
+	}
+	
+	if ((filtrec->state) && (filtrec->state->valset == VAL_SET)) {
+	    if (volrec->bck_id == 0 ) {
+		copy_state(&volrec->state , filtrec->state->val);
+	    } else {
+		fprintf(stderr, "#BLIB:  you may not modify STATE on volume %s as its part of a backup %llu\n", volrec->label.str, (llu_t) volrec->bck_id );
+		exit(EPERM);
+	    }
+	}
+	
+	if ((filtrec->offsitedate) && (filtrec->offsitedate->valset == VAL_SET)) {
+	    volrec->offsitedate = *(time_t *) filtrec->offsitedate->val;
+	}
 		
-	    case QUAL_OFFSITE:
-                filtrec->offsitedate = qual_ptr;
-                volrec->offsitedate = *(time_t *) qual_ptr->val;
-                break;
+	if ((filtrec->librarydate) && (filtrec->librarydate->valset == VAL_SET)) {
+		volrec->librarydate = *(time_t *) filtrec->librarydate->val;
+	}
 		
-	    case QUAL_LIBDATE:
-		filtrec->librarydate = qual_ptr;
-		volrec->librarydate = *(time_t *) qual_ptr->val;
-		break;
-		
-            case QUAL_USAGE:
+	if ((filtrec->usage) && (filtrec->usage->valset == VAL_SET)) {
 		if ((volrec->bck_id == 0 ) || (thecmd->param->dbaccess == DB_RO )) {
 		    if ( qual_ptr->valset == VAL_SET ) {
-			volrec->usage = *(int *) qual_ptr->val;
+			volrec->usage = *(int *) filtrec->usage->val;
 		    } else {
 			volrec->usage++;
-			replace_dynstr((char **) &qual_ptr->val,(char *) newint(volrec->usage));
+			replace_dynstr((char **) &qual_ptr->val,(char *) newint(volrec->usage)); // ?? TODO: wtf was this for??
 		    }
 		    filtrec->usage = qual_ptr;
 		} else {
 		    fprintf(stderr, "#BLIB:  you may not modify /usage on volume %s as its part of a backup %llu\n", volrec->label.str,(llu_t) volrec->bck_id );
 		    exit(EPERM);
 		}
-		
+	}
+    }
+    return(rval);
+}
+
+int   make_filter_rec(cmd_t *qual_ptr, filt_t  *filtrec)
+{
+    int rval;
+    
+    rval = 0; // no error
+    bzero(filtrec, sizeof(filt_t));
+    
+    while(qual_ptr) {
+        switch(qual_ptr->param->cmdid) {
+            case QUAL_MEDIA:
+                filtrec->media = qual_ptr;
+                break;
+            case QUAL_GROUP:
+                filtrec->groupname = qual_ptr;
+                break;
+            case QUAL_LOCATION:
+                filtrec->location = qual_ptr;
+                break;
+            case QUAL_STATE:
+		filtrec->state = qual_ptr;
+                break;
+	    case QUAL_OFFSITE:
+                filtrec->offsitedate = qual_ptr;
+                break;
+	    case QUAL_LIBDATE:
+		filtrec->librarydate = qual_ptr;
+		break;
+            case QUAL_USAGE:
+		filtrec->usage = qual_ptr;		
                 break;
 	    case QUAL_RECORD:
 		fprintf(stderr, "#BLIB:  /record date is not stored with the volume. Please see /reportbackups /listbackups the record date is with the backup id\n");
-		exit(EINVAL);
+		rval=-1;
 		break;
-		
 	    default:
 		fprintf(stderr, "#BLIB:  modify/filter volume does not support qualifier %s\n", qual_ptr->param->cmdtxt);
-		exit(EINVAL);
+		rval=-1;
 		break;
         }
         qual_ptr = qual_ptr->next;
     }
     return(rval);
 }
+
 
 char  *doenv(fio_t *outfio, char *symbol, valtype_e val_type,void *value)
 {
@@ -716,6 +746,7 @@ void do_cmd_report_free(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_pt
     int		idx;
     
     ver();
+    // select * from volumes where bck_id=0 and state='F' order by recorddate asc
     toupdate = 9999;
     idx=0;
     if (thecmd->valset == VAL_SET) {
@@ -724,8 +755,9 @@ void do_cmd_report_free(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_pt
     if (toupdate==0) toupdate = 9999;
     
     bzero(&volrec, sizeof(vol_t)); // clear all defaults we only want those filter values
-    if ((err = modify_vol(thecmd, &filtrec, &volrec, qual_ptr)) !=0 ) { // update the volrec from cmd qualifiers use as filter
-	fprintf(outfd->fd, "#BLIB:  Error modifying volume record %d\n", err);
+    
+    if ((err = make_filter_rec(qual_ptr, &filtrec )) !=0 ) { // update the volrec from cmd qualifiers use as filter
+	fprintf(outfd->fd, "#BLIB:  Error setting up volume filter %d\n", err);
 	return;
     }
     
@@ -751,7 +783,7 @@ void do_cmd_report_free(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_pt
 
 
 void do_cmd_report_exp(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr,dbh_t *dbh)
-{
+{ // reportexpired
     vol_t	volrec;
     vol_t	db_read;
     int		dbrstatus;
@@ -760,7 +792,7 @@ void do_cmd_report_exp(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr
     int		toupdate;
     int		idx;
     
-    // select * from volumes where expiredate <= datetime('now','localtime') and state='A' order by expiredate asc
+    // select * from volumes where bck_id=0 and state='A' order by bck_id asc
     toupdate = 9999;
     idx=0;
     if (thecmd->valset == VAL_SET) {
@@ -769,8 +801,8 @@ void do_cmd_report_exp(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr
     if (toupdate == 0 ) toupdate=9999;
     
     bzero(&volrec, sizeof(vol_t)); // clear all defaults we only want those filter values
-    if ((err = modify_vol(thecmd, &filtrec, &volrec, qual_ptr)) !=0 ) { // update the volrec from cmd qualifiers use as filter
-	fprintf(outfd->fd, "#BLIB:  Error modifying volume record %d\n", err);
+    if ((err = make_filter_rec(qual_ptr, &filtrec )) !=0 ) { // update the volrec from cmd qualifiers use as filter
+	fprintf(outfd->fd, "#BLIB:  Error setting up volume filter %d\n", err);
 	return;
     }
     
