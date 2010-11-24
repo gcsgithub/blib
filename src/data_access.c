@@ -1,4 +1,4 @@
-static const char *rcsid="@(#) $Id: data_access.c,v 1.2 2008/10/20 13:05:22 root Exp mark $";
+static const char *rcsid="@(#) $Id: data_access.c,v 1.3 2010/11/16 04:10:15 mark Exp mark $";
 /*
  *  data_access.c
  *  blib
@@ -6,6 +6,9 @@ static const char *rcsid="@(#) $Id: data_access.c,v 1.2 2008/10/20 13:05:22 root
  *  Created by mark on 08/10/2008.
  *  Copyright 2008 Garetech Computer Solutions. All rights reserved.
  * $Log: data_access.c,v $
+ * Revision 1.3  2010/11/16 04:10:15  mark
+ * rc1
+ *
  * Revision 1.2  2008/10/20  13:05:22  root
  * checkpoint
  *
@@ -1101,7 +1104,7 @@ int db_find_volume_free(dbh_t *dbh, vol_t *volrec, find_type_t flag)
 {
     int rval;
     
-    rval =  db_find(dbh, "select * from volumes where state='F' order by expiredate asc", NULL, (void *)volrec, copy_results_volume , flag);
+    rval =  db_find(dbh, "select * from volumes where state='F' order by recorddate asc", NULL, (void *)volrec, copy_results_volume , flag);
     
     return(rval);
 }
@@ -1110,7 +1113,7 @@ int db_find_volume_expired(dbh_t *dbh, vol_t *rec, find_type_t flag)
 {
     int rval;
 
-    char *sqltext="select * from volumes where expiredate <= strftime('%%s','now') and state='A' order by expiredate asc";
+    char *sqltext="select volumes.* from volumes,  backups where volumes.bck_id = backups.bck_id and expiredate <= strftime('%%s','now') and state='A' order by recorddate asc";
     
     rval =  db_find(dbh, sqltext, NULL, (void *)rec, copy_results_volume , flag);
     
