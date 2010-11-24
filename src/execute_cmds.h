@@ -1,8 +1,11 @@
 #ifndef __EXECUTE_CMDS_H__
 #define	__EXECUTE_CMDS_H__
 /*
- * @(#) $Id: execute_cmds.h,v 1.1 2008/10/19 22:18:59 root Exp mark $
+ * @(#) $Id: execute_cmds.h,v 1.2 2010/11/16 04:10:51 mark Exp root $
  * $Log: execute_cmds.h,v $
+ * Revision 1.2  2010/11/16 04:10:51  mark
+ * rc1
+ *
  * Revision 1.1  2008/10/19  22:18:59  root
  * Initial revision
  *
@@ -24,6 +27,7 @@
 dbh_t	*execute_cmds(dbh_t *dbh, cmd_t **cmds);
 dbh_t	*process_command_line(dbh_t *dbh, char *cmdline);
 int	modify_vol(cmd_t *thecmd, filt_t  *filtrec, vol_t *volrec, cmd_t *qual_ptr);
+int     make_filter_rec(cmd_t *qual_ptr, filt_t  *filtrec);
 int	filter_rec(filt_t *filtrec, vol_t *rec);
 
 void	do_cmd_env(fio_t *outfd);
