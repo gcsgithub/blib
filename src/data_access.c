@@ -1,4 +1,4 @@
-static const char *rcsid="@(#) $Id: data_access.c,v 1.3 2010/11/16 04:10:15 mark Exp mark $";
+static const char *rcsid="@(#) $Id: data_access.c,v 1.4 2010/11/24 00:58:47 mark Exp mark $";
 /*
  *  data_access.c
  *  blib
@@ -6,6 +6,9 @@ static const char *rcsid="@(#) $Id: data_access.c,v 1.3 2010/11/16 04:10:15 mark
  *  Created by mark on 08/10/2008.
  *  Copyright 2008 Garetech Computer Solutions. All rights reserved.
  * $Log: data_access.c,v $
+ * Revision 1.4  2010/11/24 00:58:47  mark
+ * BUGFIX: reportexpire reportfree where very wrong based on older database structures
+ *
  * Revision 1.3  2010/11/16 04:10:15  mark
  * rc1
  *
@@ -1757,8 +1760,8 @@ int	db_update_backups(dbh_t *dbh,backups_t *bckrec)
 {
     list_t	*flds = (list_t *) NULL;
     
-    db_fldsmklist(&flds , "start"      , FLD_INT  , (void *) &bckrec->start);
     db_fldsmklist(&flds , "node"       , FLD_TEXT , (void *) &bckrec->node);
+    db_fldsmklist(&flds , "start"      , FLD_INT  , (void *) &bckrec->start);
     db_fldsmklist(&flds , "end"        , FLD_INT  , (void *) &bckrec->end);
     db_fldsmklist(&flds , "expiredate" , FLD_INT  , (void *) &bckrec->expiredate);
     db_fldsmklist(&flds , "desc"       , FLD_TEXT , (void *) &bckrec->desc);
