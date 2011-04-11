@@ -1,8 +1,11 @@
 #ifndef __DATA_ACCESS_H__
 #define	__DATA_ACCESS_H__
 /*
- * @(#) $Id: data_access.h,v 1.1 2008/10/19 22:18:58 root Exp mark $
+ * @(#) $Id: data_access.h,v 1.2 2010/11/16 04:11:14 mark Exp mark $
  * $Log: data_access.h,v $
+ * Revision 1.2  2010/11/16 04:11:14  mark
+ * rc1
+ *
  * Revision 1.1  2008/10/19  22:18:58  root
  * Initial revision
  *
@@ -80,7 +83,7 @@ int     db_exec_sql_flds_pop(dbh_t *dbh, char *sqltext, list_t *flds);
 
 int     db_exec_sql_bckid(dbh_t *dbh, char *sqltext, bckid_t bck_id);
 
-dbfld_t *db_fldsmklist(list_t **fldhead,const char *fldname,  fld_type_t fldtype, void * fldptr);
+dbfld_t *db_fldsmklist(list_t **fldhead,const char *fldname,  fld_type_t fldtype, void *fldptr);
 void	 db_fldsfreelist(list_t **listp);
 
 int	 db_fldsdump(list_t *flds);
@@ -105,7 +108,7 @@ int     db_find_volumes_label(dbh_t *dbh,vol_t *key, vol_t *rec, find_type_t fla
 int     db_find_volume_bylabel(dbh_t *dbh,blabel_t *label, vol_t *rec, find_type_t flag);
 int     db_find_vol_obj_id_notbckid_label(dbh_t *dbh, list_t *key_bck_id, vol_obj_t *volobj2del,find_type_t flag);
 int     db_find_current_volobj(dbh_t *dbh, vol_obj_t *volobjrec);
-time_t	db_find_vol_obj_end(dbh_t *dbh,bckid_t bck_id);
+time_t	db_lookup_endofbackup(dbh_t *dbh,bckid_t bck_id);
 int	db_find_backups_orderbckid(dbh_t *dbh, backups_t *bckrec, bckid_t bckid, find_type_t flag);
 int	db_find_backups_by_expire(dbh_t *dbh, backups_t *bckrec, find_type_t flag);
 int     db_find_bck_objects_by_bckid(dbh_t *dbh, bckid_t bck_id,bckobj_t *bckobjrec, find_type_t flag);
@@ -158,6 +161,18 @@ int     copy_results_bck_errors(dbh_t  *dbh, void *recp);
 
 bcount_t db_get_size(dbh_t *dbh, vol_t *volrec);
 int      db_get_duration(dbh_t *dbh, vol_t *volrec);
+
+
+bcount_t  db_count_sqltext(dbh_t *dbh, char *sqltext);
+int	db_read_bck_errors_fault1(dbh_t *dbh, bck_errors_t *bckerrrec, find_type_t flag);
+int	db_read_bck_errors_fault2(dbh_t *dbh, bck_errors_t *bckerrrec, find_type_t flag);
+void db_display_bck_errors(FILE *fd, bck_errors_t *bckerrrec);
+
+
+
+int     db_verify(fio_t *outfd, dbh_t *dbh);
+
+
 
 
 #endif /* __DATA_ACCESS_H__ */

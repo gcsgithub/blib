@@ -1,6 +1,9 @@
-static char *rcsid="@(#) $Id: blib.c,v 1.2 2008/10/20 13:01:35 mark Exp mark $";
+static char *rcsid="@(#) $Id: blib.c,v 1.3 2010/11/16 04:10:03 mark Exp mark $";
 /*
  * $Log: blib.c,v $
+ * Revision 1.3  2010/11/16 04:10:03  mark
+ * rc1
+ *
  * Revision 1.2  2008/10/20  13:01:35  mark
  * checkpoint
  *
@@ -42,30 +45,30 @@ int main(int argc,  char *argv[] /* , char *envp[] */)
     (void)setlocale(LC_ALL, "");
     BLIB.progid = newstr(argv[0]);
     setup_defaults();
-   
+    
     optarg = NULL;
     while (!dousage && ((c = getopt(argc, argv, "qdvVf:h?")) != -1)) {
         switch (c) {
-	    case 'q':
-		BLIB.quiet++;
-		break;
-	    case 'd':
-		BLIB.debug++;
-		break;
-	    case 'v':
-		BLIB.verbose++;
-		break;
+            case 'q':
+                BLIB.quiet++;
+                break;
+            case 'd':
+                BLIB.debug++;
+                break;
+            case 'v':
+                BLIB.verbose++;
+                break;
             case 'V':
                 fprintf(stderr, "#BLIB:  Version: %s\n", rcsid+8);
-		exit(0);
+                exit(0);
                 break;
-	    case 'f':
-		set_default(QUAL_DATABASE, optarg); // not sure why you would but /database will over rule -f
-		break;
-	    case 'h':
-		usage(BLIB.progid);
-		exit(0);
-		break;
+            case 'f':
+                set_default(QUAL_DATABASE, optarg); // not sure why you would but /database will over rule -f
+                break;
+            case 'h':
+                usage(BLIB.progid);
+                exit(0);
+                break;
             default:
                 dousage++;
                 break;
@@ -76,35 +79,35 @@ int main(int argc,  char *argv[] /* , char *envp[] */)
     argv += (optind-1);
     
     if (argc<=1) {
-	usage(BLIB.progid);
-	exit(0);
+        usage(BLIB.progid);
+        exit(0);
     }
-
+    
     if (dousage) usage(BLIB.progid); // will exit via usage
- 
+    
     cmdline = mkcmdline(argc, argv);
     // cmdline = newstr("/newbackup '/desc=New backup test 1' /record=07-Nov-2010:00:57:20.00 /expire=14-Nov-2010:00:57:20.00");
     // cmdline = newstr("/newbackup '/desc=New backup test 1' /record=07-Nov-2010:06:26:32.00 /expire=14-Nov-2010:06:26:32.00");
-
+    
     execdb = process_command_line(NULL, cmdline); // NULL because we not open yet
     err = 0;
     if (execdb) {
-	err = execdb->status;
-	if (err) {
-	    if (strcasecmp(execdb->errmsg, "not an error")) {
-		if (BLIB.debug) fprintf(stderr, "#BLIB:  status: %d ", err);
-		if (execdb->errmsg ) fputs(execdb->errmsg, stderr);
-		if ((BLIB.debug) || (execdb->errmsg )) fputc('\n', stderr);
-	    }
-	}
+        err = execdb->status;
+        if (err) {
+            if (strcasecmp(execdb->errmsg, "not an error")) {
+                if (BLIB.debug) fprintf(stderr, "#BLIB:  status: %d ", err);
+                if (execdb->errmsg ) fputs(execdb->errmsg, stderr);
+                if ((BLIB.debug) || (execdb->errmsg )) fputc('\n', stderr);
+            }
+        }
     	if (execdb->open == YES ) {
-		db_close(execdb);
-	}
+            db_close(execdb);
+        }
     }
     if ((err == BLIBDB_DONE) || (err == BLIBDB_ROW) || (err == BLIBDB_OK)) {
-	exit(0);
+        exit(0);
     } else {
-   	 exit(err);
+        exit(err);
     }
 }
 
