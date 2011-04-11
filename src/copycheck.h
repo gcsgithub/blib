@@ -1,14 +1,17 @@
 #ifndef __COPYCHECK_H__
 #define __COPYCHECK_H__
 /*
-// @(#) $Id:$
+// @(#) $Id: copycheck.h,v 1.1 2010/11/16 04:04:35 root Exp mark $
 //
 //  copycheck.h
 //  blib
 //
 //  Created by mark on 18/10/2010.
 //  Copyright (c) 2010 Garetech Computer Solutions. All rights reserved.
-// $Log:$
+// $Log: copycheck.h,v $
+// Revision 1.1  2010/11/16 04:04:35  root
+// Initial revision
+//
 */
 
 #include "data_structures.h"
@@ -28,7 +31,7 @@ char	*copy_objname(objname_t *dst, char *src);
 int     cmp_objname(objname_t *l1, objname_t *l2);
 char	*copy_errmsg(errmsg_t *dst, char  *src);
 vol_t	*default_volume(vol_t *rec);
-
+const char    *fmt_state(char *state);
 
 #endif /* __COPYCHECK__H_ */
 

@@ -1,11 +1,14 @@
-static const char *rcsid="@(#) $Id:$";
+static const char *rcsid="@(#) $Id: copycheck.c,v 1.1 2010/11/16 04:05:32 root Exp mark $";
 /*
 //  copycheck.c
 //  blib
 //
 //  Created by mark on 18/10/2010.
 //  Copyright (c) 2010 Garetech Computer Solutions. All rights reserved.
-// $Log:$
+// $Log: copycheck.c,v $
+// Revision 1.1  2010/11/16 04:05:32  root
+// Initial revision
+//
 */
 
 #include "copycheck.h"
@@ -126,4 +129,21 @@ vol_t	*default_volume(vol_t *rec)
     
 }
 
+const char    *fmt_state(char *state)
+{
+    const char *rval;
+    
+    switch(*(char *)state) {
+        case    'F':
+            rval = "FREE";
+            break;
+        case    'A':
+            rval = "ALLOCATED";
+            break;
+        default:
+            rval = "UNKNOWN";
+            break;
+    }
+    return(rval);    
+}
 
