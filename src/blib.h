@@ -1,8 +1,11 @@
 #ifndef __BLIB_H__
 #define __BLIB_H__
 /*
- * @(#)$Id: blib.h,v 1.3 2008/10/20 13:01:36 mark Exp mark $
+ * @(#)$Id: blib.h,v 1.4 2010/11/16 04:10:58 mark Exp mark $
  * $Log: blib.h,v $
+ * Revision 1.4  2010/11/16 04:10:58  mark
+ * rc1
+ *
  * Revision 1.3  2008/10/20  13:01:36  mark
  * checkpoint
  *
@@ -71,9 +74,10 @@ struct blib_global_s {
     uint32_t	volumes_free;
     uint32_t 	volumes_allocated;
     uint32_t	volumes_other;
+    files_t	*includelogs;
 };
 
 // ${BLIB_VOLUME}|${BLIB_FILENO}|${BLIB_STATE}|${BLIB_MEDIA}|${BLIB_USAGE}|${BLIB_GROUP}|${BLIB_LOCATION}|${BLIB_LIBRARYDATE}|${BLIB_RECORDDATE}|${BLIB_OFFSITEDATE}|${BLIB_EXPIREDATE}|${BLIB_DESC}
 
-#define	COPYRIGHT	"Copyright (c) 2008-2010 Garetech Computer Solutions Pty Ltd"
+#define	COPYRIGHT	"Copyright (c) 2008-2011 Garetech Computer Solutions Pty Ltd"
 #endif /* __BLIB_H__ */
