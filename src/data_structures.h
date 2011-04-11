@@ -1,13 +1,16 @@
 #ifndef __DATA_STRUCTURE_H__
 #define __DATA_STRUCTURE_H__
 /*
-// @(#) $Id:$
-//  data_structures.h
-//  blib
-//
-//  Created by mark on 18/10/2010.
-//  Copyright (c) 2010 Garetech Computer Solutions. All rights reserved.
-// $Log:$
+ // @(#) $Id: data_structures.h,v 1.1 2010/11/16 04:04:31 root Exp mark $
+ //  data_structures.h
+ //  blib
+ //
+ //  Created by mark on 18/10/2010.
+ //  Copyright (c) 2010 Garetech Computer Solutions. All rights reserved.
+ // $Log: data_structures.h,v $
+ // Revision 1.1  2010/11/16 04:04:31  root
+ // Initial revision
+ //
  */
 
 #include    <sqlite3.h>
@@ -32,13 +35,21 @@ typedef enum {
     FLD_INT64
 } fld_type_t;
 
+typedef union val_s val_t;
+union val_s {
+		void       *val_voidptr;
+		char       *val_charptr;
+		int        val_int;
+        llu_t      val_int64;
+};
+
 typedef struct blibdbfld_s dbfld_t;
 struct blibdbfld_s {
     fld_type_t	fldtype;
-    int		fldidx;
+    int         fldidx;
     const char *fldname;
-    size_t	fldlen;
-    void       *fldval;
+    size_t      fldlen;
+    void       *fldval;  // always a pointer
 };
 
 typedef struct {
