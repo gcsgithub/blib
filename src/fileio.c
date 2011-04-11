@@ -1,4 +1,4 @@
-static char *rcsid="@(#) $Id: fileio.c,v 1.2 2010-04-06 04:29:30+10 mark Exp $";
+static char *rcsid="@(#) $Id: fileio.c,v 1.1 2010/11/16 04:06:35 root Exp mark $";
 /*
  *  fileio.c
  *  fmtbckrep_xcode
@@ -7,6 +7,9 @@ static char *rcsid="@(#) $Id: fileio.c,v 1.2 2010-04-06 04:29:30+10 mark Exp $";
  *  Copyright 2009 Garetech Computer Solutions. All rights reserved.
  *
  * $Log: fileio.c,v $
+ * Revision 1.1  2010/11/16 04:06:35  root
+ * Initial revision
+ *
  * Revision 1.2  2010-04-06 04:29:30+10  mark
  * tweek to error message on malloc failure
  *
@@ -58,6 +61,9 @@ void	fio_close_and_free(fio_t **fiop)
 	    nzfree(&fio->open_mode);
 	    nzfree(&fio->ext);
 	    nzfree(&fio->buf);
+	    nzfree(&fio->mimetype);
+	    nzfree(&fio->charset);
+	    nzfree(&fio->encoding);
 	    free(fio);
 	    *fiop = (fio_t *) NULL;
 	}
@@ -233,6 +239,11 @@ fio_t    *fio_alloc_open(char *filename, char *new_ext, char *open_mode, size_t 
 	fio->ext = newstr("");
 	fio->fnm = newstr(filename);
     }
+    // we could try and deduce this from ext or proper magic processing but for now this is what we need
+    // its been added for mailto() to do mime type on attaching files
+    replace_dynstr(&fio->mimetype, newstr("text/plain"));
+    replace_dynstr(&fio->charset, newstr("US-ASCII"));
+    replace_dynstr(&fio->encoding, newstr("7bit"));
     if (open_mode) {
 	fio->open_mode = newstr(open_mode);
     } else {
@@ -346,4 +357,74 @@ int  fio_copy_file(fio_t *src, fio_t *outfd)
     fio_close(src);
     fio_close(outfd);
     return(errno);
+}
+
+files_t *alloc_files_ent()
+{
+    files_t *files_ent;
+    
+    if ((files_ent = malloc(sizeof(files_t))) == (files_t *) NULL ) {
+	fprintf(stderr, "# Out of memory allocating space for a new files entry\n");
+	exit(ENOMEM);
+    }
+    bzero(files_ent,sizeof(files_t));
+    return(files_ent);
+}
+
+files_t *make_files_ent(char *fnm)
+{
+    files_t *files_ent;
+    
+    files_ent = alloc_files_ent();
+    files_ent->fio = fio_alloc_open(fnm, NULL, "r", MAX_BUF);
+    return(files_ent);
+}
+
+
+files_t *new_files(files_t **head, char *fnm)
+{
+    files_t *tail;
+    files_t *newfile;
+    
+    if (!head) {
+	fprintf(stderr, "# Internal Error new_files called with a null pointer to head\n");
+	exit(EINVAL);
+    }
+    
+    newfile = make_files_ent(fnm);
+    tail = *head;
+    if (tail == NULL ) { // special case head is empty
+	*head = newfile;
+    } else {
+	// find the tail of the list
+	while (tail->next) {
+	    tail = tail->next;
+	}
+	tail->next = newfile;
+    }
+    
+    return(newfile);
+}
+
+files_t	*files_insert_head(files_t **head, fio_t *fio)
+{
+    files_t *next;
+    files_t *newfile;
+    
+    if (!head) {
+	fprintf(stderr, "# Internal Error new_files called with a null pointer to head\n");
+	exit(EINVAL);
+    }
+    
+    newfile = alloc_files_ent();
+    newfile->fio = fio;
+    
+    next = *head;
+    *head = newfile;
+    
+    if (next != NULL ) { 
+	newfile->next = next; // previous head is now next
+    } 
+    
+    return(newfile);
 }
