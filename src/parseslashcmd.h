@@ -1,8 +1,11 @@
 #ifndef __PARSESLASHCMD_H__
 #define __PARSESLASHCMD_H__
 /*
- * @(#) $Id: parseslashcmd.h,v 1.3 2008/10/20 13:01:37 mark Exp mark $
+ * @(#) $Id: parseslashcmd.h,v 1.4 2010/11/16 04:10:47 mark Exp mark $
  *  $Log: parseslashcmd.h,v $
+ *  Revision 1.4  2010/11/16 04:10:47  mark
+ *  rc1
+ *
  * Revision 1.3  2008/10/20  13:01:37  mark
  * checkpoint
  *
@@ -74,6 +77,7 @@ typedef enum  {
     CMD_REPBCK, 
     CMD_LISTBCK,
     CMD_LISTOBJ, 
+    CMD_VERIFY, 
     
     QUAL_NEW,
     QUAL_NOLOG,
@@ -102,6 +106,7 @@ typedef enum  {
     QUAL_STYSHT,
     QUAL_MAIL,
     QUAL_OUTPUT,	// open this file for output instead of stdout
+    QUAL_INCLOG,
     
     CMD_END
 } cmdqual_e;
