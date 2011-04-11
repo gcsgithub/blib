@@ -1,4 +1,4 @@
-static char *rcsid="@(#) $Id:$";
+static char *rcsid="@(#) $Id: do_cmd_reportbackup.c,v 1.1 2010/11/16 04:05:13 root Exp mark $";
 
 /*
  *  do_cmd_reportbackup.c
@@ -6,7 +6,10 @@ static char *rcsid="@(#) $Id:$";
  *
  *  Created by mark on 08/10/2010.
  *  Copyright 2010 Garetech Computer Solutions. All rights reserved.
- * $Log:$
+ * $Log: do_cmd_reportbackup.c,v $
+ * Revision 1.1  2010/11/16 04:05:13  root
+ * Initial revision
+ *
  *
  */
 static char *ver()
@@ -98,16 +101,11 @@ void	do_cmd_reportbackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_p
     }
     
     if (mailtoaddress) {
-        if (mailto(report_tmp_fio, mailtoaddress, bckrec.desc.str, BLIB.debug) == -1 ) {
+	replace_dynstr(&report_tmp_fio->mimetype, newstr("text/html"));
+	files_insert_head(&BLIB.includelogs, report_tmp_fio);
+        if (mailto(&BLIB.includelogs, mailtoaddress, bckrec.desc.str, BLIB.debug) == -1 ) {
             fprintf(stderr, "#BLIB:  Failed to send email to \"%s\"\n", mailtoaddress);
-        }
-        
-        if (!BLIB.debug) {
-            fio_close_and_free_unlink(&report_tmp_fio);
-        } else {
-            fprintf(stderr, "#BLIB:  Mail temp file %s not removed with debug enabled\n", report_tmp_fio->fnm);
-        }
-        
+        }        
     } else {
         fio_copy_file(report_tmp_fio, outfd);
     }
