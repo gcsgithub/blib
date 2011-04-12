@@ -1,4 +1,4 @@
-static char *rcsid="@(#) $Id: do_cmd_reportbackup.c,v 1.1 2010/11/16 04:05:13 root Exp mark $";
+static char *rcsid="@(#) $Id: do_cmd_reportbackup.c,v 1.2 2011/04/11 03:52:25 mark Exp mark $";
 
 /*
  *  do_cmd_reportbackup.c
@@ -7,6 +7,9 @@ static char *rcsid="@(#) $Id: do_cmd_reportbackup.c,v 1.1 2010/11/16 04:05:13 ro
  *  Created by mark on 08/10/2010.
  *  Copyright 2010 Garetech Computer Solutions. All rights reserved.
  * $Log: do_cmd_reportbackup.c,v $
+ * Revision 1.2  2011/04/11 03:52:25  mark
+ * add include log stuff for mail
+ *
  * Revision 1.1  2010/11/16 04:05:13  root
  * Initial revision
  *
@@ -395,7 +398,7 @@ void table_row(fio_t *outfd, fmt_type_e fmttype ,char *iclass,  char *path, char
         bzero(duration_str, sizeof(duration_str));
     }
     
-    if (bytes >= 0 ) {
+    if (bytes != 0 ) {
         snprintf(bytes_str,  sizeof(bytes_str)  , "%llu",  (llu_t) bytes);
         snprintf(kbytes_str, sizeof(kbytes_str) , "%.2f", ((double)  bytes)/1024.0);
         snprintf(mbytes_str, sizeof(mbytes_str) , "%.4f", ((double)  bytes)/1024.0/1024.0);
