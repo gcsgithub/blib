@@ -1,6 +1,9 @@
-static char *rcsid="@(#) $Id: execute_cmds.c,v 1.5 2011/04/11 03:52:41 mark Exp mark $";
+static char *rcsid="@(#) $Id: execute_cmds.c,v 1.6 2011/04/12 00:36:11 mark Exp mark $";
 /*
  * $Log: execute_cmds.c,v $
+ * Revision 1.6  2011/04/12 00:36:11  mark
+ * add dbh to display_volume to allow it to output BLIB_RECORDDATE, BLIB_EXPIREDATE, BLIB_DESC
+ *
  * Revision 1.5  2011/04/11 03:52:41  mark
  * generally fix OSrval's, fix records being added with invalid bck_id, add /verify
  *
@@ -1523,6 +1526,8 @@ void do_cmd_errbackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr,
     volobjrec.bck_id = qualval.bck_id;
     copy_objname(&volobjrec.objname, (char *) &qualval.objname);
     copy_label(&volobjrec.label, (char *) &qualval.label);
+    volobjrec.obj_instance  = qualval.obj_instance;
+    
     if (!db_find_current_volobj(dbh, &volobjrec)) {
         replace_dynstr(&dbh->errmsg, newstr("#BLIB:  Request to report an error but no volume exists for this backup id\n"));
         return;
