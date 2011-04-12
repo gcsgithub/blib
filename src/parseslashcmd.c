@@ -1,6 +1,9 @@
-static char *rcsid="@(#) $Id: parseslashcmd.c,v 1.5 2010/11/22 05:52:59 mark Exp mark $";
+static char *rcsid="@(#) $Id: parseslashcmd.c,v 1.6 2011/04/11 03:54:00 mark Exp mark $";
 /*
  * $Log: parseslashcmd.c,v $
+ * Revision 1.6  2011/04/11 03:54:00  mark
+ * generally fix OSrval's, fix records being added with invalid bck_id, add /verify
+ *
  * Revision 1.5  2010/11/22 05:52:59  mark
  * print original cmdline not cmdp when reporting Syntax error
  * update help text for /report
@@ -339,7 +342,11 @@ cmd_t   *getcmd(char **cmdpp)
                         }
                     }
                     if ((fldend == NULL) || (fldstart == NULL) || (fldstart > fldend)) {
-                        fprintf(stderr, "#BLIB: internal error\n");
+                        fprintf(stderr, "#BLIB: " __PRETTY_FUNCTION__ " internal error ");
+                        if (fldend == NULL) fprintf(stderr, " (fldend == NULL) ");
+                        if (fldstart == NULL) fprintf(stderr, " (fldstart == NULL) ");
+                        if (fldstart > fldend) fprintf(stderr, " fldstart > fldend ");
+                        fputc('\n',stderr);
                         exit(ERANGE);
                     }
                     
