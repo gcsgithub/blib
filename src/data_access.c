@@ -1,4 +1,4 @@
-static const char *rcsid="@(#) $Id: data_access.c,v 1.5 2010/11/26 00:56:48 mark Exp mark $";
+static const char *rcsid="@(#) $Id: data_access.c,v 1.6 2011/04/11 03:51:47 mark Exp mark $";
 /*
  *  data_access.c
  *  blib
@@ -6,6 +6,9 @@ static const char *rcsid="@(#) $Id: data_access.c,v 1.5 2010/11/26 00:56:48 mark
  *  Created by mark on 08/10/2008.
  *  Copyright 2008 Garetech Computer Solutions. All rights reserved.
  * $Log: data_access.c,v $
+ * Revision 1.6  2011/04/11 03:51:47  mark
+ * generally fix OSrval's, fix records being added with invalid bck_id, add /verify
+ *
  * Revision 1.5  2010/11/26 00:56:48  mark
  * fix incorrect fld order on update backups node, start where the wrong way around ;(
  *
@@ -2175,20 +2178,20 @@ void db_display_volume(FILE *fd, vol_t *vol)
 int     db_verify(fio_t *outfd, dbh_t *dbh)
 {
     
-    bcount_t rows, total_rows;
+    // bcount_t total_rows;
     
     int fnd_sts;
     /*
      sqlite> .tables
      backups      bck_errors   bck_objects  vol_obj      volumes
      */
-    backups_t    backups;
+    // backups_t    backups;
     bck_errors_t bck_errors;
     bckobj_t     bck_objects;
     vol_obj_t    vol_objs;
     vol_t        volumes;
     
-    uint64_t    backups_errcount=0;
+    // uint64_t    backups_errcount=0;
     uint64_t    bck_errors_errcount=0;
     uint64_t    bck_objects_errcount=0;
     uint64_t    vol_objs_errcount=0;
@@ -2205,7 +2208,7 @@ int     db_verify(fio_t *outfd, dbh_t *dbh)
 /////////////////////////////
         // (bck_id > 0 )   -> backups
     fprintf(outfd->fd, "Verifying table: bck_errors\n");
-    total_rows = db_count_sqltext(dbh, "select count(*) from bck_errors");
+    // total_rows = db_count_sqltext(dbh, "select count(*) from bck_errors");
     
     fprintf(outfd->fd, "  bck_errors(bck_id>0) -> backups: ");
     fnd_sts = db_read_bck_errors_fault1(dbh, &bck_errors, FND_FIRST);
@@ -2403,9 +2406,23 @@ int     db_verify(fio_t *outfd, dbh_t *dbh)
     }
     
     
+//////////////////////////////
+// check table: BACKUPS     //
+//////////////////////////////
+
+/*
+ backups    [bck_id|node|start|end|expiredate|desc]
+Nothing we havent already checked 
+ */
+    
+     
+    
     if (vol_objs_errcount) fprintf(outfd->fd, "  volumes: Error count: %llu\n", (llu_t) volumes_errcount);
     total_errcount += volumes_errcount;
     volumes_errcount=0;
+    
+    
+/////////////////////////////////////// 
     
     if (total_errcount) fprintf(outfd->fd, "TOTAL ERRORS: %llu\n",(llu_t) total_errcount);
     
