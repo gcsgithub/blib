@@ -1,6 +1,9 @@
-static char *rcsid="@(#) $Id: execute_cmds.c,v 1.4 2010/11/24 00:55:40 mark Exp mark $";
+static char *rcsid="@(#) $Id: execute_cmds.c,v 1.5 2011/04/11 03:52:41 mark Exp mark $";
 /*
  * $Log: execute_cmds.c,v $
+ * Revision 1.5  2011/04/11 03:52:41  mark
+ * generally fix OSrval's, fix records being added with invalid bck_id, add /verify
+ *
  * Revision 1.4  2010/11/24 00:55:40  mark
  * BUGFIX: reportexpire reportfree where very wrong based on older database structures
  * add func make_filter_rec to that these guys can set up a filter and use this inside modify_vol
@@ -365,7 +368,7 @@ char  *doenv(fio_t *outfio, char *symbol, valtype_e val_type,void *value)
     val[0] = '\0';
     switch(val_type) {
         case VT_NONE:
-            snprintf(val,sizeof(val), "");
+            strncpy(val, "", sizeof(val));
             break;
         case    VT_STR:
         case	VT_LABEL:
@@ -415,8 +418,17 @@ char  *doenv(fio_t *outfio, char *symbol, valtype_e val_type,void *value)
     return(buf);
 }
 
-int display_volume(fio_t *fd, vol_t *volrec)
+int display_volume(fio_t *fd, vol_t *volrec, dbh_t *dbh)
 {
+    backups_t   bck_rec;
+    
+    bzero(&bck_rec, sizeof(backups_t));
+    
+    if (volrec->bck_id) {
+        db_find_backups_by_bck_id(dbh, volrec->bck_id, &bck_rec);
+        // filecount =  db_count_vol_obj_label(dbh, db_read.bck_id, &db_read.label);
+    }
+    
     doenv(fd, "BLIB_BCK_ID"	, VT_INT64	, &volrec->bck_id);
     doenv(fd, "BLIB_VOLUME"	, VT_LABEL	, &volrec->label);
     doenv(fd, "BLIB_STATE"	, VT_STATE	, &volrec->state);
@@ -427,9 +439,12 @@ int display_volume(fio_t *fd, vol_t *volrec)
     doenv(fd, "BLIB_LIBRARYDATE"  , VT_DATE	, &volrec->librarydate);
     doenv(fd, "BLIB_OFFSITEDATE"  , VT_DATE	, &volrec->offsitedate);
     
-    // doenv(fd, "BLIB_RECORDDATE"   , VT_DATE	, &volrec->recorddate);
+
+    doenv(fd, "BLIB_RECORDDATE"   , VT_DATE	, &bck_rec.start);
+    doenv(fd, "BLIB_EXPIREDATE"   , VT_DATE	, &bck_rec.expiredate);
+    doenv(fd, "BLIB_DESC"         , VT_STR  , &bck_rec.desc);
+
     // doenv(fd, "BLIB_FILENO"       , VT_INT	, &volrec->filecount);
-    // doenv(fd, "BLIB_EXPIREDATE"   , VT_DATE	, &volrec->expiredate);
     // doenv(fd, "BLIB_BYTESONTAPE"  , VT_INT64	, &volrec->size);
     return(0);
 }
@@ -558,7 +573,7 @@ void do_cmd_modify_volume(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_
                 if (qual_ptr) {
                     fprintf(outfd->fd, "#BLIB:  Extra qualifiers to %s ignored\n", thecmd->param->cmdtxt);
                 }
-                display_volume(outfd, &volrec);
+                display_volume(outfd, &volrec, dbh);
                 break;
                 
             case    CMD_MODIFY:
@@ -574,7 +589,7 @@ void do_cmd_modify_volume(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_
                     fprintf(outfd->fd, "#BLIB:  Error updating volume %s %s\n", (char *) &volrec.label,(char *) &dbh->errmsg);
                     return;				
                 }
-                display_volume(outfd, &volrec);
+                display_volume(outfd, &volrec, dbh);
                 break;
                 
             case    CMD_REMOVE:
@@ -656,7 +671,7 @@ void	do_cmd_add_volume(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr
                 replace_dynstr(&dbh->errmsg, newstr("#BLIB:  Error storing tape label \"%s\" %d:%s\n", (char *) &volrec.label,dbh->status, (char *) &dbh->errmsg));
                 break;
         }
-        display_volume(outfd, &volrec);
+        display_volume(outfd, &volrec, dbh);
     } else {
         replace_dynstr(&dbh->errmsg, newstr( "#BLIB:  Volume \"%s\" already in database you cannot add it again\n", (char *) &volrec.label));
         dbh->status = EEXIST;
