@@ -1,4 +1,4 @@
-static const char *rcsid="@(#) $Id: data_access.c,v 1.6 2011/04/11 03:51:47 mark Exp mark $";
+static const char *rcsid="@(#) $Id: data_access.c,v 1.7 2011/04/12 00:35:26 mark Exp mark $";
 /*
  *  data_access.c
  *  blib
@@ -6,6 +6,9 @@ static const char *rcsid="@(#) $Id: data_access.c,v 1.6 2011/04/11 03:51:47 mark
  *  Created by mark on 08/10/2008.
  *  Copyright 2008 Garetech Computer Solutions. All rights reserved.
  * $Log: data_access.c,v $
+ * Revision 1.7  2011/04/12 00:35:26  mark
+ * tidyup verify code
+ *
  * Revision 1.6  2011/04/11 03:51:47  mark
  * generally fix OSrval's, fix records being added with invalid bck_id, add /verify
  *
@@ -1675,19 +1678,22 @@ int	db_insert_bckerror(dbh_t *dbh, bck_errors_t *bckerror)
 {
     list_t	*flds = (list_t *) NULL;
     
+    // [bck_id|label|objname|obj_instance|errtime|errmsg]
     char *sqltext="insert into bck_errors ("
     "bck_id,"
     "label,"
     "objname,"
+    "obj_instance,"
     "errtime,"
     "errmsg"
     ") values ( ?,?,?,?,?)";
     
-    db_fldsmklist(&flds , "bck_id"   , FLD_INT64, (void *) &bckerror->bck_id);
-    db_fldsmklist(&flds , "label"    , FLD_TEXT , (void *) &bckerror->label);
-    db_fldsmklist(&flds , "objname"  , FLD_TEXT , (void *) &bckerror->objname);
-    db_fldsmklist(&flds , "errtime"  , FLD_INT  , (void *) &bckerror->errtime);
-    db_fldsmklist(&flds , "errmsg"   , FLD_TEXT , (void *) &bckerror->errmsg);
+    db_fldsmklist(&flds , "bck_id"      , FLD_INT64, (void *) &bckerror->bck_id);
+    db_fldsmklist(&flds , "label"       , FLD_TEXT , (void *) &bckerror->label);
+    db_fldsmklist(&flds , "objname"     , FLD_TEXT , (void *) &bckerror->objname);
+    db_fldsmklist(&flds , "obj_instance", FLD_INT  , (void *) &bckerror->obj_instance);
+    db_fldsmklist(&flds , "errtime"     , FLD_INT  , (void *) &bckerror->errtime);
+    db_fldsmklist(&flds , "errmsg"      , FLD_TEXT , (void *) &bckerror->errmsg);
     
     if (!db_exec_sql_flds_pushpop(dbh, sqltext, flds)) {
 	    replace_dynstr(&dbh->errmsg,newstr("#BLIB:  Error inserting into bck_errors: %s\n", dbh->errmsg));
@@ -1837,11 +1843,12 @@ bcount_t db_count_bck_errors(dbh_t *dbh, vol_obj_t *key)
     
     rcount = -1;
     
-    db_fldsmklist(&flds,"bck_id"  ,  FLD_INT64, (void *) &key->bck_id);
-    db_fldsmklist(&flds,"objname" ,  FLD_TEXT , (void *) &key->objname);
-    db_fldsmklist(&flds,"label"   ,  FLD_TEXT , (void *) &key->label);
+    db_fldsmklist(&flds,"bck_id"        ,  FLD_INT64, (void *) &key->bck_id);
+    db_fldsmklist(&flds,"objname"       ,  FLD_TEXT , (void *) &key->objname);
+    db_fldsmklist(&flds,"label"         ,  FLD_TEXT , (void *) &key->label);
+    db_fldsmklist(&flds,"obj_instance"  ,  FLD_INT , (void *) &key->obj_instance);
     
-    if (db_exec_sql_flds_push(dbh, "select count(*) from main.bck_errors where bck_id=? and objname=? and label=?", flds)) {	
+    if (db_exec_sql_flds_push(dbh, "select count(*) from main.bck_errors where bck_id=? and objname=? and label=? and obj_instance=?", flds)) {	
         rcount = sqlite3_column_int64(dbh->sqlcmd->stmt, 0);
     }
     
