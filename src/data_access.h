@@ -1,8 +1,11 @@
 #ifndef __DATA_ACCESS_H__
 #define	__DATA_ACCESS_H__
 /*
- * @(#) $Id: data_access.h,v 1.2 2010/11/16 04:11:14 mark Exp mark $
+ * @(#) $Id: data_access.h,v 1.3 2011/04/11 03:51:55 mark Exp mark $
  * $Log: data_access.h,v $
+ * Revision 1.3  2011/04/11 03:51:55  mark
+ * generally fix OSrval's, fix records being added with invalid bck_id, add /verify
+ *
  * Revision 1.2  2010/11/16 04:11:14  mark
  * rc1
  *
@@ -113,7 +116,7 @@ int	db_find_backups_orderbckid(dbh_t *dbh, backups_t *bckrec, bckid_t bckid, fin
 int	db_find_backups_by_expire(dbh_t *dbh, backups_t *bckrec, find_type_t flag);
 int     db_find_bck_objects_by_bckid(dbh_t *dbh, bckid_t bck_id,bckobj_t *bckobjrec, find_type_t flag);
 int     db_find_vol_obj_from_objects(dbh_t *dbh, bckobj_t *key, vol_obj_t *volobjrec, find_type_t flag);
-int     db_find_bck_errors(dbh_t *dbh, bckid_t bck_id, objname_t *objname, blabel_t *label, bck_errors_t *bckerrrec, find_type_t flag);
+int	db_find_bck_errors(dbh_t *dbh, vol_obj_t *volobjkey, bck_errors_t *bckerrrec, find_type_t flag);
 int     db_find_volumes_by_bckid(dbh_t *dbh, bckid_t bck_id, vol_t *volrec, find_type_t flag);
 int     db_find_backups_by_bck_id(dbh_t *dbh, bckid_t key_bckid, backups_t *bck_rec);
 int	db_find_bck_objects_by_name(dbh_t *dbh, objname_t *objname, bckobj_t *bckobjrec, find_type_t flag);
