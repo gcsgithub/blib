@@ -1,8 +1,12 @@
 #ifndef __PARSESLASHCMD_H__
 #define __PARSESLASHCMD_H__
 /*
- * @(#) $Id: parseslashcmd.h,v 1.4 2010/11/16 04:10:47 mark Exp mark $
+ * @(#) $Id: parseslashcmd.h,v 1.5 2011/04/11 03:54:29 mark Exp mark $
  *  $Log: parseslashcmd.h,v $
+ *  Revision 1.5  2011/04/11 03:54:29  mark
+ *  add include log stuff
+ *  add verify styff
+ *
  *  Revision 1.4  2010/11/16 04:10:47  mark
  *  rc1
  *
@@ -142,7 +146,8 @@ typedef enum {
     CMP_EQ,
     CMP_GE,
     CMP_GT,
-    CMP_NE 
+    CMP_NE,
+    CMP_OPT
 } cmp_e;
 
 typedef enum {
