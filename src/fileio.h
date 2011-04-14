@@ -1,7 +1,7 @@
 #ifndef __FILEIO_H__
 #define __FILEIO_H__
 /*
- * @(#) $Id: fileio.h,v 1.1 2010/11/16 04:11:09 mark Exp mark $
+ * @(#) $Id: fileio.h,v 1.2 2011/04/11 03:53:31 mark Exp mark $
  *
  *  fileio.h
  *  fmtbckrep_xcode
@@ -10,6 +10,9 @@
  *  Copyright 2009 Garetech Computer Solutions. All rights reserved.
  *
  * $Log: fileio.h,v $
+ * Revision 1.2  2011/04/11 03:53:31  mark
+ * add include log stuff for mail
+ *
  * Revision 1.1  2010/11/16 04:11:09  mark
  * Initial revision
  *
@@ -48,6 +51,7 @@ struct fio_s {
 
 typedef struct files_s files_t;
 struct files_s {
+    int     optional_include; // if true then only attach on error
     fio_t	*fio;
     files_t	*next;
 };
