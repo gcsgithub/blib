@@ -1,4 +1,4 @@
-static char *rcsid="@(#) $Id: do_cmd_reportbackup.c,v 1.2 2011/04/11 03:52:25 mark Exp mark $";
+static char *rcsid="@(#) $Id: do_cmd_reportbackup.c,v 1.3 2011/04/12 00:35:54 mark Exp mark $";
 
 /*
  *  do_cmd_reportbackup.c
@@ -7,6 +7,9 @@ static char *rcsid="@(#) $Id: do_cmd_reportbackup.c,v 1.2 2011/04/11 03:52:25 ma
  *  Created by mark on 08/10/2010.
  *  Copyright 2010 Garetech Computer Solutions. All rights reserved.
  * $Log: do_cmd_reportbackup.c,v $
+ * Revision 1.3  2011/04/12 00:35:54  mark
+ * fix unsigned compare to !=0
+ *
  * Revision 1.2  2011/04/11 03:52:25  mark
  * add include log stuff for mail
  *
@@ -42,9 +45,11 @@ void	do_cmd_reportbackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_p
     fmt_type_e	fmtas = FMT_TEXT;
     char	*mailtoaddress = (char *) NULL;
     fio_t       *report_tmp_fio;
+    int        bck_errs;
     
     qual=qual_ptr;
     bzero(&qualval, sizeof(qual_t));
+    bck_errs = 0;
     
     qualval.bck_id = *(bckid_t *) thecmd->val;
     qualval.stylesheet = get_default(QUAL_STYSHT);
@@ -63,7 +68,7 @@ void	do_cmd_reportbackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_p
             case QUAL_STYSHT:
                 qualval.stylesheet = (char *) qual->param->defval;
                 break;
-		
+                
             default:
                 fprintf(outfd->fd, "#BLIB:  Error invalid qualifier %s given to %s\n", qual->param->cmdtxt, thecmd->param->cmdtxt);
                 return;
@@ -87,10 +92,10 @@ void	do_cmd_reportbackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_p
     
     switch(fmtas) {
         case  FMT_TEXT:
-            create_text_report(dbh, report_tmp_fio, &bckrec, qualval.desc.str);
+            bck_errs = create_text_report(dbh, report_tmp_fio, &bckrec, qualval.desc.str);
             break;
     	case FMT_XHTML:
-            create_xhtml_report(dbh, report_tmp_fio, &bckrec, qualval.desc.str, qualval.stylesheet);
+            bck_errs = create_xhtml_report(dbh, report_tmp_fio, &bckrec, qualval.desc.str, qualval.stylesheet);
             break;
         default:
             fprintf(stderr, "#BLIB:  Internal error unknown report format %d\n", fmtas);
@@ -104,9 +109,10 @@ void	do_cmd_reportbackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_p
     }
     
     if (mailtoaddress) {
-	replace_dynstr(&report_tmp_fio->mimetype, newstr("text/html"));
-	files_insert_head(&BLIB.includelogs, report_tmp_fio);
-        if (mailto(&BLIB.includelogs, mailtoaddress, bckrec.desc.str, BLIB.debug) == -1 ) {
+        replace_dynstr(&report_tmp_fio->mimetype, newstr("text/html"));
+        files_insert_head(&BLIB.includelogs, report_tmp_fio);           // add the backup report to the top of the list
+                                                                        // the list will be mime attached
+        if (mailto(&BLIB.includelogs, mailtoaddress, bckrec.desc.str, BLIB.debug, bck_errs) == -1 ) {
             fprintf(stderr, "#BLIB:  Failed to send email to \"%s\"\n", mailtoaddress);
         }        
     } else {
@@ -119,26 +125,26 @@ int	create_text_report(dbh_t *dbh,fio_t *outfd, backups_t *bckrec, char *title2)
     write_text_header(outfd, bckrec, title2);
     write_text_table_header(outfd);
     
-    read_bck_objects(dbh, FMT_TEXT , outfd, bckrec);
-    
-    return(0);
+    return(read_bck_objects(dbh, FMT_TEXT , outfd, bckrec));
 }
 
 int   create_xhtml_report(dbh_t *dbh, fio_t *outfd, backups_t *bckrec, char *title2, char *style_sheet_name)
 {
+    int bck_errs;
+    
     write_xhtml_header(outfd, bckrec, title2, style_sheet_name);
     write_xhtml_table_header(outfd, bckrec, title2);
     
-    read_bck_objects(dbh, FMT_XHTML , outfd, bckrec);
+    bck_errs = read_bck_objects(dbh, FMT_XHTML , outfd, bckrec);
     
     html_write(outfd,'C', "table", NOCLASS, NOVAL);
     html_write(outfd,'C', "body", NOCLASS, NOVAL);
     html_write(outfd,'C', "html", NOCLASS, NOVAL);
     
-    return 0;
+    return(bck_errs);
 }
 
-void read_bck_objects(dbh_t *dbh, fmt_type_e fmttype, fio_t *outfd, backups_t *bckrec)
+int read_bck_objects(dbh_t *dbh, fmt_type_e fmttype, fio_t *outfd, backups_t *bckrec)
 {
     time_t  	gtot_duration;
     time_t  	tot_duration;
@@ -152,10 +158,10 @@ void read_bck_objects(dbh_t *dbh, fmt_type_e fmttype, fio_t *outfd, backups_t *b
     bckobj_t	bckobjrec;
     vol_obj_t	volobjrec;
     bck_errors_t bckerrrec;
-    vol_t	volrec;
-    int		dbstatus_bckobj;
-    int		dbstatus_bckerrs;
-    int		dbstatus_vol_obj;
+    vol_t       volrec;
+    int         dbstatus_bckobj;
+    int         dbstatus_bckerrs;
+    int         dbstatus_vol_obj;
     datestr_t	start;
     datestr_t	end;
     bcount_t	tot_errs;
@@ -165,8 +171,8 @@ void read_bck_objects(dbh_t *dbh, fmt_type_e fmttype, fio_t *outfd, backups_t *b
     objname_t	prev_objname;
     blabel_t	cur_label;
     blabel_t	prev_label;
-    char	*objname;
-    int     volduration;
+    char        *objname;
+    int         volduration;
     bcount_t    volsize;
     
     
@@ -208,19 +214,19 @@ void read_bck_objects(dbh_t *dbh, fmt_type_e fmttype, fio_t *outfd, backups_t *b
             objname="";
             tot_bytes    += volobjrec.size;
             tot_duration += (time_t ) duration;
-            dbstatus_vol_obj = db_find_vol_obj_from_objects(dbh, &bckobjrec, &volobjrec, FND_NEXT); // Next label
             
-            if (cmp_labels(&cur_label, &volobjrec.label)) { // if a new label
-                dbstatus_bckerrs = db_find_bck_errors(dbh, volobjrec.bck_id, &volobjrec.objname, &cur_label, &bckerrrec ,FND_FIRST); // key on bck_id, objname
-                errs=0;
-                while (dbstatus_bckerrs) {
-                    copy_datestr(&start, (datestr_t *) fmtctime(bckerrrec.errtime));
-                    table_row(outfd, fmttype , "err", bckerrrec.objname.str, bckerrrec.label.str, -1, start.str ,bckerrrec.errmsg.str  , -1 , -1,  errs++);
-                    dbstatus_bckerrs = db_find_bck_errors(dbh, volobjrec.bck_id, &volobjrec.objname, &cur_label, &bckerrrec ,FND_NEXT);
-                    tot_errs++;
-                }
+            
+            dbstatus_bckerrs = db_find_bck_errors(dbh, &volobjrec, &bckerrrec ,FND_FIRST); // key on bck_id, objname
+            tot_errs=0;
+            while (dbstatus_bckerrs) {  
+                copy_datestr_time(&start, (datestr_t *) fmtctime(bckerrrec.errtime));
+                table_row(outfd, fmttype , "err", bckerrrec.objname.str, bckerrrec.label.str, -1, start.str ,bckerrrec.errmsg.str  , -1 , -1,  ++tot_errs);
+                dbstatus_bckerrs = db_find_bck_errors(dbh, &volobjrec, &bckerrrec ,FND_NEXT);
             }
             
+            dbstatus_vol_obj = db_find_vol_obj_from_objects(dbh, &bckobjrec, &volobjrec, FND_NEXT); // Next label
+            //if (cmp_labels(&cur_label, &volobjrec.label)) { // if a new label
+            //}
         }
         
         dbstatus_bckobj = db_find_bck_objects_by_bckid(dbh, bckrec->bck_id, &bckobjrec, FND_NEXT); // next backup object
@@ -259,8 +265,9 @@ void read_bck_objects(dbh_t *dbh, fmt_type_e fmttype, fio_t *outfd, backups_t *b
         sp=NL;
         dbstatus_vol_obj = db_find_volumes_by_bckid(dbh, bckrec->bck_id, &volrec, FND_NEXT);
     }
-    if (fmttype == FMT_XHTML)  html_write(outfd,'C', "tfoot", NULL, NULL);
-    else			fprintf(outfd->fd, DIV_TEXT_FMT);
+    if (fmttype == FMT_XHTML)   html_write(outfd,'C', "tfoot", NULL, NULL);
+    else                        fprintf(outfd->fd, DIV_TEXT_FMT);
+    return(gtot_errs);
 }
 
 
@@ -324,6 +331,7 @@ void table_row(fio_t *outfd, fmt_type_e fmttype ,char *iclass,  char *path, char
 {
     static	char	*class;
     static  int	row=0;
+    static  int last_was_err=0;
     int		errline;
     char	path_str[28];
     char	bcode_str[80];
@@ -345,6 +353,7 @@ void table_row(fio_t *outfd, fmt_type_e fmttype ,char *iclass,  char *path, char
     if (iclass) {
         if (strncmp(iclass,"err", 3) == 0) {
             errline=1;
+            last_was_err=1;
             if (row) {
                 class = "l1errline";
                 row=0;
@@ -422,9 +431,9 @@ void table_row(fio_t *outfd, fmt_type_e fmttype ,char *iclass,  char *path, char
         html_write(outfd,'O', "tr", class    , NOVAL);
         
         if (errline ) {
-            html_write(outfd,'I', "td", NOCLASS  , "%llu", (llu_t) (errs+1));  // err line number
-            html_write(outfd,'I', "td", NOCLASS  , "%s"  , stime); // when
-            html_write(outfd,'I', "td", NOCLASS  , "%s"  , etime); // error message string
+            html_write(outfd,'I', "td", NOCLASS  , "%s" , err_str);  // err line number
+            html_write(outfd,'I', "td", NOCLASS  , "%s" , stime); // when
+            html_write(outfd,'I', "td", "errfld" , "%s" , etime); // error message string
             
         } else {
             html_write(outfd,'I', "td", NOCLASS  , path);
@@ -440,18 +449,16 @@ void table_row(fio_t *outfd, fmt_type_e fmttype ,char *iclass,  char *path, char
         
     }  else {
         // FMT_TEXT
-		
         if (errline ) {
-            if (errs) {
-                snprintf(err_str, sizeof(err_str), "%llu", (llu_t) (errs+1));
-            } else {
-                bzero(err_str, sizeof(err_str));
-            }
             fprintf(outfd->fd, ERR_TEXT_FMT, err_str,  // err line number
-                    stime_str,   // when
-                    etime_str    // error message string
+                    stime,   // when
+                    etime    // error message string
                     );
         } else {
+            if (last_was_err) {
+                fprintf(outfd->fd, DIV_TEXT_FMT);
+                last_was_err=0;
+            }
             fprintf(outfd->fd, ROW_TEXT_FMT, path, bcode_str, time_str, duration_str, bytes_str, mbytes_str, gbytes_str, err_str);	 
             fprintf(outfd->fd, DIV_TEXT_FMT);
         }
@@ -483,7 +490,7 @@ int	html_write(fio_t *outfd, char flag, char *tag, char *class, char *val, ... )
     }
     
     if (!outfd) return(EINVAL);
-    
+    // Close, Inline, Literal, Open tag flags
     if ((flag == 'C') || (flag == 'I') || (flag == 'L') || (flag == 'O')) {
         tabout(outfd, offset);
     }
@@ -557,24 +564,24 @@ void	style_sheet(char *base, fio_t *outfd)
     if (!outfd) return;
     
     stylesheet_fio = fio_alloc_open(base, ".stylesheet", "r", MAX_BUF);
-
+    
     if ((stylesheet_fio->status == 0 ) && (stylesheet_fio->open)) {
-	
-	html_write(outfd,'O',"style type=\"text/css\"", NOCLASS, NOVAL);
-	html_write(outfd,'L',NOTAG, NOCLASS, "/*<![CDATA[*/");
-	
-	fgets(ibuf, sizeof(ibuf), stylesheet_fio->fd);
-	while(!feof(stylesheet_fio->fd)) {
-	    zapcrlf(ibuf);
-	    html_write(outfd, 'L', NOTAG, NOCLASS,  ibuf);
-	    fgets(ibuf, sizeof(ibuf), stylesheet_fio->fd);
-	}
-	fio_close_and_free(&stylesheet_fio);
-	
-	html_write(outfd,'L',NOTAG, NOCLASS, "/*]]>*/");
-	html_write(outfd,'C',"style",NOCLASS,NOVAL);
+        
+        html_write(outfd,'O',"style type=\"text/css\"", NOCLASS, NOVAL);
+        html_write(outfd,'L',NOTAG, NOCLASS, "/*<![CDATA[*/");
+        
+        fgets(ibuf, sizeof(ibuf), stylesheet_fio->fd);
+        while(!feof(stylesheet_fio->fd)) {
+            zapcrlf(ibuf);
+            html_write(outfd, 'L', NOTAG, NOCLASS,  ibuf);
+            fgets(ibuf, sizeof(ibuf), stylesheet_fio->fd);
+        }
+        fio_close_and_free(&stylesheet_fio);
+        
+        html_write(outfd,'L',NOTAG, NOCLASS, "/*]]>*/");
+        html_write(outfd,'C',"style",NOCLASS,NOVAL);
     } else {
-	fprintf(stderr, "#BLIB:  Warning: error opening stylesheet \"%s\" %d:%s\n", stylesheet_fio->fnm, stylesheet_fio->status, strerror(stylesheet_fio->status));
+        fprintf(stderr, "#BLIB:  Warning: error opening stylesheet \"%s\" %d:%s\n", stylesheet_fio->fnm, stylesheet_fio->status, strerror(stylesheet_fio->status));
     }
 }
 
