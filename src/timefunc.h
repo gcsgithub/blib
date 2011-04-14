@@ -6,7 +6,10 @@
  *
  *  Created by mark on 31/10/2010.
  *  Copyright 2010 Garetech Computer Solutions. All rights reserved.
- * $Log:$
+ * $Log: timefunc.h,v $
+ * Revision 1.1  2010/11/16 04:04:08  root
+ * Initial revision
+ *
  *
  */
 #include "util.h"
@@ -34,6 +37,7 @@ time_t    timegm(struct tm *tm)
 #endif /* __NEED_TIMEGM__ */
 
 datestr_t *copy_datestr(datestr_t *dst, datestr_t *src);
+datestr_t *copy_datestr_time(datestr_t *dst, datestr_t *src);
 void	  printlitdate(FILE *fd, time_t ctim);
 
 #endif /* __TIMEFUNC_H__ */
