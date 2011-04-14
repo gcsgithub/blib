@@ -1,4 +1,4 @@
-static const char *rcsid="@(#) $Id:$";
+static const char *rcsid="@(#) $Id: timefunc.c,v 1.1 2010/11/16 04:04:52 root Exp mark $";
 /*
  *  timefunc.c
  *  blib
@@ -97,6 +97,33 @@ datestr_t *copy_datestr(datestr_t *dst, datestr_t *src)
     }
     return(dst);
 }
+
+// 12-APR-2022:21:49:12.00
+datestr_t *copy_datestr_time(datestr_t *dst, datestr_t *src)
+{
+    char *colon;
+    char *dot;
+    
+    if (dst) {
+        if (src) {
+            colon = index(src->str, ':');
+            if (colon) {
+                colon++;
+                strncpy(dst->str, colon,sizeof(datestr_t));
+                dot = rindex(dst->str, '.');
+                if (dot) *dot='\0';
+            } else {
+                colon = src->str;
+                strncpy(dst->str, colon,sizeof(datestr_t));
+            }
+            
+        } else {
+            bzero(dst, sizeof(datestr_t));
+        }
+    }
+    return(dst);
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 #ifdef __NEED_TIMEGM__
