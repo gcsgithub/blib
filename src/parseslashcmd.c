@@ -1,6 +1,9 @@
-static char *rcsid="@(#) $Id: parseslashcmd.c,v 1.6 2011/04/11 03:54:00 mark Exp mark $";
+static char *rcsid="@(#) $Id: parseslashcmd.c,v 1.7 2011/04/12 00:36:57 mark Exp mark $";
 /*
  * $Log: parseslashcmd.c,v $
+ * Revision 1.7  2011/04/12 00:36:57  mark
+ * make internal error more descriptive to what values caused it
+ *
  * Revision 1.6  2011/04/11 03:54:00  mark
  * generally fix OSrval's, fix records being added with invalid bck_id, add /verify
  *
@@ -81,7 +84,7 @@ cmdqual_t CMDQUALS[]  = {
     {QUAL_BCKID     ,QUAL   ,DB_NONE  ,"/bck_id"	      ,"bck_id"       ,VT_INT64    , REQVAL_REQ  , NULL      ,NULL      , "bck_id that we intend working on"},
     {QUAL_LABEL     ,QUAL   ,DB_NONE  ,"/label"	      ,"label"	      ,VT_LABEL    , REQVAL_REQ  , NULL      ,NULL      , "Volume label to be used"},
     {QUAL_HTML      ,QUAL   ,DB_NONE  ,"/html"	      ,NULL	      ,VT_NONE     , REQVAL_NONE , NULL      ,NULL      , "output in html rather than plain text"},
-    {QUAL_STYSHT    ,QUAL   ,DB_NONE  ,"/stylesheet"      ,NULL	      ,VT_FILENAM  , REQVAL_REQ  , NULL      ,DEF_STYSHT, "stylesheet to include for /html output"},
+    {QUAL_STYSHT    ,QUAL   ,DB_NONE  ,"/stylesheet"      ,NULL	      ,VT_FILENAM  , REQVAL_REQ  , NULL      ,NULL, "stylesheet to include for /html output"},
     {QUAL_MAIL      ,QUAL   ,DB_NONE  ,"/mail"	      ,NULL	      ,VT_STR      , REQVAL_REQ  , NULL      ,NULL      , "email backup report to address"},
     {QUAL_OUTPUT    ,QUAL   ,DB_NONE  ,"/output"	      ,NULL	      ,VT_FILENAM  , REQVAL_REQ  , NULL      ,NULL      , "output result to file"},
     {QUAL_INCLOG    ,QUAL   ,DB_NONE  ,"/includelog"      ,NULL	      ,VT_FILENAM  , REQVAL_REQ  , NULL      ,NULL      , "output result to file"},
@@ -165,6 +168,13 @@ void	setup_defaults()
     }
     set_default(QUAL_NODE, sp);
     
+    //============================================================================       
+    
+    if ((sp=getenv("BLIB_STYLE")) == NL ) {
+        sp = DEF_STYSHT;
+    }
+    set_default(QUAL_STYSHT, sp);
+    
 }
 
 char *getlognamefromdbname(char *dbname)
@@ -173,7 +183,7 @@ char *getlognamefromdbname(char *dbname)
     char *logfnm;
     char *decimalptr;
     
-    if (decimalptr=rindex(dbname, '.')) {
+    if ((decimalptr=rindex(dbname, '.'))) {
         len=decimalptr-dbname;
     } else {
         len=strlen(dbname); // no . in name
@@ -399,7 +409,7 @@ cmp_e get_cmp(char **cmdpp)
     cmp_e rval;
     char *cmdp;
     
-    const char *cmpc="=><!,.";
+    const char *cmpc="=><!,.?";
     char    *sp,cmp[3];
     int	    idx;
     rval = CMP_NONE;
@@ -438,18 +448,21 @@ cmp_e get_cmp(char **cmdpp)
                 rval = CMP_NONE;
                 break;
             case '=':
-                rval = CMP_EQ;			    // =?
+                rval = CMP_EQ;			    // =
                 break;
             case '>':
             case '.':
-                rval = CMP_GT;			    // >?
+                rval = CMP_GT;			    // >
                 break;
             case '<':
             case ',':
-                rval = CMP_LT;			    // <?
+                rval = CMP_LT;			    // <
                 break;
             case '!':
-                rval = CMP_NE;			    // !?
+                rval = CMP_NE;			    // !
+                break;
+            case '?':                       // ?
+                rval = CMP_OPT;
                 break;
             default:
                 rval = CMP_ERR;			    // WTF
@@ -460,6 +473,14 @@ cmp_e get_cmp(char **cmdpp)
             case '\0':				    // =, <, >, !
                 // we good we have it already from cmp[0]
                 break;
+            case '?':
+                if (rval == CMP_EQ) { // only ?= or =? are valid
+                    rval = CMP_OPT;
+                } else {
+                    rval = CMP_ERR;     
+                }
+                break;
+                
             case '=':
                 switch(rval) {
                     case CMP_NONE:
@@ -476,6 +497,9 @@ cmp_e get_cmp(char **cmdpp)
                         break;
                     case CMP_NE:		    // !=
                         rval = CMP_NE;
+                        break;
+                    case CMP_OPT:           // ?=
+                        rval = CMP_OPT;
                         break;
                     default:
                         rval = CMP_ERR;		    // WTF
@@ -793,6 +817,9 @@ void	    display_cmd(FILE *outfd, cmd_t *cmd)
             case CMP_NE:
                 cmpstr="!=";
                 break;
+            case CMP_OPT:
+                cmpstr="?=";
+                break;
             default:
                 // includes CMP_NONE,
                 cmpstr="";
@@ -1039,6 +1066,8 @@ void	do_cmd_help(FILE *fd)
             "\tNot Equal  !=\n"
             "\tGreater Than or equal .= or >=\n"
             "\tGreater than . or >\n"
+            "\tOptional ?= or =? valid only for /includelogs will optional include the file only when errors are found\n"
+            "\t in the backup beging reported\n"
             "Times maybe entered as absolute ctime values using the format /qual=ctime:%d\n", (int) nowgm());
     
 }
