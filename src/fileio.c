@@ -1,4 +1,4 @@
-static char *rcsid="@(#) $Id: fileio.c,v 1.1 2010/11/16 04:06:35 root Exp mark $";
+static char *rcsid="@(#) $Id: fileio.c,v 1.2 2011/04/11 03:53:04 mark Exp mark $";
 /*
  *  fileio.c
  *  fmtbckrep_xcode
@@ -7,6 +7,9 @@ static char *rcsid="@(#) $Id: fileio.c,v 1.1 2010/11/16 04:06:35 root Exp mark $
  *  Copyright 2009 Garetech Computer Solutions. All rights reserved.
  *
  * $Log: fileio.c,v $
+ * Revision 1.2  2011/04/11 03:53:04  mark
+ * add include log stuff for email
+ *
  * Revision 1.1  2010/11/16 04:06:35  root
  * Initial revision
  *
@@ -27,21 +30,21 @@ static char *version()
 }
 
 /*//////////////////////////////////////////////////////////////////////////////
-//////////// FILE IO FUNCTIONS /////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////*/
+ //////////// FILE IO FUNCTIONS /////////////////////////////////////////////////
+ //////////////////////////////////////////////////////////////////////////////*/
 fio_t    *fio_new(size_t    bufsiz)
 {
     fio_t	*new;
     
     if ((new = malloc(sizeof(fio_t))) == (fio_t *) NULL ) {
-	fprintf(stderr,"#BLIB:  error allocating memory for file struct " __ATLINE__ "\n");
-	exit(ENOMEM);
+        fprintf(stderr,"#BLIB:  error allocating memory for file struct " __ATLINE__ "\n");
+        exit(ENOMEM);
     }
     bzero(new, sizeof(fio_t));
     new->bufsiz = bufsiz;
     if ((new->buf = malloc(bufsiz)) == (char *) NULL ) {
-	fprintf(stderr,"#BLIB:  error allocating memory for buffer in " __ATLINE__ "\n");
-	exit(ENOMEM);
+        fprintf(stderr,"#BLIB:  error allocating memory for buffer in " __ATLINE__ "\n");
+        exit(ENOMEM);
     }
     bzero(new->buf, bufsiz);
     return(new);
@@ -52,66 +55,66 @@ void	fio_close_and_free(fio_t **fiop)
     fio_t *fio;
     
     if (fiop) {
-	fio = *fiop;
-	if (fio) {
-	    if (!fio->useropenflag) {
-		    fio_close(fio);
-	    }
-	    nzfree(&fio->fnm);
-	    nzfree(&fio->open_mode);
-	    nzfree(&fio->ext);
-	    nzfree(&fio->buf);
-	    nzfree(&fio->mimetype);
-	    nzfree(&fio->charset);
-	    nzfree(&fio->encoding);
-	    free(fio);
-	    *fiop = (fio_t *) NULL;
-	}
+        fio = *fiop;
+        if (fio) {
+            if (!fio->useropenflag) {
+                fio_close(fio);
+            }
+            nzfree(&fio->fnm);
+            nzfree(&fio->open_mode);
+            nzfree(&fio->ext);
+            nzfree(&fio->buf);
+            nzfree(&fio->mimetype);
+            nzfree(&fio->charset);
+            nzfree(&fio->encoding);
+            free(fio);
+            *fiop = (fio_t *) NULL;
+        }
     }
 }
 
 void	fio_close_and_free_unlink(fio_t **fiop)
 {
     fio_t *fio;
-
+    
     if (fiop) {
-	fio = *fiop;
-	if ((!fio->useropenflag) && (fio->fnm))  {
-	    if (fio->debug == 0) {
-		unlink(fio->fnm);
-	    } else {
-		fprintf(stderr, "#BLIB:  Debugging: %s not deleted\n", fio->fnm);
-	    }
-	}
-	fio_close_and_free(fiop);
+        fio = *fiop;
+        if ((!fio->useropenflag) && (fio->fnm))  {
+            if (fio->debug == 0) {
+                unlink(fio->fnm);
+            } else {
+                fprintf(stderr, "#BLIB:  Debugging: %s not deleted\n", fio->fnm);
+            }
+        }
+        fio_close_and_free(fiop);
     }
 }
 
 int fio_close(fio_t *fio)
 {
     if (fio) {
-	if (!fio->useropenflag) {
-	    if (fio->open) {
-		if (fclose(fio->fd)) {
-			fio->status = errno;
-		} else {
-		    fio->open = 0;
-		}
-		
-	    }
-	    return(fio->status);
-	}
-	fio->open = 0;	/* mark it closed */
-	return(0);
+        if (!fio->useropenflag) {
+            if (fio->open) {
+                if (fclose(fio->fd)) {
+                    fio->status = errno;
+                } else {
+                    fio->open = 0;
+                }
+                
+            }
+            return(fio->status);
+        }
+        fio->open = 0;	/* mark it closed */
+        return(0);
     } else {
-	return(ENOENT);
+        return(ENOENT);
     }
 }
 
 int fio_reopen(fio_t *fio, char *open_mode)
 {
     if (fio->open_mode) {
-	free(fio->open_mode);
+        free(fio->open_mode);
     }
     fio_close(fio);
     fio->open_mode = newstr(open_mode);
@@ -124,12 +127,16 @@ char *fio_fgets(fio_t *fio)
     char    *rval;
     
     bzero(fio->buf, fio->bufsiz);
-    rval = fgets(fio->buf, fio->bufsiz, fio->fd);
-    if (rval) {
-	zapcrlf(fio->buf);
-	fio->reads++;
+    if (fio->open) {
+        rval = fgets(fio->buf, fio->bufsiz, fio->fd);
+        if (rval) {
+            zapcrlf(fio->buf);
+            fio->reads++;
+        } else {
+            fio->status = errno;
+        }
     } else {
-	fio->status = errno;
+        fio->status = ENXIO;
     }
     return(rval);
 }
@@ -141,14 +148,14 @@ fio_t *fio_open_temp(char *prefix, char *ext, size_t bufsiz)
     
     tmpfnam = tempnam("/tmp", prefix);
     if (ext) {
-	tmpfnam_ext = newstr("%s.%s", tmpfnam, ext);
-	replace_dynstr(&tmpfnam, tmpfnam_ext);
+        tmpfnam_ext = newstr("%s.%s", tmpfnam, ext);
+        replace_dynstr(&tmpfnam, tmpfnam_ext);
     }
 	
     rval = fio_alloc_open(tmpfnam, NULL, "w", bufsiz);
     return(rval);
 }
-    
+
 fio_t	*fio_dup(fio_t *fio)
 {
     fio_t *rval;
@@ -156,7 +163,7 @@ fio_t	*fio_dup(fio_t *fio)
     
     rval = (fio_t *) NULL;
     if (!fio) {
-	return(rval);
+        return(rval);
     }
     
     rval               = fio_new(fio->bufsiz);
@@ -171,26 +178,26 @@ fio_t	*fio_dup(fio_t *fio)
     rval->writes       = 0;
     
     if (fio->open) {
-	filenum = fileno(fio->fd);
-	switch(filenum) {
-	    case 0:
-		replace_dynstr(&rval->open_mode, newstr("r"));
-		replace_dynstr(&rval->fnm, newstr("stdin"));
-		break;
-	    case 1:
-		replace_dynstr(&rval->open_mode, newstr("a"));
-		replace_dynstr(&rval->fnm, newstr("stdout"));
-		break;
-	    case 2:
-		replace_dynstr(&rval->open_mode, newstr("a"));
-		replace_dynstr(&rval->fnm, newstr("stderr"));
-		break;
-	    default:
-		break;
-	}
-	if ((rval->open_mode) && (fileno >= 0)) {
+        filenum = fileno(fio->fd);
+        switch(filenum) {
+            case 0:
+                replace_dynstr(&rval->open_mode, newstr("r"));
+                replace_dynstr(&rval->fnm, newstr("stdin"));
+                break;
+            case 1:
+                replace_dynstr(&rval->open_mode, newstr("a"));
+                replace_dynstr(&rval->fnm, newstr("stdout"));
+                break;
+            case 2:
+                replace_dynstr(&rval->open_mode, newstr("a"));
+                replace_dynstr(&rval->fnm, newstr("stderr"));
+                break;
+            default:
+                break;
+        }
+        if ((rval->open_mode) && (fileno >= 0)) {
     		rval->fd   = fdopen(filenum,rval->open_mode);
-	}
+        }
     }
     return(rval);
 }
@@ -204,18 +211,18 @@ fio_t	*fio_fd(FILE *fd)
     fio = fio_new(MAX_BUF);    
     ext="";
     switch(fileno(fd)) {
-	case 0:
-	    filename="stdin";
-	    break;
-	case 1:
-	    filename="stdout";
-	    break;
-	case 2:
-	    filename="stderr";
-	    break;
-	default:
-	    filename="unknown";
-	    break;
+        case 0:
+            filename="stdin";
+            break;
+        case 1:
+            filename="stdout";
+            break;
+        case 2:
+            filename="stderr";
+            break;
+        default:
+            filename="unknown";
+            break;
     }
     fio->ext = newstr(ext);
     fio->fnm = newstr(filename);
@@ -225,7 +232,7 @@ fio_t	*fio_fd(FILE *fd)
     return(fio);
     
 }
-    
+
 fio_t    *fio_alloc_open(char *filename, char *new_ext, char *open_mode, size_t bufsiz)
 {
     fio_t	*fio;
@@ -233,11 +240,11 @@ fio_t    *fio_alloc_open(char *filename, char *new_ext, char *open_mode, size_t 
     fio = fio_new(bufsiz);
     
     if (new_ext) {
-	fio->ext = newstr(new_ext);
-	fio->fnm = replace_ext(filename, new_ext);
+        fio->ext = newstr(new_ext);
+        fio->fnm = replace_ext(filename, new_ext);
     } else {
-	fio->ext = newstr("");
-	fio->fnm = newstr(filename);
+        fio->ext = newstr("");
+        fio->fnm = newstr(filename);
     }
     // we could try and deduce this from ext or proper magic processing but for now this is what we need
     // its been added for mailto() to do mime type on attaching files
@@ -245,9 +252,9 @@ fio_t    *fio_alloc_open(char *filename, char *new_ext, char *open_mode, size_t 
     replace_dynstr(&fio->charset, newstr("US-ASCII"));
     replace_dynstr(&fio->encoding, newstr("7bit"));
     if (open_mode) {
-	fio->open_mode = newstr(open_mode);
+        fio->open_mode = newstr(open_mode);
     } else {
-	fio->open_mode = newstr("r");
+        fio->open_mode = newstr("r");
     }
     fio_open(fio);
     return(fio);
@@ -256,37 +263,37 @@ fio_t    *fio_alloc_open(char *filename, char *new_ext, char *open_mode, size_t 
 int fio_open(fio_t *fio)
 {
     if (!fio->useropenflag) {
-	if (fio->open) {
-	    fio_close(fio);
-	}
-	
-	if (strcmp(fio->fnm, "stdin")==0) {
-	    fio->fd = stdin;
-	    fio->open = 1;
-	    fio->useropenflag = 1;
-	    
-	} else if (strcmp(fio->fnm, "stdout")==0) {
-	    fio->fd = stdout;
-	    fio->open = 1;
-	    fio->useropenflag = 1;
-	    
-	} else if (strcmp(fio->fnm, "stderr")==0) {
-	    fio->fd = stderr;
-	    fio->open = 1;
-	    fio->useropenflag = 1;
-	    
-	} else {
-	    if ((fio->fd = fopen(fio->fnm, fio->open_mode)) == (FILE *) NULL ) {
-		fio->status = errno;
-		fprintf(stderr,"#BLIB:  Error opening file \"%s\" mode: \"%s\" %d:%s\n", fio->fnm, fio->open_mode, fio->status, strerror(fio->status));
-	    } else {
-		fio->open = 1;	/* make it open */
-		fio->reads = fio->writes = 0;
-	    }
-	}
+        if (fio->open) {
+            fio_close(fio);
+        }
+        
+        if (strcmp(fio->fnm, "stdin")==0) {
+            fio->fd = stdin;
+            fio->open = 1;
+            fio->useropenflag = 1;
+            
+        } else if (strcmp(fio->fnm, "stdout")==0) {
+            fio->fd = stdout;
+            fio->open = 1;
+            fio->useropenflag = 1;
+            
+        } else if (strcmp(fio->fnm, "stderr")==0) {
+            fio->fd = stderr;
+            fio->open = 1;
+            fio->useropenflag = 1;
+            
+        } else {
+            if ((fio->fd = fopen(fio->fnm, fio->open_mode)) == (FILE *) NULL ) {
+                fio->status = errno;
+                fprintf(stderr,"#BLIB:  Error opening file \"%s\" mode: \"%s\" %d:%s\n", fio->fnm, fio->open_mode, fio->status, strerror(fio->status));
+            } else {
+                fio->open = 1;	/* make it open */
+                fio->reads = fio->writes = 0;
+            }
+        }
     } else {
-	fio->open = 1;	/* make it open */
-	fio->reads = fio->writes = 0;
+        fio->open = 1;	/* make it open */
+        fio->reads = fio->writes = 0;
     }
 	
     return(fio->status);
@@ -303,8 +310,8 @@ char *replace_ext(char *base, char *new_ext)
     fnmlen = strlen(base) + strlen(new_ext) + 1;
     
     if ((fnamstr = (char *) malloc(fnmlen)) == (char *) NULL ) {
-	fprintf(stderr,"#BLIB:  Error allocating memory for file name string\n");
-	exit(ENOMEM);
+        fprintf(stderr,"#BLIB:  Error allocating memory for file name string\n");
+        exit(ENOMEM);
     }
     strcpy(fnamstr, base);
     if ( (dotptr = rindex(fnamstr, '.')) ) *dotptr = '\0';
@@ -317,15 +324,15 @@ char	    *fio_basename(fio_t *fio)
     char *basefnm;
     basefnm = (char *) NULL;
     if (fio) {
-	if (fio->fnm) {
-	    basefnm = rindex(fio->fnm, '/');
-	    
-	}
+        if (fio->fnm) {
+            basefnm = rindex(fio->fnm, '/');
+            
+        }
     }
     if (basefnm) {
-	basefnm++; // skip to the 1st char after the slash
+        basefnm++; // skip to the 1st char after the slash
     } else {
-	basefnm="";
+        basefnm="";
     }
     return(basefnm);
 }
@@ -337,10 +344,10 @@ int fio_rewind(fio_t *fio)
     int   old_errno;
     
     if (fio) {
-	old_errno=errno;
-	rewind(fio->fd);
-	if (old_errno != errno) {
-		rval = fio->status = errno;
+        old_errno=errno;
+        rewind(fio->fd);
+        if (old_errno != errno) {
+            rval = fio->status = errno;
     	}
     }
     return(rval);
@@ -351,7 +358,7 @@ int  fio_copy_file(fio_t *src, fio_t *outfd)
     fio_rewind(src);
     fio_fgets(src);
     while(!feof(src->fd)) {
-	fprintf(outfd->fd, "%s\n", src->buf);
+        fprintf(outfd->fd, "%s\n", src->buf);
         fio_fgets(src);
     }
     fio_close(src);
@@ -364,8 +371,8 @@ files_t *alloc_files_ent()
     files_t *files_ent;
     
     if ((files_ent = malloc(sizeof(files_t))) == (files_t *) NULL ) {
-	fprintf(stderr, "# Out of memory allocating space for a new files entry\n");
-	exit(ENOMEM);
+        fprintf(stderr, "# Out of memory allocating space for a new files entry\n");
+        exit(ENOMEM);
     }
     bzero(files_ent,sizeof(files_t));
     return(files_ent);
@@ -387,20 +394,20 @@ files_t *new_files(files_t **head, char *fnm)
     files_t *newfile;
     
     if (!head) {
-	fprintf(stderr, "# Internal Error new_files called with a null pointer to head\n");
-	exit(EINVAL);
+        fprintf(stderr, "# Internal Error new_files called with a null pointer to head\n");
+        exit(EINVAL);
     }
     
     newfile = make_files_ent(fnm);
     tail = *head;
     if (tail == NULL ) { // special case head is empty
-	*head = newfile;
+        *head = newfile;
     } else {
-	// find the tail of the list
-	while (tail->next) {
-	    tail = tail->next;
-	}
-	tail->next = newfile;
+        // find the tail of the list
+        while (tail->next) {
+            tail = tail->next;
+        }
+        tail->next = newfile;
     }
     
     return(newfile);
@@ -412,8 +419,8 @@ files_t	*files_insert_head(files_t **head, fio_t *fio)
     files_t *newfile;
     
     if (!head) {
-	fprintf(stderr, "# Internal Error new_files called with a null pointer to head\n");
-	exit(EINVAL);
+        fprintf(stderr, "# Internal Error new_files called with a null pointer to head\n");
+        exit(EINVAL);
     }
     
     newfile = alloc_files_ent();
@@ -423,7 +430,7 @@ files_t	*files_insert_head(files_t **head, fio_t *fio)
     *head = newfile;
     
     if (next != NULL ) { 
-	newfile->next = next; // previous head is now next
+        newfile->next = next; // previous head is now next
     } 
     
     return(newfile);
