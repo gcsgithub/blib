@@ -1,6 +1,9 @@
-static char *rcsid="@(#) $Id: execute_cmds.c,v 1.6 2011/04/12 00:36:11 mark Exp mark $";
+static char *rcsid="@(#) $Id: execute_cmds.c,v 1.7 2011/04/12 07:03:48 mark Exp mark $";
 /*
  * $Log: execute_cmds.c,v $
+ * Revision 1.7  2011/04/12 07:03:48  mark
+ * complete the key for the vol_obj lookup in /errbackup which was failing as a result
+ *
  * Revision 1.6  2011/04/12 00:36:11  mark
  * add dbh to display_volume to allow it to output BLIB_RECORDDATE, BLIB_EXPIREDATE, BLIB_DESC
  *
@@ -33,6 +36,7 @@ static char *rcsid="@(#) $Id: execute_cmds.c,v 1.6 2011/04/12 00:36:11 mark Exp 
 #include "execute_cmds.h"
 #include "timefunc.h"
 #include "blib.h"
+#include "fileio.h"
 
 static char *ver()
 {
@@ -69,6 +73,7 @@ dbh_t *process_command_line(dbh_t *dbh, char *cmdline)
     cmd_t	*includelog;
     cmd_t	*cmds;
     char	*blib_log_fnm;
+    files_t *logfile;
     
     
     if ((cmds = parseslashcmd(cmdline)) == (cmd_t *) NULL ) {
@@ -78,8 +83,11 @@ dbh_t *process_command_line(dbh_t *dbh, char *cmdline)
     qual_log   = have_qual_unlink(&cmds, QUAL_LOG);  	// this also make sure execute_cmds never sees /log
     qual_nolog = have_qual_unlink(&cmds, QUAL_NOLOG);  // this also make sure execute_cmds never sees /nolog
     
-    while ( includelog = have_qual_unlink(&cmds, QUAL_INCLOG)) {
-        new_files(&BLIB.includelogs, (char *) includelog->val);
+    while ( (includelog = have_qual_unlink(&cmds, QUAL_INCLOG))) {
+        logfile = new_files(&BLIB.includelogs, (char *) includelog->val);
+        if (includelog->cmpflg == CMP_OPT) {
+            logfile->optional_include = TRUE;
+        }
     }
     
     if (qual_log && qual_nolog) {
@@ -134,7 +142,7 @@ dbh_t *execute_cmds(dbh_t *dbh, cmd_t **cmds)
     
     if (dbh==(dbh_t *) NULL) {// not yet opened
         dbfnm = get_default(QUAL_DATABASE);
-        if (database_qual = have_qual_unlink(cmds, QUAL_DATABASE)) { // remove /database from the qual chain if it exists
+        if ((database_qual = have_qual_unlink(cmds, QUAL_DATABASE))) { // remove /database from the qual chain if it exists
             dbfnm = (char *) database_qual->val;
             set_default(QUAL_DATABASE, dbfnm);
         }
@@ -484,9 +492,11 @@ int filtcmp(cmd_t *output_qual, void *val, int size)
     
     switch(output_qual->cmpflg) // rval =1 will skip record in filter_rec
     {
-        case     CMP_ERR:
+        case    CMP_OPT:               // TODO: maybe change this its NA to this filter
+        case    CMP_ERR:
         case    CMP_NONE:
-            return(0);	    // error so display everything
+            rval=0;	    // error so display everything
+            break;
         case    CMP_LT:
             if (rval >= 0 ) rval=1; // <
             else	    rval=0;
@@ -543,6 +553,7 @@ void do_cmd_env(fio_t *outfd)
     doenv(outfd, "DAILYMEDIA", VT_STR, get_default(QUAL_MEDIA));
     doenv(outfd, "BLIB_LOG", VT_STR, get_default(QUAL_LOG));
     doenv(outfd, "BLIB_NODE", VT_STR, get_default(QUAL_NODE));
+    doenv(outfd, "BLIB_STYLE", VT_STR, get_default(QUAL_STYSHT));
     
 }
 
