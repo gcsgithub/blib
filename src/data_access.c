@@ -1,4 +1,4 @@
-static const char *rcsid="@(#) $Id: data_access.c,v 1.7 2011/04/12 00:35:26 mark Exp mark $";
+static const char *rcsid="@(#) $Id: data_access.c,v 1.8 2011/04/13 03:59:18 mark Exp mark $";
 /*
  *  data_access.c
  *  blib
@@ -6,6 +6,9 @@ static const char *rcsid="@(#) $Id: data_access.c,v 1.7 2011/04/12 00:35:26 mark
  *  Created by mark on 08/10/2008.
  *  Copyright 2008 Garetech Computer Solutions. All rights reserved.
  * $Log: data_access.c,v $
+ * Revision 1.8  2011/04/13 03:59:18  mark
+ * fix bug in bck_errors tables, wasnt using obj_instance to look it up and wasnt inserting the obj_instance
+ *
  * Revision 1.7  2011/04/12 00:35:26  mark
  * tidyup verify code
  *
@@ -657,11 +660,12 @@ int	copy_results_bck_errors(dbh_t  *dbh, void *recp)
     
     bzero(rec,sizeof(bck_errors_t));    
     
-    db_fldsmklist(&flds, "bck_id"  , FLD_INT64, &rec->bck_id);
-    db_fldsmklist(&flds, "label"   , FLD_TEXT , &rec->label);
-    db_fldsmklist(&flds, "objname" , FLD_TEXT , &rec->objname);
-    db_fldsmklist(&flds, "errtime" , FLD_INT  , &rec->errtime);
-    db_fldsmklist(&flds, "errmsg"  , FLD_TEXT , &rec->errmsg);
+    db_fldsmklist(&flds, "bck_id"      , FLD_INT64, &rec->bck_id);
+    db_fldsmklist(&flds, "label"       , FLD_TEXT , &rec->label);
+    db_fldsmklist(&flds, "objname"     , FLD_TEXT , &rec->objname);
+    db_fldsmklist(&flds, "obj_instance", FLD_INT, &rec->obj_instance);
+    db_fldsmklist(&flds, "errtime"     , FLD_INT  , &rec->errtime);
+    db_fldsmklist(&flds, "errmsg"      , FLD_TEXT , &rec->errmsg);
     
     dbh->sqlcmd->getflds = flds;
     db_columns(dbh);
@@ -1686,7 +1690,7 @@ int	db_insert_bckerror(dbh_t *dbh, bck_errors_t *bckerror)
     "obj_instance,"
     "errtime,"
     "errmsg"
-    ") values ( ?,?,?,?,?)";
+    ") values ( ?,?,?,?,?,?)";
     
     db_fldsmklist(&flds , "bck_id"      , FLD_INT64, (void *) &bckerror->bck_id);
     db_fldsmklist(&flds , "label"       , FLD_TEXT , (void *) &bckerror->label);
@@ -1857,16 +1861,17 @@ bcount_t db_count_bck_errors(dbh_t *dbh, vol_obj_t *key)
     return(rcount);
 }
 
-int	db_find_bck_errors(dbh_t *dbh, bckid_t bck_id, objname_t *objname, blabel_t *label, bck_errors_t *bckerrrec, find_type_t flag)
+int	db_find_bck_errors(dbh_t *dbh, vol_obj_t *volobjkey, bck_errors_t *bckerrrec, find_type_t flag)
 {
     int 	rval;
     list_t	*keylist= (list_t *) NULL;
-    char 	*sqltext="select * from main.bck_errors where bck_id=? and objname=? and label=?";
+    char 	*sqltext="select * from main.bck_errors where bck_id=? and objname=? and label=? and obj_instance=?";
     
     bzero(bckerrrec, sizeof(bck_errors_t));
-    db_fldsmklist(&keylist,"bck_id"  ,  FLD_INT64, (void *) &bck_id);
-    db_fldsmklist(&keylist,"objname" ,  FLD_TEXT , (void *) objname);
-    db_fldsmklist(&keylist,"label"   ,  FLD_TEXT , (void *) label);
+    db_fldsmklist(&keylist,"bck_id"       ,  FLD_INT64, (void *) &volobjkey->bck_id);
+    db_fldsmklist(&keylist,"objname"      ,  FLD_TEXT , (void *) &volobjkey->objname);
+    db_fldsmklist(&keylist,"label"        ,  FLD_TEXT , (void *) &volobjkey->label);
+    db_fldsmklist(&keylist,"obj_instance" ,  FLD_INT , (void *) &volobjkey->obj_instance);
     
     rval =  db_find(dbh, sqltext, keylist, (void *)bckerrrec, copy_results_bck_errors , flag);
     
