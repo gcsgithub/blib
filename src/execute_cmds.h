@@ -1,8 +1,11 @@
 #ifndef __EXECUTE_CMDS_H__
 #define	__EXECUTE_CMDS_H__
 /*
- * @(#) $Id: execute_cmds.h,v 1.3 2010/11/24 00:58:15 root Exp mark $
+ * @(#) $Id: execute_cmds.h,v 1.4 2011/04/11 03:52:57 mark Exp mark $
  * $Log: execute_cmds.h,v $
+ * Revision 1.4  2011/04/11 03:52:57  mark
+ * generally fix OSrval's, fix records being added with invalid bck_id, add /verify
+ *
  * Revision 1.3  2010/11/24 00:58:15  root
  * add function modify_filter_rec
  *
@@ -53,7 +56,8 @@ void	do_cmd_removebackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_p
 void	do_cmd_modifybackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr,dbh_t *dbh);
 void	do_cmd_listbackups(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr,dbh_t *dbh);
 void	do_cmd_listobjects(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr,dbh_t *dbh);
-void  do_cmd_verifydb(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr,dbh_t *dbh);
+void    do_cmd_verifydb(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr,dbh_t *dbh);
+void    do_cmd_counterrors(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr,dbh_t *dbh);
 
 int	usetape(dbh_t *dbh, blabel_t *label, bckid_t bck_id );
 int	can_use(dbh_t *dbh, blabel_t *label, bckid_t bck_id);

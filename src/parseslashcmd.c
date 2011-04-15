@@ -1,6 +1,9 @@
-static char *rcsid="@(#) $Id: parseslashcmd.c,v 1.7 2011/04/12 00:36:57 mark Exp mark $";
+static char *rcsid="@(#) $Id: parseslashcmd.c,v 1.8 2011/04/14 02:33:33 mark Exp mark $";
 /*
  * $Log: parseslashcmd.c,v $
+ * Revision 1.8  2011/04/14 02:33:33  mark
+ * optional compare ?= ?= for including logs only on error
+ *
  * Revision 1.7  2011/04/12 00:36:57  mark
  * make internal error more descriptive to what values caused it
  *
@@ -60,7 +63,8 @@ cmdqual_t CMDQUALS[]  = {
     {CMD_REPBCK     ,CMD  ,DB_RO     ,"/reportbackup"   ,"bck_id"	 ,VT_INT64  ,REQVAL_REQ  ,NULL      ,NULL      ,"report backup info for given bck_id"}, 
     {CMD_LISTBCK    ,CMD  ,DB_RO     ,"/listbackups"    ,"bck_id"	 ,VT_INT64  ,REQVAL_OPT  ,NULL      ,NULL      ,"list all backups or given backupid"}, 
     {CMD_LISTOBJ    ,CMD  ,DB_RO     ,"/listobjects"    ,"objname"   ,VT_STR    ,REQVAL_OPT  ,NULL      ,NULL      ,"list all backups for all backups or a given object name"},
-    {CMD_VERIFY     ,CMD  ,DB_RO     ,"/verify"           ,NULL          ,VT_NONE   ,REQVAL_NONE ,NULL     ,NULL      , "Verify internal conistancy of database tables"},
+    {CMD_VERIFY     ,CMD  ,DB_RO     ,"/verify"         ,NULL        ,VT_NONE   ,REQVAL_NONE ,NULL      ,NULL      , "Verify internal conistancy of database tables"},
+    {CMD_ERRCOUNT   ,CMD  ,DB_RO     ,"/errcount"       ,"bck_id"    ,VT_INT64  ,REQVAL_REQ  ,NULL      ,NULL      , "Return BLIB_ERRCOUNT for a given backup id"},
     {QUAL_NEW       ,QUAL ,DB_RW     ,"/new"	            ,NULL          ,VT_NONE	   , REQVAL_NONE , NULL      ,NULL      , "only valid for /import"},
     {QUAL_SINCE     ,QUAL ,DB_NONE   ,"/since"	       ,NULL          ,VT_DATE	   , REQVAL_REQ  , NULL      ,NULL      , "with /replaylog /since=ctime:n to replay log since n"},
     {QUAL_UNTIL     ,QUAL ,DB_NONE   ,"/until"	      ,NULL           ,VT_DATE	   , REQVAL_REQ  , NULL      ,NULL      , "with /replaylog /until=ctime:n to replay log since n"},

@@ -1,8 +1,11 @@
 #ifndef __PARSESLASHCMD_H__
 #define __PARSESLASHCMD_H__
 /*
- * @(#) $Id: parseslashcmd.h,v 1.5 2011/04/11 03:54:29 mark Exp mark $
+ * @(#) $Id: parseslashcmd.h,v 1.6 2011/04/14 02:33:55 mark Exp mark $
  *  $Log: parseslashcmd.h,v $
+ *  Revision 1.6  2011/04/14 02:33:55  mark
+ *  optional include
+ *
  *  Revision 1.5  2011/04/11 03:54:29  mark
  *  add include log stuff
  *  add verify styff
@@ -81,7 +84,8 @@ typedef enum  {
     CMD_REPBCK, 
     CMD_LISTBCK,
     CMD_LISTOBJ, 
-    CMD_VERIFY, 
+    CMD_VERIFY,
+    CMD_ERRCOUNT,
     
     QUAL_NEW,
     QUAL_NOLOG,
