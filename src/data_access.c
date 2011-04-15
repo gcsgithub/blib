@@ -1,4 +1,4 @@
-static const char *rcsid="@(#) $Id: data_access.c,v 1.8 2011/04/13 03:59:18 mark Exp mark $";
+static const char *rcsid="@(#) $Id: data_access.c,v 1.9 2011/04/14 02:28:06 mark Exp mark $";
 /*
  *  data_access.c
  *  blib
@@ -6,6 +6,9 @@ static const char *rcsid="@(#) $Id: data_access.c,v 1.8 2011/04/13 03:59:18 mark
  *  Created by mark on 08/10/2008.
  *  Copyright 2008 Garetech Computer Solutions. All rights reserved.
  * $Log: data_access.c,v $
+ * Revision 1.9  2011/04/14 02:28:06  mark
+ * fix for missing obj_instance on bck_errors
+ *
  * Revision 1.8  2011/04/13 03:59:18  mark
  * fix bug in bck_errors tables, wasnt using obj_instance to look it up and wasnt inserting the obj_instance
  *
@@ -1853,6 +1856,24 @@ bcount_t db_count_bck_errors(dbh_t *dbh, vol_obj_t *key)
     db_fldsmklist(&flds,"obj_instance"  ,  FLD_INT , (void *) &key->obj_instance);
     
     if (db_exec_sql_flds_push(dbh, "select count(*) from main.bck_errors where bck_id=? and objname=? and label=? and obj_instance=?", flds)) {	
+        rcount = sqlite3_column_int64(dbh->sqlcmd->stmt, 0);
+    }
+    
+    db_fldsfreelist(&flds);
+    sqlstack_pop(dbh);
+    return(rcount);
+}
+
+bcount_t db_count_bck_errors_bck_id(dbh_t *dbh, bckid_t bck_id)
+{
+    bcount_t	rcount;
+    list_t	*flds = (list_t *) NULL;
+    
+    rcount = -1;
+    
+    db_fldsmklist(&flds,"bck_id"        ,  FLD_INT64, (void *) &bck_id);
+    
+    if (db_exec_sql_flds_push(dbh, "select count(*) from main.bck_errors where bck_id=?", flds)) {	
         rcount = sqlite3_column_int64(dbh->sqlcmd->stmt, 0);
     }
     
