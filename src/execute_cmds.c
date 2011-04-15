@@ -1,6 +1,9 @@
-static char *rcsid="@(#) $Id: execute_cmds.c,v 1.8 2011/04/14 02:30:19 mark Exp mark $";
+static char *rcsid="@(#) $Id: execute_cmds.c,v 1.9 2011/04/15 03:23:27 mark Exp mark $";
 /*
  * $Log: execute_cmds.c,v $
+ * Revision 1.9  2011/04/15 03:23:27  mark
+ * use db_count_bck_errors_bck_id in finishbackup to report errors
+ *
  * Revision 1.8  2011/04/14 02:30:19  mark
  * add env BLIB_STYLE
  * add option include for log files /includelog?=
@@ -253,6 +256,9 @@ dbh_t *execute_cmds(dbh_t *dbh, cmd_t **cmds)
             break;
         case CMD_VERIFY:
             do_cmd_verifydb(outfd, cmds, thecmd, qual_ptr, dbh);
+            break;
+        case CMD_ERRCOUNT:
+            do_cmd_counterrors(outfd, cmds, thecmd, qual_ptr, dbh);
             break;
             
         default:
@@ -2079,6 +2085,43 @@ void	do_cmd_verifydb(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr,d
     
     db_verify(outfd, dbh);
  
+}
+
+void do_cmd_counterrors(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr,dbh_t *dbh)
+{
+
+    /* /errcount=<bckid>  return count of errors for a given backup id
+     */
+    
+    cmd_t	*output_qual;
+    qual_t	qualval;
+    bcount_t bck_error;
+    
+    bzero(&qualval, sizeof(qual_t));
+    
+    
+    if (BLIB.debug==99999) fprintf(stderr, "CMD: %s QUAL: %s\n", thecmd->param->cmdtxt, qual_ptr->param->cmdtxt);
+    
+    output_qual=qual_ptr;
+    
+    
+    while(output_qual) {
+        switch(output_qual->param->cmdid) {	
+            default:
+                fprintf(outfd->fd, "#BLIB:  Error invalid qualifier %s given to %s\n", output_qual->param->cmdtxt, thecmd->param->cmdtxt);
+                return;
+                break;
+        }
+        output_qual=output_qual->next;
+    }
+    
+    if (thecmd->valset == VAL_SET) {
+	    qualval.bck_id = *(bckid_t *) thecmd->val;
+    }
+    
+    bck_error = db_count_bck_errors_bck_id(dbh, qualval.bck_id);
+    doenv(outfd, "BLIB_ERRCOUNT", VT_INT64, &bck_error);
+    
 }
 
 
