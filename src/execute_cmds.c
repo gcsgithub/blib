@@ -1,6 +1,10 @@
-static char *rcsid="@(#) $Id: execute_cmds.c,v 1.7 2011/04/12 07:03:48 mark Exp mark $";
+static char *rcsid="@(#) $Id: execute_cmds.c,v 1.8 2011/04/14 02:30:19 mark Exp mark $";
 /*
  * $Log: execute_cmds.c,v $
+ * Revision 1.8  2011/04/14 02:30:19  mark
+ * add env BLIB_STYLE
+ * add option include for log files /includelog?=
+ *
  * Revision 1.7  2011/04/12 07:03:48  mark
  * complete the key for the vol_obj lookup in /errbackup which was failing as a result
  *
@@ -1580,6 +1584,7 @@ void	do_cmd_finishbackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_p
     int		reqflg;
     cmd_t	*output_qual;
     qual_t	qualval;
+    bcount_t    bck_errs=0;
     
     bzero(&qualval, sizeof(qual_t));
     copy_objname(&qualval.objname, (char *) thecmd->val);
@@ -1621,6 +1626,10 @@ void	do_cmd_finishbackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_p
     if (!dbcheck(dbh, NULL)) {
         fprintf(outfd->fd, "#BLIB:  Error updating backup end times in %s: %s\n", thecmd->param->cmdtxt, dbh->errmsg);
         exit(dbh->status);
+    }
+    bck_errs = db_count_bck_errors_bck_id(dbh, qualval.bck_id);
+    if (bck_errs) {
+        dbh->status = bck_errs;
     }
     
 }
