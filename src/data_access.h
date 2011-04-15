@@ -1,8 +1,11 @@
 #ifndef __DATA_ACCESS_H__
 #define	__DATA_ACCESS_H__
 /*
- * @(#) $Id: data_access.h,v 1.3 2011/04/11 03:51:55 mark Exp mark $
+ * @(#) $Id: data_access.h,v 1.4 2011/04/14 02:28:56 mark Exp mark $
  * $Log: data_access.h,v $
+ * Revision 1.4  2011/04/14 02:28:56  mark
+ * change key on db_find_bck_errors to simple use vol_obj_t values
+ *
  * Revision 1.3  2011/04/11 03:51:55  mark
  * generally fix OSrval's, fix records being added with invalid bck_id, add /verify
  *
@@ -81,7 +84,7 @@ objid_t db_get_obj_instance(dbh_t *dbh, bckid_t bck_id, objname_t *objname );
 
 int     db_exec_sql(dbh_t *dbh, char *sqltext);
 int     db_exec_sql_flds(dbh_t *dbh, char *sqltext, list_t *flds);
-int	db_exec_sql_flds_pushpop(dbh_t *dbh, char *sqltext, list_t *flds);
+int     db_exec_sql_flds_pushpop(dbh_t *dbh, char *sqltext, list_t *flds);
 int     db_exec_sql_flds_pop(dbh_t *dbh, char *sqltext, list_t *flds);
 
 int     db_exec_sql_bckid(dbh_t *dbh, char *sqltext, bckid_t bck_id);
@@ -89,7 +92,7 @@ int     db_exec_sql_bckid(dbh_t *dbh, char *sqltext, bckid_t bck_id);
 dbfld_t *db_fldsmklist(list_t **fldhead,const char *fldname,  fld_type_t fldtype, void *fldptr);
 void	 db_fldsfreelist(list_t **listp);
 
-int	 db_fldsdump(list_t *flds);
+int     db_fldsdump(list_t *flds);
 void	 db_flds_display(dbfld_t *fld);
 dbfld_t *db_flds_byname(list_t *flds, const char *fldname);
 char	*db_flds_textbyname(list_t *flds, const char *fldname);
@@ -174,6 +177,7 @@ void db_display_bck_errors(FILE *fd, bck_errors_t *bckerrrec);
 
 
 int     db_verify(fio_t *outfd, dbh_t *dbh);
+bcount_t db_count_bck_errors_bck_id(dbh_t *dbh, bckid_t bck_id);
 
 
 
