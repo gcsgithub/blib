@@ -1,8 +1,11 @@
 #ifndef __DATA_ACCESS_H__
 #define	__DATA_ACCESS_H__
 /*
- * @(#) $Id: data_access.h,v 1.4 2011/04/14 02:28:56 mark Exp mark $
+ * @(#) $Id: data_access.h,v 1.5 2011/04/15 03:23:21 mark Exp mark $
  * $Log: data_access.h,v $
+ * Revision 1.5  2011/04/15 03:23:21  mark
+ * add db_count_bck_errors_bck_id
+ *
  * Revision 1.4  2011/04/14 02:28:56  mark
  * change key on db_find_bck_errors to simple use vol_obj_t values
  *
@@ -178,6 +181,7 @@ void db_display_bck_errors(FILE *fd, bck_errors_t *bckerrrec);
 
 int     db_verify(fio_t *outfd, dbh_t *dbh);
 bcount_t db_count_bck_errors_bck_id(dbh_t *dbh, bckid_t bck_id);
+bcount_t db_count_notset(dbh_t *dbh, bckid_t bck_id);
 
 
 
