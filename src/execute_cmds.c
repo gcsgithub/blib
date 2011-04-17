@@ -1,6 +1,9 @@
-static char *rcsid="@(#) $Id: execute_cmds.c,v 1.9 2011/04/15 03:23:27 mark Exp mark $";
+static char *rcsid="@(#) $Id: execute_cmds.c,v 1.10 2011/04/15 03:39:36 mark Exp mark $";
 /*
  * $Log: execute_cmds.c,v $
+ * Revision 1.10  2011/04/15 03:39:36  mark
+ * add /errcount=bckid
+ *
  * Revision 1.9  2011/04/15 03:23:27  mark
  * use db_count_bck_errors_bck_id in finishbackup to report errors
  *
@@ -2090,12 +2093,18 @@ void	do_cmd_verifydb(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr,d
 void do_cmd_counterrors(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr,dbh_t *dbh)
 {
 
-    /* /errcount=<bckid>  return count of errors for a given backup id
+    /* 
+     *      /errcount=<bckid>  return count of errors for a given backup id
+     *          Output:     export BLIB_ERRCOUNT=?;
+     *                  where ? is the raw error count reported into bck_errors by /errbackup=
+     *                          plus a 1 for every backup object or backup itself that has end date NotSet
      */
     
     cmd_t	*output_qual;
     qual_t	qualval;
     bcount_t bck_error;
+    bcount_t bck_notset;
+    bcount_t total_errors;
     
     bzero(&qualval, sizeof(qual_t));
     
@@ -2120,7 +2129,13 @@ void do_cmd_counterrors(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_pt
     }
     
     bck_error = db_count_bck_errors_bck_id(dbh, qualval.bck_id);
-    doenv(outfd, "BLIB_ERRCOUNT", VT_INT64, &bck_error);
+    bck_notset = db_count_notset(dbh, qualval.bck_id);
+    
+    total_errors = bck_error + bck_notset;
+    
+    doenv(outfd, "BLIB_BCKERRORS", VT_INT64, &bck_error);
+    doenv(outfd, "BLIB_BCKINCOMPLETED", VT_INT64, &bck_notset);
+    doenv(outfd, "BLIB_ERRCOUNT", VT_INT64, &total_errors);
     
 }
 
