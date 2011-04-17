@@ -1,4 +1,4 @@
-static const char *rcsid="@(#) $Id: data_access.c,v 1.9 2011/04/14 02:28:06 mark Exp mark $";
+static const char *rcsid="@(#) $Id: data_access.c,v 1.10 2011/04/15 03:22:57 mark Exp mark $";
 /*
  *  data_access.c
  *  blib
@@ -6,6 +6,9 @@ static const char *rcsid="@(#) $Id: data_access.c,v 1.9 2011/04/14 02:28:06 mark
  *  Created by mark on 08/10/2008.
  *  Copyright 2008 Garetech Computer Solutions. All rights reserved.
  * $Log: data_access.c,v $
+ * Revision 1.10  2011/04/15 03:22:57  mark
+ * add db_count_bck_errors_bck_id so finishbackup can report errors
+ *
  * Revision 1.9  2011/04/14 02:28:06  mark
  * fix for missing obj_instance on bck_errors
  *
@@ -1881,6 +1884,30 @@ bcount_t db_count_bck_errors_bck_id(dbh_t *dbh, bckid_t bck_id)
     sqlstack_pop(dbh);
     return(rcount);
 }
+
+bcount_t db_count_notset(dbh_t *dbh, bckid_t bck_id)
+{
+    bcount_t	rcount;
+    list_t	*flds = (list_t *) NULL;
+    
+    rcount = -1;
+    
+    db_fldsmklist(&flds,"bck_id"        ,  FLD_INT64, (void *) &bck_id);
+    
+    if (db_exec_sql_flds_push(dbh, "select count(*) from main.backups where bck_id=? and end=0" , flds)) {	
+        rcount = sqlite3_column_int64(dbh->sqlcmd->stmt, 0);
+    }
+    sqlstack_pop(dbh);
+    
+    if (db_exec_sql_flds_push(dbh, "select count(*) from bck_objects where bck_id=? and end=0" , flds)) {	
+        rcount += sqlite3_column_int64(dbh->sqlcmd->stmt, 0);
+    }
+    
+    db_fldsfreelist(&flds);
+    sqlstack_pop(dbh);
+    return(rcount);
+}
+
 
 int	db_find_bck_errors(dbh_t *dbh, vol_obj_t *volobjkey, bck_errors_t *bckerrrec, find_type_t flag)
 {
