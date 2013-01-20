@@ -1,6 +1,9 @@
-static const char *rcsid="@(#) $Id: list.c,v 1.1 2008/10/19 22:18:59 root Exp mark $";
+static const char *rcsid="@(#) $Id: list.c,v 1.2 2010/11/16 04:10:20 mark Exp mark $";
 /*
  * $Log: list.c,v $
+ * Revision 1.2  2010/11/16 04:10:20  mark
+ * rc1
+ *
  * Revision 1.1  2008/10/19  22:18:59  root
  * Initial revision
  *
@@ -212,34 +215,5 @@ entry_t *atoi_ent(int *err,unsigned int *val, entry_t *ent, char *errmsg,...)
     return(ent);
 }
 
-entry_t	*time_ent(int *err, time_t *val, entry_t *ent, char *errmsg,...)
-{
-    va_list args;
-    time_t    rval;
-    va_start(args,errmsg);
-    
-    
-    if (ent) {
-        if (ent->e) {
-            rval = scandate_gmt(ent->e);
-        } else	{
-            (*err)++;
-            rval = 0;
-        }
-        ent = ent->np;
-    } else {
-        rval = 0;
-        vfprintf(stderr, errmsg, args);
-        va_end(args);
-        (*err)++;
-    }
-    if (val) {
-        *val = rval;
-    } else {
-        fprintf(stderr, "%s called with null pointer for return value\n", __PRETTY_FUNCTION__);
-        (*err)++;
-    }
-    return(ent);
-}
 
 
