@@ -1,8 +1,11 @@
 #ifndef __LIST_H__
 #define __LIST_H__
 /*
- * @(#) $Id: list.h,v 1.1 2008/10/19 22:18:59 root Exp mark $
+ * @(#) $Id: list.h,v 1.2 2010/11/16 04:11:16 mark Exp mark $
  * $Log: list.h,v $
+ * Revision 1.2  2010/11/16 04:11:16  mark
+ * rc1
+ *
  * Revision 1.1  2008/10/19  22:18:59  root
  * Initial revision
  *
@@ -18,7 +21,7 @@
 #include <stdlib.h>
 #include <strings.h>
 #include <stdarg.h>
-#include <time.h>
+#include "timefunc.h"
 #include "util.h"
 
 typedef struct entry entry_t;
@@ -44,6 +47,6 @@ void	dump_list(list_t *lis);
 entry_t *new_entry(void *val);
 entry_t *snprintf_ent(int *err, char *val, size_t len,char *fmt, entry_t *ent, char *errmsg, ...);
 entry_t *atoi_ent(int *err,unsigned int *val, entry_t *ent, char *errmsg, ...);
-entry_t	*time_ent(int *err, time_t *val, entry_t *ent, char *errmsg, ...);
+
 
 #endif /* __LIST_H__ */
