@@ -1,6 +1,9 @@
-static char *rcsid="@(#) $Id: blib.c,v 1.3 2010/11/16 04:10:03 mark Exp mark $";
+static char *rcsid="@(#) $Id: blib.c,v 1.4 2011/04/11 03:49:50 mark Exp $";
 /*
  * $Log: blib.c,v $
+ * Revision 1.4  2011/04/11 03:49:50  mark
+ * generally fix OSrval's, fix records being added with invalid bck_id, add /verify
+ *
  * Revision 1.3  2010/11/16 04:10:03  mark
  * rc1
  *
@@ -35,9 +38,7 @@ int main(int argc,  char *argv[] /* , char *envp[] */)
     char            c;
     extern char     *optarg;
     extern int      optind; 
-    extern int      optopt;
-    extern int      opterr;
-    extern int      optreset; 
+
     
     dbh_t	    *execdb;
     char	    *cmdline;
