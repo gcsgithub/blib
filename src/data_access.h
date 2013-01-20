@@ -1,8 +1,11 @@
 #ifndef __DATA_ACCESS_H__
 #define	__DATA_ACCESS_H__
 /*
- * @(#) $Id: data_access.h,v 1.5 2011/04/15 03:23:21 mark Exp mark $
+ * @(#) $Id: data_access.h,v 1.6 2011/04/17 05:34:17 mark Exp mark $
  * $Log: data_access.h,v $
+ * Revision 1.6  2011/04/17 05:34:17  mark
+ * add db_count_notset() - improve errcount
+ *
  * Revision 1.5  2011/04/15 03:23:21  mark
  * add db_count_bck_errors_bck_id
  *
@@ -76,6 +79,8 @@ int     db_open(dbh_t **dbh, char *fnm);
 int     db_close(dbh_t *dbh);
 void    db_finish(dbh_t *dbh);
 int     dbcheck(dbh_t *dbh, char *errmsg, ...);
+dbh_t   *dbh_set(dbh_t **dbh_ptr, char *fnm, char *errmsg);
+void    dbh_free(dbh_t **dbh_ptr);
 
 sqlcmd_t *sqlstack_push(dbh_t *dbh);
 sqlcmd_t *sqlstack_pop(dbh_t *dbh);
@@ -117,7 +122,7 @@ int     db_find_volumes_label(dbh_t *dbh,vol_t *key, vol_t *rec, find_type_t fla
 int     db_find_volume_bylabel(dbh_t *dbh,blabel_t *label, vol_t *rec, find_type_t flag);
 int     db_find_vol_obj_id_notbckid_label(dbh_t *dbh, list_t *key_bck_id, vol_obj_t *volobj2del,find_type_t flag);
 int     db_find_current_volobj(dbh_t *dbh, vol_obj_t *volobjrec);
-time_t	db_lookup_endofbackup(dbh_t *dbh,bckid_t bck_id);
+blib_tim_t	db_lookup_endofbackup(dbh_t *dbh,bckid_t bck_id);
 int	db_find_backups_orderbckid(dbh_t *dbh, backups_t *bckrec, bckid_t bckid, find_type_t flag);
 int	db_find_backups_by_expire(dbh_t *dbh, backups_t *bckrec, find_type_t flag);
 int     db_find_bck_objects_by_bckid(dbh_t *dbh, bckid_t bck_id,bckobj_t *bckobjrec, find_type_t flag);
@@ -135,9 +140,9 @@ int     db_setvolume_used(dbh_t *dbh, blabel_t *label, bckid_t bckid);
 void	db_update_volume(dbh_t *dbh,filt_t *filtrec, vol_t *rec);
 int     db_end_vol_obj(dbh_t *dbh, vol_obj_t *volobjrec); // update end and size
 bcount_t db_vol_obj_sumsize(dbh_t *dbh, vol_obj_t *volobjrec);
-int     db_update_bck_object_size_end(dbh_t *dbh, bckid_t bckid, objname_t *objname, objid_t obj_instance,  time_t end, bcount_t totalsize);
+int     db_update_bck_object_size_end(dbh_t *dbh, bckid_t bckid, objname_t *objname, objid_t obj_instance,  blib_tim_t end, bcount_t totalsize);
 int     db_inc_volume_usage(dbh_t *dbh, bckid_t bck_id);
-int     db_update_backups_end(dbh_t *dbh, bckid_t bck_id, time_t end);
+int     db_update_backups_end(dbh_t *dbh, bckid_t bck_id, blib_tim_t end);
 int     db_update_backups(dbh_t *dbh,backups_t *bckrec);
 
 
