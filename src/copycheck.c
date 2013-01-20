@@ -1,4 +1,4 @@
-static const char *rcsid="@(#) $Id: copycheck.c,v 1.1 2010/11/16 04:05:32 root Exp mark $";
+static const char *rcsid="@(#) $Id: copycheck.c,v 1.2 2011/04/11 03:51:27 mark Exp mark $";
 /*
 //  copycheck.c
 //  blib
@@ -6,6 +6,9 @@ static const char *rcsid="@(#) $Id: copycheck.c,v 1.1 2010/11/16 04:05:32 root E
 //  Created by mark on 18/10/2010.
 //  Copyright (c) 2010 Garetech Computer Solutions. All rights reserved.
 // $Log: copycheck.c,v $
+// Revision 1.2  2011/04/11 03:51:27  mark
+// add fmt_state
+//
 // Revision 1.1  2010/11/16 04:05:32  root
 // Initial revision
 //
@@ -95,12 +98,20 @@ char	*copy_location(location_t *dst, char *src)
 }
 
 char	*copy_objname(objname_t *dst, char *src)
-{
-    if (src && dst ) {
-        strncpy(dst->str, src, OBJ_NAME_SIZ);
-        dst->str[OBJ_NAME_SIZ]='\0';
+{ // BUGfix: better protection of src and dst null values, though dst->str better be properly sized, cant tell from here
+    if (dst) {
+        if (src) {
+            strncpy(dst->str, src, OBJ_NAME_SIZ);
+            dst->str[OBJ_NAME_SIZ]='\0';
+        }
+        else {
+            bzero(dst->str, OBJ_NAME_SIZ);
+        }
+        return(dst->str);
     }
-    return(dst->str);
+    else {
+        return(NULL);
+    }
 }
 
 char	*copy_errmsg(errmsg_t *dst, char *src)
@@ -114,17 +125,17 @@ char	*copy_errmsg(errmsg_t *dst, char *src)
 
 vol_t	*default_volume(vol_t *rec)
 {
-    bzero(rec,sizeof(vol_t));
-    // set up default values
-    copy_state(&rec->state,  "F");
-    copy_media(&rec->media, get_default(QUAL_MEDIA));
-    rec->usage		= 0;
-    copy_groupname(&rec->groupname, get_default(QUAL_GROUP));
-    copy_location(&rec->location, get_default(QUAL_LOCATION));
-    rec->librarydate	= nowgm();;
-    rec->offsitedate	= 0;
-    
-    
+    if (rec) {
+        bzero(rec,sizeof(vol_t));
+        // set up default values
+        copy_state(&rec->state,  "F");
+        copy_media(&rec->media, get_default(QUAL_MEDIA));
+        rec->usage		= 0;
+        copy_groupname(&rec->groupname, get_default(QUAL_GROUP));
+        copy_location(&rec->location, get_default(QUAL_LOCATION));
+        rec->librarydate	= nowgm();;
+        rec->offsitedate	= 0;
+    }
     return(rec);
     
 }
