@@ -1,8 +1,11 @@
 #ifndef __EXECUTE_CMDS_H__
 #define	__EXECUTE_CMDS_H__
 /*
- * @(#) $Id: execute_cmds.h,v 1.4 2011/04/11 03:52:57 mark Exp mark $
+ * @(#) $Id: execute_cmds.h,v 1.5 2011/04/15 03:40:03 mark Exp mark $
  * $Log: execute_cmds.h,v $
+ * Revision 1.5  2011/04/15 03:40:03  mark
+ * add /errcount
+ *
  * Revision 1.4  2011/04/11 03:52:57  mark
  * generally fix OSrval's, fix records being added with invalid bck_id, add /verify
  *
@@ -64,7 +67,7 @@ int	can_use(dbh_t *dbh, blabel_t *label, bckid_t bck_id);
 int	getstate(state_t *state);
 void	dump_vol_obj(vol_obj_t *volobjrec);
 void	display_backup(fio_t *outfd, bckid_t bckid, cmp_e flag, dbh_t *dbh);
-int	display_backup_volumes(dbh_t *dbh,backups_t *bck_rec, fio_t *outfd);
+int	    display_backup_volumes(dbh_t *dbh,backups_t *bck_rec, fio_t *outfd, int headfoot, int showasfreed);
 void    display_objects(fio_t *outfd, objname_t *objname, dbh_t *dbh);
 int     display_backup_volumes_for_object(dbh_t *dbh, bckobj_t *bckobjrec,backups_t *bckrec , fio_t *outfd);
 
