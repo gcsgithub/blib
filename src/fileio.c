@@ -1,4 +1,4 @@
-static char *rcsid="@(#) $Id: fileio.c,v 1.2 2011/04/11 03:53:04 mark Exp mark $";
+static char *rcsid="@(#) $Id: fileio.c,v 1.3 2011/04/14 02:31:06 mark Exp mark $";
 /*
  *  fileio.c
  *  fmtbckrep_xcode
@@ -7,6 +7,9 @@ static char *rcsid="@(#) $Id: fileio.c,v 1.2 2011/04/11 03:53:04 mark Exp mark $
  *  Copyright 2009 Garetech Computer Solutions. All rights reserved.
  *
  * $Log: fileio.c,v $
+ * Revision 1.3  2011/04/14 02:31:06  mark
+ * reindent and changes for optional include
+ *
  * Revision 1.2  2011/04/11 03:53:04  mark
  * add include log stuff for email
  *
@@ -126,17 +129,20 @@ char *fio_fgets(fio_t *fio)
 {
     char    *rval;
     
-    bzero(fio->buf, fio->bufsiz);
-    if (fio->open) {
-        rval = fgets(fio->buf, fio->bufsiz, fio->fd);
-        if (rval) {
-            zapcrlf(fio->buf);
-            fio->reads++;
+    rval = NULL;
+    if (fio) {
+        bzero(fio->buf, fio->bufsiz);
+        if (fio->open) {
+            rval = fgets(fio->buf, fio->bufsiz, fio->fd);
+            if (rval) {
+                zapcrlf(fio->buf);
+                fio->reads++;
+            } else {
+                fio->status = errno;
+            }
         } else {
-            fio->status = errno;
+            fio->status = ENXIO;
         }
-    } else {
-        fio->status = ENXIO;
     }
     return(rval);
 }
@@ -355,14 +361,17 @@ int fio_rewind(fio_t *fio)
 
 int  fio_copy_file(fio_t *src, fio_t *outfd)
 {
-    fio_rewind(src);
-    fio_fgets(src);
-    while(!feof(src->fd)) {
-        fprintf(outfd->fd, "%s\n", src->buf);
+    if (src && outfd) {
+        fio_rewind(src);
         fio_fgets(src);
+        
+        while(!feof(src->fd)) {
+            fprintf(outfd->fd, "%s\n", src->buf);
+            fio_fgets(src);
+        }
+        fio_close(src);
+        fio_close(outfd);
     }
-    fio_close(src);
-    fio_close(outfd);
     return(errno);
 }
 
