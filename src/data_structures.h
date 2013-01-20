@@ -1,13 +1,16 @@
 #ifndef __DATA_STRUCTURE_H__
 #define __DATA_STRUCTURE_H__
 /*
- // @(#) $Id: data_structures.h,v 1.1 2010/11/16 04:04:31 root Exp mark $
+ // @(#) $Id: data_structures.h,v 1.2 2011/04/11 03:52:00 mark Exp mark $
  //  data_structures.h
  //  blib
  //
  //  Created by mark on 18/10/2010.
  //  Copyright (c) 2010 Garetech Computer Solutions. All rights reserved.
  // $Log: data_structures.h,v $
+ // Revision 1.2  2011/04/11 03:52:00  mark
+ // add val_t
+ //
  // Revision 1.1  2010/11/16 04:04:31  root
  // Initial revision
  //
@@ -17,12 +20,13 @@
 #include    <strings.h>
 #include    <string.h>
 #include    "list.h"
+#include    "timefunc.h"
 
 #define	    SQL_MAX	42
 
 typedef enum {
-    FND_UNKNOWN=0, 
-    FND_EQUAL, 
+    FND_UNKNOWN=0,
+    FND_EQUAL,
     FND_FIRST,
     FND_NEXT,
     FND_FINSIHED
@@ -32,15 +36,17 @@ typedef enum {
     FLD_UNKNOWN=0,
     FLD_TEXT,
     FLD_INT,
-    FLD_INT64
+    FLD_INT64,
+    FLD_DATE,
+    FLD_DOUBLE
 } fld_type_t;
 
 typedef union val_s val_t;
 union val_s {
-		void       *val_voidptr;
-		char       *val_charptr;
-		int        val_int;
-        llu_t      val_int64;
+    void       *val_voidptr;
+    char       *val_charptr;
+    int        val_int;
+    llu_t      val_int64;
 };
 
 typedef struct blibdbfld_s dbfld_t;
@@ -53,24 +59,24 @@ struct blibdbfld_s {
 };
 
 typedef struct {
-    sqlite3_stmt  *stmt;
-    int		  sqllen;
-    char	  *sqltxt;
-    int		 needfinalized;
-    list_t	 *putflds;
-    list_t	 *getflds;
+    sqlite3_stmt    *stmt;
+    int             sqllen;
+    char            *sqltxt;
+    int             needfinalized;
+    list_t          *putflds;
+    list_t          *getflds;
 } sqlcmd_t;
 
 typedef struct {
-    mode_t	  saved_umask;
-    bool_t	  open;
-    int		  status;
-    char	  *errmsg;
-    char	  *fnm;
-    sqlite3	  *dbf;
-    int		  sqlidx;
-    sqlcmd_t	  *sqlcmd;
-    sqlcmd_t	  sqlstack[SQL_MAX];
+    mode_t      saved_umask;
+    bool_t      open;
+    int         status;
+    char        *errmsg;
+    char        *fnm;
+    sqlite3     *dbf;
+    int         sqlidx;
+    sqlcmd_t    *sqlcmd;
+    sqlcmd_t	sqlstack[SQL_MAX];
 } dbh_t;
 
 // if these change remember to review the format statment in do_cmd_report()
@@ -94,8 +100,8 @@ typedef struct {
 #define		LOCNAM_SIZ_STR		"64"
 #define		ERRMSG_SIZ_STR		"256"
 
-typedef uint64_t	bckid_t;
-typedef uint64_t	bcount_t;
+typedef uint64_t        bckid_t;
+typedef uint64_t        bcount_t;
 typedef unsigned int	objid_t;
 
 typedef struct {
@@ -137,25 +143,25 @@ typedef struct {
 
 typedef struct backups_s backups_t;
 struct backups_s {
-    bckid_t	bck_id;		// backup id of this backup set
-    node_t	node;		// backup for node
-    time_t	start;
-    time_t	end;		// 0 or null when backup hasnt completed
-    time_t	expiredate;
-    desc_t	desc;    
+    bckid_t     bck_id;		// backup id of this backup set
+    node_t      node;		// backup for node
+    blib_tim_t	start;
+    blib_tim_t	end;		// 0 or null when backup hasnt completed
+    blib_tim_t	expiredate;
+    desc_t      desc;
 };
 
 typedef struct vol_s vol_t;
 struct vol_s {
-    bckid_t	bck_id;			// what ever was written onto the tape last
+    bckid_t     bck_id;			// what ever was written onto the tape last
     blabel_t	label;			// the volume label eg ABC123D
-    state_t	state;
-    media_t	media;
+    state_t     state;
+    media_t     media;
     uint32_t	usage;
     groupname_t	groupname;
     location_t	location;
-    time_t	librarydate;
-    time_t	offsitedate;
+    blib_tim_t	librarydate;
+    blib_tim_t	offsitedate;
 };
 
 typedef struct bckobj_s	bckobj_t;
@@ -163,8 +169,8 @@ struct bckobj_s {
     bckid_t	bck_id;
     objname_t	objname;
     objid_t	obj_instance;
-    time_t	start;
-    time_t	end;
+    blib_tim_t	start;
+    blib_tim_t	end;
     bcount_t	size;
 };
 
@@ -175,8 +181,8 @@ struct vol_obj_s {
     objid_t	obj_instance;
     blabel_t	label;		// link vol_t.label
     uint32_t	fileno;		// the file number on the volume
-    time_t	start;
-    time_t	end;
+    blib_tim_t	start;
+    blib_tim_t	end;
     bcount_t	size;		// how much written in this segment
 };
 
@@ -186,7 +192,7 @@ struct bck_errors_s {
     blabel_t	label;
     objname_t	objname;
     objid_t	obj_instance;
-    time_t	errtime;
+    blib_tim_t	errtime;
     errmsg_t	errmsg;
 };
 
@@ -195,29 +201,29 @@ typedef struct qual_s qual_t;
 struct qual_s {
     bckid_t	bck_id;
     desc_t	desc;
-    time_t	end;
+    blib_tim_t	end;
     int		errcount;
     errmsg_t	errmsg;
-    time_t	expiredate;
+    blib_tim_t	expiredate;
     int		filecount;
     int		fileno;
     groupname_t	groupname;
     blabel_t	label;
-    time_t	librarydate;
+    blib_tim_t	librarydate;
     location_t	location;
     media_t	media;
     node_t	node;
     objname_t	objname;
     objid_t	obj_instance;
-    time_t	offsitedate;
-    time_t	recorddate;
+    blib_tim_t	offsitedate;
+    blib_tim_t	recorddate;
     bcount_t	size;
-    time_t	start;
+    blib_tim_t	start;
     state_t	state;
     char	*stylesheet;
-    int		usage; 
-    time_t	since;
-    time_t	until;
+    int		usage;
+    blib_tim_t	since;
+    blib_tim_t	until;
 };
 
 #endif /* __DATA_STRUCTURE_H__ */
