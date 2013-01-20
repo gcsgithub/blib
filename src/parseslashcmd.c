@@ -1,6 +1,9 @@
-static char *rcsid="@(#) $Id: parseslashcmd.c,v 1.8 2011/04/14 02:33:33 mark Exp mark $";
+static char *rcsid="@(#) $Id: parseslashcmd.c,v 1.9 2011/04/15 03:40:09 mark Exp $";
 /*
  * $Log: parseslashcmd.c,v $
+ * Revision 1.9  2011/04/15 03:40:09  mark
+ * add /errcount
+ *
  * Revision 1.8  2011/04/14 02:33:33  mark
  * optional compare ?= ?= for including logs only on error
  *
@@ -46,7 +49,7 @@ cmdqual_t CMDQUALS[]  = {
     {CMD_ADD        ,CMD  ,DB_WO     ,"/add"              ,"label"       ,VT_LABEL  ,REQVAL_REQ  ,VALIDLABEL,NULL      ,"Add a new volume name to database"},
     {CMD_DISPLAY    ,CMD  ,DB_RO     ,"/display"	      ,"label"       ,VT_LABEL  ,REQVAL_REQ  ,VALIDLABEL,NULL      ,"Display existing volume and any fsets"},
     {CMD_MODIFY     ,CMD  ,DB_RW     ,"/modify"	      ,"label"       ,VT_LABEL  ,REQVAL_REQ  ,VALIDLABEL,NULL      ,"Modify an existing volume"},
-    {CMD_REMOVE     ,CMD  ,DB_RW     ,"/remove"          ,"label"       ,VT_LABEL  ,REQVAL_REQ  ,VALIDLABEL,NULL      ,"Remove and existing volume and any fsets from database"}, 
+    {CMD_REMOVE     ,CMD  ,DB_RW     ,"/remove"          ,"label"       ,VT_LABEL  ,REQVAL_REQ  ,VALIDLABEL,NULL      ,"Remove and existing volume and any fsets from database"},
     {CMD_REPORTFRE  ,CMD  ,DB_RO     ,"/reportfree"     ,NULL	       ,VT_INT	   ,REQVAL_OPT  ,NULL      ,NULL      ,"Report free volumes for compatibility"},
     {CMD_REPORTEXP  ,CMD  ,DB_RO     ,"/reportexpired" ,NULL	       ,VT_INT	   ,REQVAL_OPT  ,NULL      ,NULL      ,"Report expired volumes for compatibility"},
     {CMD_DOEXPIRE   ,CMD  ,DB_RW     ,"/runexpiration" ,NULL          ,VT_INT	   ,REQVAL_OPT  ,NULL      ,NULL      ,"free up all or up too n expired tapes"},
@@ -55,13 +58,13 @@ cmdqual_t CMDQUALS[]  = {
     {CMD_NEWBCK     ,CMD  ,DB_WO     ,"/newbackup"	 ,NULL	       ,VT_NONE   ,REQVAL_NONE ,NULL      ,NULL      ,"Establish a new backup and return its bck_id"},
     {CMD_STARTBCK   ,CMD  ,DB_WO     ,"/startbackup"    ,"objname"   ,VT_STR    ,REQVAL_REQ  ,NULL      ,NULL      ,"start backup of object on a given /label="},
     {CMD_CHG_VOL    ,CMD  ,DB_RW     ,"/change_volume" ,"objname"   ,VT_STR    ,REQVAL_REQ  ,NULL      ,NULL      ,"close current volume of object start new on /label="},
-    {CMD_ENDBCK     ,CMD  ,DB_WO     ,"/endbackup"	    ,"objname",VT_STR    ,REQVAL_REQ  ,NULL      ,NULL      ,"finish backup of object"}, 
-    {CMD_ERRBCK     ,CMD  ,DB_WO     ,"/errbackup"	    ,"objname",VT_STR    ,REQVAL_REQ  ,NULL      ,NULL      ,"report an error during backup against /errbackup= /bck_id= /label="}, 
+    {CMD_ENDBCK     ,CMD  ,DB_WO     ,"/endbackup"	    ,"objname",VT_STR    ,REQVAL_REQ  ,NULL      ,NULL      ,"finish backup of object"},
+    {CMD_ERRBCK     ,CMD  ,DB_WO     ,"/errbackup"	    ,"objname",VT_STR    ,REQVAL_REQ  ,NULL      ,NULL      ,"report an error during backup against /errbackup= /bck_id= /label="},
     {CMD_FINBCK     ,CMD  ,DB_RW     ,"/finishbackup"   ,NULL	      ,VT_STR    ,REQVAL_NONE ,NULL      ,NULL      ,"finish a backup id (verify and summary updates)"},
     {CMD_DELBCK     ,CMD  ,DB_RW     ,"/removebackup"   ,"bck_id"	 ,VT_INT64  ,REQVAL_REQ  ,NULL      ,NULL      ,"Remove all data refering to backup id given"},
-    {CMD_MODBCK     ,CMD  ,DB_NONE   ,"/modifybackup"   ,"bck_id"    ,VT_INT64  ,REQVAL_REQ  ,NULL      ,NULL      ,"Modify backup info for given bck_id"}, 
-    {CMD_REPBCK     ,CMD  ,DB_RO     ,"/reportbackup"   ,"bck_id"	 ,VT_INT64  ,REQVAL_REQ  ,NULL      ,NULL      ,"report backup info for given bck_id"}, 
-    {CMD_LISTBCK    ,CMD  ,DB_RO     ,"/listbackups"    ,"bck_id"	 ,VT_INT64  ,REQVAL_OPT  ,NULL      ,NULL      ,"list all backups or given backupid"}, 
+    {CMD_MODBCK     ,CMD  ,DB_NONE   ,"/modifybackup"   ,"bck_id"    ,VT_INT64  ,REQVAL_REQ  ,NULL      ,NULL      ,"Modify backup info for given bck_id"},
+    {CMD_REPBCK     ,CMD  ,DB_RO     ,"/reportbackup"   ,"bck_id"	 ,VT_INT64  ,REQVAL_REQ  ,NULL      ,NULL      ,"report backup info for given bck_id"},
+    {CMD_LISTBCK    ,CMD  ,DB_RO     ,"/listbackups"    ,"bck_id"	 ,VT_INT64  ,REQVAL_OPT  ,NULL      ,NULL      ,"list all backups or given backupid"},
     {CMD_LISTOBJ    ,CMD  ,DB_RO     ,"/listobjects"    ,"objname"   ,VT_STR    ,REQVAL_OPT  ,NULL      ,NULL      ,"list all backups for all backups or a given object name"},
     {CMD_VERIFY     ,CMD  ,DB_RO     ,"/verify"         ,NULL        ,VT_NONE   ,REQVAL_NONE ,NULL      ,NULL      , "Verify internal conistancy of database tables"},
     {CMD_ERRCOUNT   ,CMD  ,DB_RO     ,"/errcount"       ,"bck_id"    ,VT_INT64  ,REQVAL_REQ  ,NULL      ,NULL      , "Return BLIB_ERRCOUNT for a given backup id"},
@@ -84,14 +87,14 @@ cmdqual_t CMDQUALS[]  = {
     {QUAL_SIZE      ,QUAL   ,DB_NONE  ,"/size"	      ,"size"         ,VT_INT64    , REQVAL_REQ  , NULL      ,NULL      , "Bytes to record"},
     {QUAL_DESC      ,QUAL   ,DB_NONE  ,"/desc"	      ,"desc"         ,VT_STR      , REQVAL_REQ  , NULL      ,NULL      , "Description of the backup or error"},
     {QUAL_NODE      ,QUAL   ,DB_NONE  ,"/node"	      ,"node"         ,VT_STR	   , REQVAL_REQ  , NULL      ,NULL      , "name of node the backup was recorded on"},
-    {QUAL_OBJINS    ,QUAL   ,DB_NONE  ,"/objinstance"     ,"obj_instance" ,VT_INT      , REQVAL_REQ  , NULL      ,NULL      , "BLIB_OBJINSTANCE returned by /startbackup usually 1"}, 
+    {QUAL_OBJINS    ,QUAL   ,DB_NONE  ,"/objinstance"     ,"obj_instance" ,VT_INT      , REQVAL_REQ  , NULL      ,NULL      , "BLIB_OBJINSTANCE returned by /startbackup usually 1"},
     {QUAL_BCKID     ,QUAL   ,DB_NONE  ,"/bck_id"	      ,"bck_id"       ,VT_INT64    , REQVAL_REQ  , NULL      ,NULL      , "bck_id that we intend working on"},
     {QUAL_LABEL     ,QUAL   ,DB_NONE  ,"/label"	      ,"label"	      ,VT_LABEL    , REQVAL_REQ  , NULL      ,NULL      , "Volume label to be used"},
     {QUAL_HTML      ,QUAL   ,DB_NONE  ,"/html"	      ,NULL	      ,VT_NONE     , REQVAL_NONE , NULL      ,NULL      , "output in html rather than plain text"},
     {QUAL_STYSHT    ,QUAL   ,DB_NONE  ,"/stylesheet"      ,NULL	      ,VT_FILENAM  , REQVAL_REQ  , NULL      ,NULL, "stylesheet to include for /html output"},
     {QUAL_MAIL      ,QUAL   ,DB_NONE  ,"/mail"	      ,NULL	      ,VT_STR      , REQVAL_REQ  , NULL      ,NULL      , "email backup report to address"},
     {QUAL_OUTPUT    ,QUAL   ,DB_NONE  ,"/output"	      ,NULL	      ,VT_FILENAM  , REQVAL_REQ  , NULL      ,NULL      , "output result to file"},
-    {QUAL_INCLOG    ,QUAL   ,DB_NONE  ,"/includelog"      ,NULL	      ,VT_FILENAM  , REQVAL_REQ  , NULL      ,NULL      , "output result to file"},
+    {QUAL_INCLOG    ,QUAL   ,DB_NONE  ,"/includelog"      ,NULL	      ,VT_FILENAM  , REQVAL_REQ  , NULL      ,NULL      , "include log file in output"},
     
     {CMD_END        ,DIS    ,DB_NONE  ,NULL		      ,NULL           ,VT_NONE	   , REQVAL_NONE , NULL      ,NULL      , "End of the line"}
 };
@@ -117,9 +120,10 @@ cmdqual_t *set_default(cmdqual_e qual, char *defval)
 char	*get_default(cmdqual_e qual)
 {
     cmdqual_t	*cmd_entry;
-    char	*defval;
+    char	    *defval;
+    
     cmd_entry = lookup_cmdqual_id(qual);
-    defval = cmd_entry->defval;
+    defval    = cmd_entry->defval;
     if (!defval) {
         defval="UNKNOWN";
     }
@@ -137,14 +141,14 @@ void	setup_defaults()
     this_host = get_hostname(NL);
     set_default(QUAL_NODE, this_host);
     
-    //============================================================================   
+    //============================================================================
     if ((sp=getenv("MYBLIB_GROUP")) == NL ) {
         snprintf(buf, sizeof(buf),"%s", this_host);
         sp = buf;
     }
     blib_group = set_default(QUAL_GROUP, sp);
     
-    //============================================================================   
+    //============================================================================
     if ((sp=getenv("BLIBDBS")) == NL ) {
         snprintf(buf, sizeof(buf),"/usr/local/etc/dat/blib/blib_%s.sqlite3", blib_group->defval);
         sp = buf;
@@ -160,19 +164,19 @@ void	setup_defaults()
     set_default(QUAL_LOG, sp);
     
     
-    //============================================================================   
+    //============================================================================
     if ((sp=getenv("DAILYMEDIA")) == NL ) {
         sp = "TZ89";
     }
     set_default(QUAL_MEDIA, sp);
-    //============================================================================       
+    //============================================================================
     
     if ((sp=getenv("BLIB_NODE")) == NL ) {
         sp = this_host;
     }
     set_default(QUAL_NODE, sp);
     
-    //============================================================================       
+    //============================================================================
     
     if ((sp=getenv("BLIB_STYLE")) == NL ) {
         sp = DEF_STYSHT;
@@ -194,7 +198,7 @@ char *getlognamefromdbname(char *dbname)
     }
     
     logfnmlen=len+5;
-    if (logfnm=malloc(logfnmlen)) {
+    if ((logfnm=malloc(logfnmlen))) {
         memcpy(logfnm, dbname, len);
         logfnm[len]= '\0';
         strcat(logfnm, ".log");
@@ -215,9 +219,10 @@ cmd_t *parseslashcmd(char *cmdline)
     head = (cmd_t *) NULL;
     
     cmdp=cmdline;
-    while (newcmd = getcmd(&cmdp)) {  // work through each argv entry until exausted
+    while ((newcmd = getcmd(&cmdp))) {  // work through each argv entry until exausted
         if (newcmd->param->cmdid == CMD_ERR) {
             fprintf(stderr, "#BLIB:  Syntax error no command found: \"%s\"\n", cmdline);
+            free(newcmd);
             head = (cmd_t *) NULL;
             break;
         } else {
@@ -269,7 +274,7 @@ cmd_t   *getcmd(char **cmdpp)
     //  this function is called multiple times to grab each sucessive command from the buffer.
     //
     // if the 1st thing we see is a quote, then we will take it that the whole command is inside that quote
-    //  eg.   '/desc=ABC 123 axy'  
+    //  eg.   '/desc=ABC 123 axy'
     //
     bzero(cmd_val,sizeof(cmd_val));
     cmpflg = CMP_NONE;
@@ -281,9 +286,9 @@ cmd_t   *getcmd(char **cmdpp)
         if (cmdp) {
             fldstart = fldend = skipwspace(cmdp);
             
-            if ((*fldstart == '\"') || (*fldstart == '\'')) { // this will be the shell quoting the command inside a eval eg. 
-                //    '/desc="fred"' 
-                // or '/desc=New Backup test 1' 
+            if ((*fldstart == '\"') || (*fldstart == '\'')) { // this will be the shell quoting the command inside a eval eg.
+                                                              //    '/desc="fred"'
+                                                              // or '/desc=New Backup test 1'
                 if (qchar == '\0') { // start of new quote
                     qchar = *fldstart++; // capture the quote state and skip forward
                     fldend = index(fldstart, qchar);
@@ -336,7 +341,7 @@ cmd_t   *getcmd(char **cmdpp)
                                 fprintf(stderr, "#BLIB: Error missing closing quote in command\n");
                                 cmdqual = &CMDQUALS[CMD_ERR]; 	// all down hill from here
                                 goto getcmd_return_val;
-                            } 			    
+                            }
                         } else {
                             fprintf(stderr, "#BLIB: Error missmatched quotes in command, oh brother am I confused by your command\n");
                             cmdqual = &CMDQUALS[CMD_ERR];	// all down hill from here
@@ -352,7 +357,7 @@ cmd_t   *getcmd(char **cmdpp)
                             cmdp = fldend;								      //////////////////**************///////////////////
                             fldend--;
                         } else { // was a full quote on qchar
-                            // fldendwas already setup we gtg here with nothing needed to be done
+                                 // fldendwas already setup we gtg here with nothing needed to be done
                         }
                     }
                     if ((fldend == NULL) || (fldstart == NULL) || (fldstart > fldend)) {
@@ -372,7 +377,7 @@ cmd_t   *getcmd(char **cmdpp)
                     memcpy(cmd_val,fldstart,len); // cmd_val is full of zero's always at start of this function
                     
                     rtrim(cmd_val,strlen(cmd_val));		// right trim white space
-                } 
+                }
                 if (fldstart> cmdp) {
                     cmdp = fldstart; // no value so adjust the cmdp now					 //////////////////**************///////////////////
                 }
@@ -389,7 +394,7 @@ cmd_t   *getcmd(char **cmdpp)
                         }
                         break;
                     case REQVAL_REQ:
-                        if (len==0) { 				// length of value as a string 
+                        if (len==0) { 				// length of value as a string
                             fprintf(stderr, "#BLIB:  Syntax error cmd %s requires a value and none was provided\n", cmdqual->cmdtxt);
                             cmdqual = &CMDQUALS[CMD_ERR]; 	// all down hill from here
                             goto getcmd_return_val;
@@ -475,13 +480,13 @@ cmp_e get_cmp(char **cmdpp)
         
         switch(cmp[1])  {
             case '\0':				    // =, <, >, !
-                // we good we have it already from cmp[0]
+                                        // we good we have it already from cmp[0]
                 break;
             case '?':
                 if (rval == CMP_EQ) { // only ?= or =? are valid
                     rval = CMP_OPT;
                 } else {
-                    rval = CMP_ERR;     
+                    rval = CMP_ERR;
                 }
                 break;
                 
@@ -572,6 +577,21 @@ cmp_e get_cmp(char **cmdpp)
     return(rval);
 }
 
+cmd_t  *cmd_new(cmdqual_t   *param, cmp_e	cmpflg)
+{
+    cmd_t *rval;
+    
+    if ((rval = malloc(sizeof(cmd_t))) == (cmd_t *) NULL ) {
+        fprintf(stderr, "#BLIB:  Error allocating memory in " __ATLINE__ "\n");
+        exit(ENOMEM);
+    }
+    bzero(rval, sizeof(cmd_t));
+
+    rval->param  = param;
+    rval->cmpflg = cmpflg;
+    
+    return(rval);
+}
 
 cmd_t *newcmd(cmdqual_t *cmdqual, char *val, cmp_e cmpflg)
 {
@@ -579,15 +599,7 @@ cmd_t *newcmd(cmdqual_t *cmdqual, char *val, cmp_e cmpflg)
     char    state_char, c;
     ssize_t	havevalue;
     
-    if ((rval = malloc(sizeof(cmd_t))) == (cmd_t *) NULL ) {
-        fprintf(stderr, "#BLIB:  Error allocating memory in " __ATLINE__ "\n");
-        exit(ENOMEM);
-    }
-    rval->next   = NULL;
-    rval->prev   = NULL;
-    rval->param  = cmdqual;
-    rval->cmpflg = cmpflg;
-    
+    rval = cmd_new(cmdqual, cmpflg);
     
     if (val)	{
         havevalue = strlen(val);
@@ -601,7 +613,7 @@ cmd_t *newcmd(cmdqual_t *cmdqual, char *val, cmp_e cmpflg)
             rval->param = &CMDQUALS[CMD_ERR];
             return(rval);
         }
-    } else { /* do not havevalue */ 
+    } else { /* do not havevalue */
         if (cmdqual->val_opt == REQVAL_REQ ) { // do we require one ?
             fprintf(stderr, "#BLIB:  Syntax error, command %s requires a value, none was provided\n", cmdqual->cmdtxt);
             rval->param = &CMDQUALS[CMD_ERR];
@@ -647,7 +659,9 @@ cmd_t *newcmd(cmdqual_t *cmdqual, char *val, cmp_e cmpflg)
             break;
             
         case 	VT_DATE:
-            rval->val = newdate_gmt(val);
+            rval->val = new_time_blib_from_str((datestr_t *) val);
+            break;
+        case    VT_NONE:
             break;
     }
     return(rval);
@@ -656,18 +670,11 @@ cmd_t *newcmd(cmdqual_t *cmdqual, char *val, cmp_e cmpflg)
 
 cmd_t *newcmd_abs(cmdqual_t *cmdqual, void *val, cmp_e cmpflg)
 { // same as newcmd but with less validation and val is not a string, used internall to add to the qual list for log output
-    // to include assumed/default and calculated values.
+  // to include assumed/default and calculated values.
     
     cmd_t   *rval;
     
-    if ((rval = malloc(sizeof(cmd_t))) == (cmd_t *) NULL ) {
-        fprintf(stderr, "#BLIB:  Error allocating memory in " __ATLINE__ "\n");
-        exit(ENOMEM);
-    }
-    rval->next   = NULL;
-    rval->prev   = NULL;
-    rval->param  = cmdqual;
-    rval->cmpflg = cmpflg;
+    rval = cmd_new(cmdqual, cmpflg);
     
     if (!val) {
         rval->valset = VAL_NULL;
@@ -740,7 +747,7 @@ cmdqual_t *lookup_cmdqual(char **cmdpp)
     char cmdbuf[MAX_CMD_WIDTH];
     
     cmdp = *cmdpp;
-    idx=CMD_ERR+1; 
+    idx=CMD_ERR+1;
     copy_cmd(cmdbuf, cmdp);
     while (CMDQUALS[idx].cmdid < CMD_END) {
         if (strcasecmp(cmdbuf, CMDQUALS[idx].cmdtxt) == 0 ) {
@@ -757,7 +764,7 @@ cmdqual_t *lookup_cmdqual_id(cmdqual_e cmdid)
 {
     int idx;
     
-    idx=CMD_ERR+1; 
+    idx=CMD_ERR+1;
     
     while (CMDQUALS[idx].cmdid < CMD_END) {
         if (cmdid ==  CMDQUALS[idx].cmdid) {
@@ -766,7 +773,7 @@ cmdqual_t *lookup_cmdqual_id(cmdqual_e cmdid)
         idx++;
     }
     return (&CMDQUALS[CMD_ERR]);
-}    
+}
 
 void	    dump_cmd(cmd_t *hd)
 {
@@ -783,7 +790,7 @@ void	log_cmd(fio_t *logfd, cmd_t *hd)
 {
     cmd_t *ptr;
     
-    if (logfd && logfd->open ) { 
+    if (logfd && logfd->open ) {
         if (hd && hd->param && (hd->param->cmdid != CMD_REPLAY)) {
             fprintf(logfd->fd, "%lu: ",(lu_t) nowgm());
             ptr=hd;
@@ -850,8 +857,8 @@ void	    display_cmd(FILE *outfd, cmd_t *cmd)
                     default:
                         fprintf(outfd, "%s", "UNKNOWN");
                         break;
-                }    
-                break;	    
+                }
+                break;
             case    VT_INT:
                 fprintf(outfd, "%d", *( int *) cmd->val);
                 break;
@@ -859,8 +866,8 @@ void	    display_cmd(FILE *outfd, cmd_t *cmd)
                 fprintf(outfd, "%llu", (llu_t) *( uint64_t *) cmd->val);
                 break;
             case VT_DATE:
-                //fprintf(outfd ,"%s", fmtctime(*(time_t *) cmd->val));
-                printlitdate(outfd, *( int *) cmd->val);
+                //fprintf(outfd ,"%s", time_cvt_blib_to_str(*(blib_tim_t *) cmd->val));
+                printlitdate(outfd, *( blib_tim_t *) cmd->val);
                 
                 break;
                 
@@ -880,7 +887,7 @@ cmd_t *unlink_cmd(cmd_t **hd, cmd_t *qual)
     if (prev == (cmd_t *) NULL) { // top or only entry in list
         if (next) {
             next->prev = (cmd_t *) NULL; // make next a have no previous
-        }  
+        }
         *hd=next; // reset the head pointer
         
     } else  if (next == (cmd_t *) NULL) { // bottom of list
@@ -888,13 +895,13 @@ cmd_t *unlink_cmd(cmd_t **hd, cmd_t *qual)
             prev->next = (cmd_t *) NULL; // make them the new bottom
         }
     } else {
-        // must in the middle some place.    
+        // must in the middle some place.
         prev->next = next;
         next->prev = prev;
     }
     qual->next = qual->prev = (cmd_t *) NULL;
     return(qual);
-}    
+}
 
 cmd_t *have_qual_unlink(cmd_t **hd, cmdqual_e qual)
 {
@@ -956,7 +963,7 @@ cmd_t	    *checksyntax(cmd_t *hd)
     while (ptr) {
         if ((ptr->param->cmdid == CMD_ERR) || (ptr->cmpflg == CMP_ERR)) {
             rval = (cmd_t *) NULL;
-        } 
+        }
         if (ptr->param->cmdtype == CMD) {
             if (first_cmd == (cmd_t *) NULL ) {
                 first_cmd = ptr;	// keep a track of first cmd
@@ -1005,7 +1012,7 @@ void	do_cmd_help(FILE *fd)
         if (cmdp->defval) 	defval = cmdp->defval;
         else			defval = cmdp->sql_fldnam;
 		
-        fprintf(fd, " %s", cmdp->cmdtxt); 
+        fprintf(fd, " %s", cmdp->cmdtxt);
         switch(cmdp->val_opt) {
             case REQVAL_NONE:
                 tail="";
@@ -1040,11 +1047,11 @@ void	do_cmd_help(FILE *fd)
                 case    VT_INT:
                     fprintf(fd, "0-%d", INT_MAX);
                     break;
-                case    VT_INT64: 
+                case    VT_INT64:
                     fprintf(fd, "0-%llu", INT64_MAX);
                     break;
                 case    VT_DATE:
-                    fprintf(fd, "dd-Mmm-YYYY:HH:MM:SS");
+                    fprintf(fd, "dd-Mmm-YYYY:HH:MM:SS.CC");
                     break;
             }
         }
