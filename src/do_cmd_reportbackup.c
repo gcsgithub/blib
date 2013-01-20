@@ -1,4 +1,4 @@
-static char *rcsid="@(#) $Id: do_cmd_reportbackup.c,v 1.3 2011/04/12 00:35:54 mark Exp mark $";
+static char *rcsid="@(#) $Id: do_cmd_reportbackup.c,v 1.4 2011/04/14 02:29:33 mark Exp mark $";
 
 /*
  *  do_cmd_reportbackup.c
@@ -7,6 +7,9 @@ static char *rcsid="@(#) $Id: do_cmd_reportbackup.c,v 1.3 2011/04/12 00:35:54 ma
  *  Created by mark on 08/10/2010.
  *  Copyright 2010 Garetech Computer Solutions. All rights reserved.
  * $Log: do_cmd_reportbackup.c,v $
+ * Revision 1.4  2011/04/14 02:29:33  mark
+ * fix up error reporting
+ *
  * Revision 1.3  2011/04/12 00:35:54  mark
  * fix unsigned compare to !=0
  *
@@ -146,8 +149,8 @@ int   create_xhtml_report(dbh_t *dbh, fio_t *outfd, backups_t *bckrec, char *tit
 
 int read_bck_objects(dbh_t *dbh, fmt_type_e fmttype, fio_t *outfd, backups_t *bckrec)
 {
-    time_t  	gtot_duration;
-    time_t  	tot_duration;
+    blib_tim_t  	gtot_duration;
+    blib_tim_t  	tot_duration;
     double  	duration;
     
     bcount_t 	tot_bytes;
@@ -205,21 +208,21 @@ int read_bck_objects(dbh_t *dbh, fmt_type_e fmttype, fio_t *outfd, backups_t *bc
 		    
             duration = difftime(volobjrec.end, volobjrec.start);
             
-            copy_datestr(&start, (datestr_t *) fmtctime(volobjrec.start));
-            copy_datestr(&end  , (datestr_t *) fmtctime(volobjrec.end));
+            copy_datestr(&start, (datestr_t *) time_cvt_blib_to_str(volobjrec.start));
+            copy_datestr(&end  , (datestr_t *) time_cvt_blib_to_str(volobjrec.end));
             
             errs =  db_count_bck_errors(dbh, &volobjrec);
             
             table_row(outfd , fmttype      ,NULL        ,objname, volobjrec.label.str, volobjrec.fileno, start.str, end.str, duration, volobjrec.size, errs);
             objname="";
             tot_bytes    += volobjrec.size;
-            tot_duration += (time_t ) duration;
+            tot_duration += (blib_tim_t ) duration;
             
             
             dbstatus_bckerrs = db_find_bck_errors(dbh, &volobjrec, &bckerrrec ,FND_FIRST); // key on bck_id, objname
             tot_errs=0;
             while (dbstatus_bckerrs) {  
-                copy_datestr_time(&start, (datestr_t *) fmtctime(bckerrrec.errtime));
+                copy_datestr_time(&start, (datestr_t *) time_cvt_blib_to_str(bckerrrec.errtime));
                 table_row(outfd, fmttype , "err", bckerrrec.objname.str, bckerrrec.label.str, -1, start.str ,bckerrrec.errmsg.str  , -1 , -1,  ++tot_errs);
                 dbstatus_bckerrs = db_find_bck_errors(dbh, &volobjrec, &bckerrrec ,FND_NEXT);
             }
@@ -280,7 +283,11 @@ void write_xhtml_header(fio_t *outfd, backups_t *bckrec, char *title2, char *sty
     
     if (style_sheet_name) style_sheet(style_sheet_name, outfd);
     
-    html_write(outfd,'I',"title", NOCLASS, "%llu %-11.11s Backup report of %s:\"%s\"", (llu_t) bckrec->bck_id, fmtctime(bckrec->start), pstr(bckrec->node.str,""),pstr(bckrec->desc.str,""));
+    html_write(outfd,'I',"title", NOCLASS, "%llu %-11.11s Backup report of %s:\"%s\"",
+               (llu_t) bckrec->bck_id,
+               time_cvt_blib_to_str(bckrec->start),
+               pstr(bckrec->node.str,""),
+               pstr(bckrec->desc.str,""));
     if (title2) {
         html_write(outfd,'I',"title", NOCLASS, "%s", title2);
     }
@@ -295,7 +302,11 @@ void write_xhtml_table_header(fio_t *outfd, backups_t *bckrec, char *title2)
     
     
     html_write(outfd,'O',"caption"  , NOCLASS,NOVAL);
-    html_write(outfd,'I',"p"  , NOCLASS,  "%llu %-11.11s Backup report of %s:\"%s\"",(llu_t) bckrec->bck_id, fmtctime(bckrec->start), pstr(bckrec->node.str,""),pstr(bckrec->desc.str,""));
+    html_write(outfd,'I',"p"  , NOCLASS,  "%llu %-11.11s Backup report of %s:\"%s\"",
+               (llu_t) bckrec->bck_id,
+               time_cvt_blib_to_str(bckrec->start),
+               pstr(bckrec->node.str,""),
+               pstr(bckrec->desc.str,""));
     if (title2) {
     	html_write(outfd,'I',"p", NOCLASS, "%s", title2);
     }
@@ -591,7 +602,11 @@ void write_text_header(fio_t *outfd,backups_t *bckrec, char *title2)
 {
     char hdr_str[256];
     
-    snprintf(hdr_str, sizeof(hdr_str), "%llu %-11.11s Backup report of %s:\"%s\"",(llu_t) bckrec->bck_id, fmtctime(bckrec->start), pstr(bckrec->node.str,""),pstr(bckrec->desc.str,""));
+    snprintf(hdr_str, sizeof(hdr_str), "%llu %-11.11s Backup report of %s:\"%s\"",
+             (llu_t) bckrec->bck_id,
+             (char *) time_cvt_blib_to_str(bckrec->start),
+             pstr(bckrec->node.str,""),
+             pstr(bckrec->desc.str,""));
     fprintf(outfd->fd, DIV_TEXT_FMT);
     fprintf(outfd->fd, HDR_TEXT_FMT, hdr_str);
     if (title2) {
