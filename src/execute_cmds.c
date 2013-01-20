@@ -1,6 +1,9 @@
-static char *rcsid="@(#) $Id: execute_cmds.c,v 1.10 2011/04/15 03:39:36 mark Exp mark $";
+static char *rcsid="@(#) $Id: execute_cmds.c,v 1.11 2011/04/17 05:34:32 mark Exp $";
 /*
  * $Log: execute_cmds.c,v $
+ * Revision 1.11  2011/04/17 05:34:32  mark
+ * improve errcount to include incompleted backups as errors BLIB_ERRCOUNT = BLIB_BCKINCOMPLETED + BLIB_BCKERRORS
+ *
  * Revision 1.10  2011/04/15 03:39:36  mark
  * add /errcount=bckid
  *
@@ -93,6 +96,9 @@ dbh_t *process_command_line(dbh_t *dbh, char *cmdline)
     qual_log   = have_qual_unlink(&cmds, QUAL_LOG);  	// this also make sure execute_cmds never sees /log
     qual_nolog = have_qual_unlink(&cmds, QUAL_NOLOG);  // this also make sure execute_cmds never sees /nolog
     
+    //
+    // This is not a memory leak of logfile as its just a weak reference to the value put into BLIB.includelogs list
+    //
     while ( (includelog = have_qual_unlink(&cmds, QUAL_INCLOG))) {
         logfile = new_files(&BLIB.includelogs, (char *) includelog->val);
         if (includelog->cmpflg == CMP_OPT) {
@@ -138,7 +144,7 @@ dbh_t *execute_cmds(dbh_t *dbh, cmd_t **cmds)
     
     dbh= (dbh_t *) 0;
     
-    if (output_qual=have_qual_unlink(cmds, QUAL_OUTPUT)) { // remove /output from qual chain if it exists
+    if ((output_qual=have_qual_unlink(cmds, QUAL_OUTPUT))) { // remove /output from qual chain if it exists
         fnm=(char *) output_qual->val;
         set_default(QUAL_OUTPUT, fnm);
         outfd=fio_alloc_open(fnm, NULL, "w", MAX_BUF);
@@ -288,6 +294,10 @@ int   modify_vol(cmd_t *thecmd, filt_t  *filtrec, vol_t *volrec, cmd_t *qual_ptr
     int rval;
     
     rval = 0; // no error
+    if (!qual_ptr) {
+        return(rval);
+    }
+    
     if ((rval = make_filter_rec(qual_ptr, filtrec)) >= 0 ) {
         if ((filtrec->media)  && (filtrec->media->valset == VAL_SET )) {
             copy_media(&volrec->media		, filtrec->media->val);
@@ -311,11 +321,11 @@ int   modify_vol(cmd_t *thecmd, filt_t  *filtrec, vol_t *volrec, cmd_t *qual_ptr
         }
         
         if ((filtrec->offsitedate) && (filtrec->offsitedate->valset == VAL_SET)) {
-            volrec->offsitedate = *(time_t *) filtrec->offsitedate->val;
+            volrec->offsitedate = *(blib_tim_t *) filtrec->offsitedate->val;
         }
 		
         if ((filtrec->librarydate) && (filtrec->librarydate->valset == VAL_SET)) {
-            volrec->librarydate = *(time_t *) filtrec->librarydate->val;
+            volrec->librarydate = *(blib_tim_t *) filtrec->librarydate->val;
         }
 		
         if ((filtrec->usage) /* && (filtrec->usage->valset == VAL_SET) */) {
@@ -409,7 +419,7 @@ char  *doenv(fio_t *outfio, char *symbol, valtype_e val_type,void *value)
             snprintf(val,sizeof(val), "%llu", *( uint64_t *) value);
             break;
         case VT_DATE:
-            snprintf(val,sizeof(val) ,"%s", fmtctime(*(time_t *) value));
+            snprintf(val,sizeof(val) ,"%s", (char *) time_cvt_blib_to_str(*(blib_tim_t *) value));
             break;
             
     }
@@ -499,7 +509,13 @@ int filtcmp(cmd_t *output_qual, void *val, int size)
             else						 rval=1;
             break;
         case    VT_DATE:
-            rval = ( *(time_t *)val - *(time_t *)output_qual->val);
+            rval = ( *(blib_tim_t *)val - *(blib_tim_t *)output_qual->val);
+            break;
+            
+        case VT_LABEL:
+        case VT_FILENAM:
+            fprintf(stderr, "# Internal logic error VT_LABEL, VT_FILENAM are not valid for filtcmp()\n");
+            exit(EINVAL);
             break;
     }
     
@@ -540,21 +556,20 @@ int filtcmp(cmd_t *output_qual, void *val, int size)
 
 int filter_rec(filt_t *filtrec, vol_t *rec)
 { // return true to print record  0 false to skip it ie default 1 to skip
-    
-    if (filtcmp(filtrec->label      , &rec->label       , sizeof(rec->label)))	    return(0);	// mismatched
-    if (filtcmp(filtrec->state      , &rec->state       , sizeof(rec->state)))	    return(0);	// mismatched
-    if (filtcmp(filtrec->media      , &rec->media       , sizeof(rec->media)))	    return(0);	// mismatched
-    if (filtcmp(filtrec->groupname  , &rec->groupname   , sizeof(rec->groupname)))  return(0);	// mismatched
-    if (filtcmp(filtrec->location   , &rec->location    , sizeof(rec->location)))   return(0);	// mismatched
-    
-    if (filtcmp(filtrec->usage      ,(int *)  	&rec->usage      , sizeof(rec->usage)))	  	return(0);	// mismatched
-    // if (filtcmp(filtrec->filecount  ,(int *)  	&rec->filecount  , sizeof(rec->filecount)))	return(0);	// mismatched
-    // if (filtcmp(filtrec->recorddate ,(time_t *) &rec->recorddate , sizeof(rec->recorddate)))   	return(0);	// mismatched
-    if (filtcmp(filtrec->offsitedate,(time_t *) &rec->offsitedate, sizeof(rec->offsitedate)))   return(0);	// mismatched
-    // if (filtcmp(filtrec->expiredate ,(time_t *) &rec->expiredate , sizeof(rec->expiredate)))    return(0);	// mismatched
-    // if (filtcmp(filtrec->size	    ,(bcount_t  *) &rec->size	 , sizeof(rec->size)))    	return(0);	// mismatched
-    
-    
+    if (filtrec) {
+        if (filtcmp(filtrec->label      , &rec->label       , sizeof(rec->label)))	    return(0);	// mismatched
+        if (filtcmp(filtrec->state      , &rec->state       , sizeof(rec->state)))	    return(0);	// mismatched
+        if (filtcmp(filtrec->media      , &rec->media       , sizeof(rec->media)))	    return(0);	// mismatched
+        if (filtcmp(filtrec->groupname  , &rec->groupname   , sizeof(rec->groupname)))  return(0);	// mismatched
+        if (filtcmp(filtrec->location   , &rec->location    , sizeof(rec->location)))   return(0);	// mismatched
+        
+        if (filtcmp(filtrec->usage      ,(int *)  	&rec->usage      , sizeof(rec->usage)))	  	return(0);	// mismatched
+        // if (filtcmp(filtrec->filecount  ,(int *)  	&rec->filecount  , sizeof(rec->filecount)))	return(0);	// mismatched
+        // if (filtcmp(filtrec->recorddate ,(blib_tim_t *) &rec->recorddate , sizeof(rec->recorddate)))   	return(0);	// mismatched
+        if (filtcmp(filtrec->offsitedate,(blib_tim_t *) &rec->offsitedate, sizeof(rec->offsitedate)))   return(0);	// mismatched
+        // if (filtcmp(filtrec->expiredate ,(blib_tim_t *) &rec->expiredate , sizeof(rec->expiredate)))    return(0);	// mismatched
+        // if (filtcmp(filtrec->size	    ,(bcount_t  *) &rec->size	 , sizeof(rec->size)))    	return(0);	// mismatched
+    }
     return(1); // default to display record
     
 }
@@ -595,6 +610,38 @@ void do_cmd_modify_volume(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_
         memcpy(&volrec,  &db_read, sizeof(volrec));
         
         switch(thecmd->param->cmdid) {
+            case QUAL_NEW:
+            case QUAL_NOLOG:
+            case QUAL_LOG:
+            case QUAL_SINCE:
+            case QUAL_BCKID:
+            case QUAL_DATABASE:
+            case QUAL_DESC:
+            case QUAL_ENDBCK:
+            case QUAL_EXPIRE:
+            case QUAL_GROUP:
+            case QUAL_UNTIL:
+            case QUAL_HTML:
+            case QUAL_INCLOG:
+            case QUAL_LABEL:
+            case QUAL_LIBDATE:
+            case QUAL_LOCATION:
+            case QUAL_MAIL:
+            case QUAL_MEDIA:
+            case QUAL_NODE:
+            case QUAL_OBJINS:
+            case QUAL_OFFSITE:
+            case QUAL_OUTPUT:
+            case QUAL_RECORD:
+            case QUAL_SIZE:
+            case QUAL_STATE:
+            case QUAL_STYSHT:
+            case QUAL_USAGE:
+            case QUAL_XML:
+                
+                fprintf(outfd->fd, "#BLIB:  invalid qualifier  %s ignored\n", thecmd->param->cmdtxt);
+                break;
+                
             case    CMD_DISPLAY:
                 // /display=
                 if (qual_ptr) {
@@ -634,6 +681,32 @@ void do_cmd_modify_volume(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_
                                                         (llu_t) volrec.bck_id));
                     dbh->status = BLIBDB_CONSTRAINT;
                 }
+                break;
+            case CMD_ADD:
+            case CMD_CHG_VOL:
+            case CMD_DELBCK:
+            case CMD_DOEXPIRE:
+            case CMD_END:
+            case CMD_ENV:
+            case CMD_ENDBCK:
+            case CMD_ERR:
+            case CMD_ERRBCK:
+            case CMD_ERRCOUNT:
+            case CMD_FINBCK:
+            case CMD_HELP:
+            case CMD_LISTBCK:
+            case CMD_LISTOBJ:
+            case CMD_MODBCK:
+            case CMD_NEWBCK:
+            case CMD_REPBCK:
+            case CMD_REPLAY:
+            case CMD_REPORT:
+            case CMD_VERIFY:
+            case CMD_STARTBCK:
+            case CMD_REPORTEXP:
+            case CMD_REPORTFRE:
+                replace_dynstr(&dbh->errmsg, newstr("#BLIB:  Command %d not valid for modify\n", thecmd->param->cmdid));
+                dbh->status = EINVAL;
                 break;
         }
     }
@@ -707,22 +780,22 @@ void	do_cmd_add_volume(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr
 }
 
 
-void do_cmd_report(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr,dbh_t *dbh)
+void do_cmd_report(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr, dbh_t *dbh)
 {
     /*
      blib /report [/state ] [ /media ] [ /usage ] [ /group ] [ /location ] [ /libdate ] [ /offsite ] 
      where each of the optional filters have a filter state like = != ,= .= etc etc 
      these filters are never removed by modify_vol so they should come out in the log as they given
      */
-    vol_t	db_key;
-    vol_t	volrec;
-    vol_t	db_read;
+    vol_t	    db_key;
+    vol_t	    volrec;
+    vol_t	    db_read;
     backups_t	bck_rec;
     
-    int		dbrstatus;
-    int		err;
-    int		filecount=0;
-    filt_t	filtrec;
+    int		    dbrstatus;
+    int		    err;
+    int		    filecount=0;
+    filt_t	    filtrec;
     datestr_t 	librarydate;
     datestr_t 	recorddate;
     datestr_t 	offsitedate;
@@ -731,6 +804,8 @@ void do_cmd_report(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr,dbh
     if (BLIB.debug) fprintf(stderr, "cmd: %s \n", thecmd->param->cmdtxt);
     
     bzero(&volrec, sizeof(vol_t)); // clear all defaults we only want those filter values
+    bzero(&filtrec, sizeof(filt_t));
+    
     err = modify_vol(thecmd, &filtrec, &volrec, qual_ptr);
     if (err !=0 ) { // update the volrec from cmd qualifiers use as filter
         return;
@@ -748,8 +823,8 @@ void do_cmd_report(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr,dbh
     dbrstatus = db_find_volumes_label(dbh, &db_key, &db_read, FND_FIRST);
     while (dbrstatus) {
         if (filter_rec(&filtrec,&db_read)) {
-            copy_datestr(&librarydate, (datestr_t *) fmtctime(db_read.librarydate));
-            copy_datestr(&offsitedate, (datestr_t *) fmtctime(db_read.offsitedate)); 
+            copy_datestr(&librarydate, (datestr_t *) time_cvt_blib_to_str(db_read.librarydate));
+            copy_datestr(&offsitedate, (datestr_t *) time_cvt_blib_to_str(db_read.offsitedate)); 
             
             bzero(&bck_rec, sizeof(bck_rec));
             filecount = 0;
@@ -758,8 +833,8 @@ void do_cmd_report(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr,dbh
                     filecount =  db_count_vol_obj_label(dbh, db_read.bck_id, &db_read.label);
                 }
             }
-            copy_datestr(&recorddate,  (datestr_t *) fmtctime(bck_rec.start));     // bck_rec was zero'd if we didn't find one to match
-            copy_datestr(&expiredate,  (datestr_t *) fmtctime(bck_rec.expiredate));
+            copy_datestr(&recorddate,  (datestr_t *) time_cvt_blib_to_str(bck_rec.start));     // bck_rec was zero'd if we didn't find one to match
+            copy_datestr(&expiredate,  (datestr_t *) time_cvt_blib_to_str(bck_rec.expiredate));
             
             
             fprintf(outfd->fd,"%-9.9s %6d %6d %-9.9s %-10.10s %-9.9s %-5.5s %-17.17s %-17.17s %-17.17s  %s\n", 
@@ -877,11 +952,11 @@ void do_cmd_runexpiration(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_
 { // /runexpiration[=n] - expire enough backups for all or to a given number of free volumes 
     
     backups_t	bckrec;
-    int		dbrstatus;
-    int		toupdate;
-    int		reqflg;
-    cmd_t	*output_qual;
-    time_t	nowgmt;
+    int		    dbrstatus;
+    int		    toupdate;
+    int		    reqflg;
+    cmd_t	    *output_qual;
+    blib_tim_t	    nowgmt;
     bcount_t	volumesinbackup;
     bcount_t	volumesfreed;
     
@@ -914,6 +989,14 @@ void do_cmd_runexpiration(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_
         }
         if (bckrec.expiredate < nowgmt) {
             volumesinbackup = db_count_volumes_in_backup_id(dbh, bckrec.bck_id);
+
+            if (volumesinbackup) {
+                if (!BLIB.quiet)
+                    fprintf(outfd->fd, "# Volumes moved from allocated to Free\n");
+                
+                display_backup_volumes(dbh,&bckrec, outfd, BLIB.quiet, 1 /* show as moving to free */ );
+            }
+            
             if (db_delete_backup_id(dbh, bckrec.bck_id)) {
                 fprintf(outfd->fd, "Deleted backup id: %llu\n", (llu_t ) bckrec.bck_id);
                 volumesfreed += volumesinbackup;
@@ -939,7 +1022,7 @@ void do_cmd_replaylog(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr,
     int		reqflg;
     cmd_t	*output_qual;
     qual_t	qualval;
-    time_t	cmdtime;
+    blib_tim_t	cmdtime;
     char	*cmdline;
     int		skip;
     size_t	line;
@@ -1046,7 +1129,7 @@ void do_cmd_newbackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr,
     backups_t	bck_rec;
     qual_t	qualval;
     cmd_t	*output_qual;
-    time_t	whatnow;
+    blib_tim_t	whatnow;
     int		dbstatus;
     int		reqflg;
     
@@ -1064,11 +1147,11 @@ void do_cmd_newbackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr,
                 reqflg |= 1;
                 break;
             case QUAL_RECORD:
-                qualval.start = *(time_t *) output_qual->val;
+                qualval.start = *(blib_tim_t *) output_qual->val;
                 reqflg |= 2;
                 break;
             case QUAL_EXPIRE:
-                qualval.expiredate = *(time_t *) output_qual->val;
+                qualval.expiredate = *(blib_tim_t *) output_qual->val;
                 reqflg |= 4;
                 break;
             case QUAL_NODE:
@@ -1169,7 +1252,7 @@ void do_cmd_startbackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_pt
                 reqflg |= 2;
                 break;
             case QUAL_RECORD:
-                qualval.start = *(time_t *) output_qual->val;
+                qualval.start = *(blib_tim_t *) output_qual->val;
                 reqflg |= 4;
                 break;
             case QUAL_OBJINS:
@@ -1278,7 +1361,7 @@ void do_cmd_change_volume(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_
                 reqflg |= 2;
                 break;
             case QUAL_ENDBCK:
-                qualval.end = *(time_t *) output_qual->val;
+                qualval.end = *(blib_tim_t *) output_qual->val;
                 reqflg |= 4;
                 break;
             case QUAL_SIZE:
@@ -1386,7 +1469,7 @@ void do_cmd_endbackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr,
                 reqflg |= 2;
                 break;
             case QUAL_ENDBCK:
-                qualval.end = *(time_t *) output_qual->val;
+                qualval.end = *(blib_tim_t *) output_qual->val;
                 reqflg |=4;
                 break;
             case QUAL_SIZE:
@@ -1523,7 +1606,7 @@ void do_cmd_errbackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr,
                 reqflg |= 2;
                 break;
             case QUAL_RECORD:
-                qualval.recorddate = *(time_t *) output_qual->val;
+                qualval.recorddate = *(blib_tim_t *) output_qual->val;
                 reqflg |=4;
                 break;
             case QUAL_DESC:
@@ -1606,7 +1689,7 @@ void	do_cmd_finishbackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_p
                 reqflg |= 1;
                 break;
             case QUAL_ENDBCK:
-                qualval.end = *(time_t *) output_qual->val;
+                qualval.end = *(blib_tim_t *) output_qual->val;
                 reqflg |=0; // optional
                 break;
                 
@@ -1661,7 +1744,7 @@ void do_cmd_removebackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_p
     qual_t	qualval;
     char	ans[80];
     backups_t	bckrec;
-    time_t	nowgmt;
+    blib_tim_t	nowgmt;
     
     bzero(&qualval, sizeof(qual_t));
     qualval.bck_id = *(bckid_t *) thecmd->val;
@@ -1728,7 +1811,7 @@ void do_cmd_modifybackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_p
     cmd_t	*output_qual;
     qual_t	qualval;
     backups_t	bckrec;
-    time_t	nowgmt;
+    blib_tim_t	nowgmt;
     
     bzero(&qualval, sizeof(qual_t));
     
@@ -1744,7 +1827,7 @@ void do_cmd_modifybackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_p
         dbh->status = ENOENT;
         return;
     }
-    nowgmt = nowgm();
+    nowgmt = nowgm(); // thats returning now localtime not GMT
     if (bckrec.expiredate >= nowgmt) {
         fprintf(stderr, "#BLIB:  Warning you modifing a NONE EXPIRED backup\n");
     }
@@ -1755,13 +1838,13 @@ void do_cmd_modifybackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_p
     while(output_qual) {
         switch(output_qual->param->cmdid) {				
             case QUAL_RECORD:
-                bckrec.start = *(time_t *) output_qual->val;
+                bckrec.start = *(blib_tim_t *) output_qual->val;
                 break;
             case QUAL_ENDBCK:
-                bckrec.end = *(time_t *) output_qual->val;
+                bckrec.end = *(blib_tim_t *) output_qual->val;
                 break;
             case QUAL_EXPIRE:
-                bckrec.expiredate = *(time_t *) output_qual->val;
+                bckrec.expiredate = *(blib_tim_t *) output_qual->val;
                 break;		
             case QUAL_DESC:
                 copy_desc(&bckrec.desc, (char *) output_qual->val);
@@ -1851,12 +1934,17 @@ void display_objects(fio_t *outfd, objname_t *objname, dbh_t *dbh)
             fprintf(stderr, "#BLIB:  Internal database error found bck_object but no matching backups record objname: %s bck_id: %llu\n", objname->str, (llu_t) bckobjrec.bck_id);
             exit(EBADF);
         }
-        copy_datestr(&start , (datestr_t *) fmtctime(bckrec.start));
-        copy_datestr(&end   , (datestr_t *) fmtctime(bckrec.end));
-        copy_datestr(&expire, (datestr_t *) fmtctime(bckrec.expiredate));
+        copy_datestr(&start , (datestr_t *) time_cvt_blib_to_str(bckrec.start));
+        copy_datestr(&end   , (datestr_t *) time_cvt_blib_to_str(bckrec.end));
+        copy_datestr(&expire, (datestr_t *) time_cvt_blib_to_str(bckrec.expiredate));
         
-        fprintf(outfd->fd, "%-13llu  %-21.21s %3u %-17.17s %-17.17s %s\n", bckobjrec.bck_id, 
-                shrink_string_by_middle(objnameshrink, 21, bckobjrec.objname.str), bckobjrec.obj_instance, start.str, expire.str, bckrec.desc.str);
+        fprintf(outfd->fd, "%-13llu  %-20.20s %3u %-23.23s %-23.23s %s\n",
+                bckobjrec.bck_id,
+                shrink_string_by_middle(objnameshrink, 21, bckobjrec.objname.str),
+                bckobjrec.obj_instance,
+                start.str,
+                expire.str,
+                bckrec.desc.str);
         
         display_backup_volumes_for_object(dbh,&bckobjrec, &bckrec, outfd);
         if (!BLIB.quiet) fprintf(outfd->fd, "=======================================================================================\n");
@@ -1872,16 +1960,16 @@ void display_objects(fio_t *outfd, objname_t *objname, dbh_t *dbh)
 
 int display_backup_volumes_for_object(dbh_t *dbh, bckobj_t *bckobjrec,backups_t *bckrec , fio_t *outfd)
 {
-    vol_t	volrec;
+    vol_t	    volrec;
     vol_obj_t	volobjrec;
-    int		volobj_sts;
-    int		vol_sts;
+    int		    volobj_sts;
+    int		    vol_sts;
     datestr_t 	librarydate;
     datestr_t 	recorddate;
     datestr_t 	offsitedate;
     datestr_t 	expiredate;
-    int		volcount;
-    char	volfileno[16];
+    int		    volcount;
+    char	    volfileno[16];
     
     
     bzero(&volrec,sizeof(volrec));
@@ -1897,8 +1985,8 @@ int display_backup_volumes_for_object(dbh_t *dbh, bckobj_t *bckobjrec,backups_t 
          */
     }
     
-    copy_datestr(&recorddate,  (datestr_t *) fmtctime(bckrec->start));
-    copy_datestr(&expiredate,  (datestr_t *) fmtctime(bckrec->expiredate));
+    copy_datestr(&recorddate,  (datestr_t *) time_cvt_blib_to_str(bckrec->start));
+    copy_datestr(&expiredate,  (datestr_t *) time_cvt_blib_to_str(bckrec->expiredate));
     
     volcount = 0;
     volobj_sts = db_find_vol_obj_for_bck_object(dbh, bckobjrec, &volobjrec, FND_FIRST);
@@ -1915,12 +2003,12 @@ int display_backup_volumes_for_object(dbh_t *dbh, bckobj_t *bckobjrec,backups_t 
         }
         
         
-        copy_datestr(&librarydate, (datestr_t *) fmtctime(volrec.librarydate));
-        copy_datestr(&offsitedate, (datestr_t *) fmtctime(volrec.offsitedate));
+        copy_datestr(&librarydate, (datestr_t *) time_cvt_blib_to_str(volrec.librarydate));
+        copy_datestr(&offsitedate, (datestr_t *) time_cvt_blib_to_str(volrec.offsitedate));
         
         snprintf(volfileno, sizeof(volfileno), "%s:%d", volrec.label.str, volobjrec.fileno);
         
-        fprintf(outfd->fd,"%-15s %-9.9s %-5.5s %16llu %-17.17s %-s\n", 
+        fprintf(outfd->fd,"%-15s %-9.9s %-5.5s %16llu %-20.20s %-s\n",
                 volfileno,
                 (char *) &volrec.media,
                 lookup_state((char *) &volrec.state),
@@ -1980,7 +2068,10 @@ void display_backup(fio_t *outfd, bckid_t bckid, cmp_e flag, dbh_t *dbh)
     
     if (!BLIB.quiet) {
         fprintf(outfd->fd, "====================================================================================\n");
-        fprintf(outfd->fd, "bck_id           Start               End               Expire            Descritpion\n");
+// bck_id         Start                     End                      Expire                   Descritpion
+// 1358365641     17-Jan-2013:16:47:21.00   NotSet                   24-Jan-2013:16:47:00.42  NEWPROD backup Daily
+//                                          17-Jan-2013:16:47:21.00
+        fprintf(outfd->fd, "bck_id         Start                     End                      Expire                   Description\n");
     }
     
     bzero(&bckrec, sizeof(backups_t));
@@ -1997,14 +2088,18 @@ void display_backup(fio_t *outfd, bckid_t bckid, cmp_e flag, dbh_t *dbh)
     dbstatus = db_find_backups_orderbckid(dbh, &bckrec, bckid, fndmode);
     while( dbstatus) {
         rows_read++;
-        copy_datestr(&start , (datestr_t *) fmtctime(bckrec.start));
-        copy_datestr(&end   , (datestr_t *) fmtctime(bckrec.end));
-        copy_datestr(&expire, (datestr_t *) fmtctime(bckrec.expiredate));
+        copy_datestr(&start , (datestr_t *) time_cvt_blib_to_str(bckrec.start));
+        copy_datestr(&end   , (datestr_t *) time_cvt_blib_to_str(bckrec.end));
+        copy_datestr(&expire, (datestr_t *) time_cvt_blib_to_str(bckrec.expiredate));
 		
-        fprintf(outfd->fd, "%-13llu  %-17.17s   %-17.17s  %-17.17s  %s\n", bckrec.bck_id,
-                start.str, end.str, expire.str , bckrec.desc.str);
+        fprintf(outfd->fd, "%-13llu  %-23.23s   %-23.23s  %-23.23s  %s\n",
+                bckrec.bck_id,
+                start.str,
+                end.str,
+                expire.str,
+                bckrec.desc.str);
         if (bckid) { // did they ask for a specific one?
-            display_backup_volumes(dbh,&bckrec, outfd);
+            display_backup_volumes(dbh,&bckrec, outfd, BLIB.quiet, 0 /* show actual state */ );
         }
         
         if (fndmode==FND_FIRST) {
@@ -2019,50 +2114,58 @@ void display_backup(fio_t *outfd, bckid_t bckid, cmp_e flag, dbh_t *dbh)
     }
 }
 
-int display_backup_volumes(dbh_t *dbh,backups_t *bck_rec, fio_t *outfd)
+int display_backup_volumes(dbh_t *dbh,backups_t *bck_rec, fio_t *outfd, int headfoot, int showasfreed)
 {
-    vol_t	volrec;    
-    int		dbrstatus;
-    int		filecount=0;
+    vol_t	    volrec;    
+    int		    dbrstatus;
+    int		    filecount=0;
     datestr_t 	librarydate;
     datestr_t 	recorddate;
     datestr_t 	offsitedate;
     datestr_t 	expiredate;
-    int		volcount;
+    int		    volcount;
+    char        *state_desc;
     
     
     bzero(&volrec,sizeof(vol_t));
-    if (!BLIB.quiet) {
+    if (headfoot) {
         fprintf(outfd->fd,"-------------------------------------------------------------------------------\n");
         fprintf(outfd->fd,"Volume    #Files  #use  Group     Location   Media     State            Offsite\n"                                              
                 "--------- ------ ------ --------- ---------- --------- -----  -----------------\n");   
     }
     
-    copy_datestr(&recorddate,  (datestr_t *) fmtctime(bck_rec->start));
-    copy_datestr(&expiredate,  (datestr_t *) fmtctime(bck_rec->expiredate));
+    copy_datestr(&recorddate,  (datestr_t *) time_cvt_blib_to_str(bck_rec->start));
+    copy_datestr(&expiredate,  (datestr_t *) time_cvt_blib_to_str(bck_rec->expiredate));
     
     volcount = 0;
     dbrstatus = db_find_volumes_by_bckid(dbh, bck_rec->bck_id, &volrec, FND_FIRST);
     while (dbrstatus) {
-        copy_datestr(&librarydate, (datestr_t *) fmtctime(volrec.librarydate));
-        copy_datestr(&offsitedate, (datestr_t *) fmtctime(volrec.offsitedate));
+        copy_datestr(&librarydate, (datestr_t *) time_cvt_blib_to_str(volrec.librarydate));
+        copy_datestr(&offsitedate, (datestr_t *) time_cvt_blib_to_str(volrec.offsitedate));
         
         filecount =  db_count_vol_obj_label(dbh, volrec.bck_id, &volrec.label);
         
-        fprintf(outfd->fd,"%-9.9s %6d %6d %-9.9s %-10.10s %-9.9s %-5.5s %-17.17s\n", 
+        if (showasfreed) {
+            state_desc = "FREE";
+        }
+        else {
+            state_desc = lookup_state((char *) &volrec.state);
+        }
+        fprintf(outfd->fd,"%-9.9s %6d %6d %-9.9s %-10.10s %-9.9s %-5.5s %-23.23s\n",
                 (char *) &volrec.label,
                 filecount,
                 volrec.usage,
                 (char *) &volrec.groupname, 
                 (char *) &volrec.location, 
                 (char *) &volrec.media, 
-                lookup_state((char *) &volrec.state), 
+                state_desc,
                 offsitedate.str
                 );
         volcount++;
     	dbrstatus = db_find_volumes_by_bckid(dbh, bck_rec->bck_id, &volrec, FND_NEXT);
     }
-    if (!BLIB.quiet) fprintf(outfd->fd, "* End of Report *\n");  
+    if (headfoot)
+        fprintf(outfd->fd, "* End of Report *\n");
     return(volcount);
 }
 
@@ -2073,8 +2176,8 @@ void dump_vol_obj(vol_obj_t *volobjrec)
     fprintf(stderr, "#BLIB:  	objname   : %s\n"  , volobjrec->objname.str);
     fprintf(stderr, "#BLIB:   label     : %s\n"  , volobjrec->label.str);
     fprintf(stderr, "#BLIB:   filio     : %u\n"  , volobjrec->fileno);
-    fprintf(stderr, "#BLIB:   start time: %s\n"  , fmtctime(volobjrec->start));
-    fprintf(stderr, "#BLIB:   end time  : %s\n"  , fmtctime(volobjrec->end));
+    fprintf(stderr, "#BLIB:   start time: %s\n"  , (char *) time_cvt_blib_to_str(volobjrec->start));
+    fprintf(stderr, "#BLIB:   end time  : %s\n"  , (char *) time_cvt_blib_to_str(volobjrec->end));
     fprintf(stderr, "#BLIB:   size      : %llu\n", (llu_t)  volobjrec->size);
     
 }
