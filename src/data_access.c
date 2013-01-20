@@ -1,4 +1,4 @@
-static const char *rcsid="@(#) $Id: data_access.c,v 1.10 2011/04/15 03:22:57 mark Exp mark $";
+static const char *rcsid="@(#) $Id: data_access.c,v 1.11 2011/04/17 05:33:33 mark Exp mark $";
 /*
  *  data_access.c
  *  blib
@@ -6,6 +6,10 @@ static const char *rcsid="@(#) $Id: data_access.c,v 1.10 2011/04/15 03:22:57 mar
  *  Created by mark on 08/10/2008.
  *  Copyright 2008 Garetech Computer Solutions. All rights reserved.
  * $Log: data_access.c,v $
+ * Revision 1.11  2011/04/17 05:33:33  mark
+ * improve errcount to include incomplete backups in the count
+ * added function db_count_notset()
+ *
  * Revision 1.10  2011/04/15 03:22:57  mark
  * add db_count_bck_errors_bck_id so finishbackup can report errors
  *
@@ -85,13 +89,20 @@ int load_schema(dbh_t *dbh)
     
     char *create_table_bck_objects =  
     "create table bck_objects ( "
-    "bck_id		unsigned long long,"
-    "objname	  	varchar("OBJ_NAME_SIZ_STR "),"
-    "obj_instance	unsigned int,"		// muliple objects copies of an object backed
-    "start		date,"
-    "end		date,"
-    "size		unsigned long long"
+                "bck_id         unsigned long long,"
+                "objname	  	varchar("OBJ_NAME_SIZ_STR "),"
+                "obj_instance	unsigned int,"		// muliple objects copies of an object backed
+                "start          date,"
+                "end            date,"
+                "size           unsigned long long"
     ")";
+    /* Old schema
+                bck_id               unsigned long long,
+                objname              varchar(1024),
+                start                date,
+                end                  date,
+                size                 unsigned long long
+     */
     
     char *create_index_bck_objects_1 = "create unique index bo_pkey_1 on bck_objects  (objname, obj_instance, bck_id);";
     /****************************************************************************************/
@@ -369,7 +380,52 @@ int db_newdb(dbh_t **dbh, char *fnm)
     return(status);
 }
 
-int db_open(dbh_t **dbh, char *fnm)
+
+dbh_t *new_dbh(void)
+{
+    dbh_t *rval;
+    
+    if ((rval = malloc(sizeof(dbh_t))) == (dbh_t *) NULL ) {
+        fprintf(stderr, "#BLIB:  Error allocating database control block\n");
+        return(NULL);
+    } else {
+        bzero(rval,sizeof(dbh_t)); // clear out the new block
+    }
+    return(rval);
+    
+}
+
+dbh_t *dbh_set(dbh_t **dbh_ptr, char *fnm, char *errmsg)
+{
+    dbh_t *dbh;
+    if (dbh_ptr) {
+        dbh = *dbh_ptr;
+        if (!dbh) {
+            *dbh_ptr = dbh = new_dbh(); // if its not allocated make one here
+        }
+        replace_dynstr(&dbh->fnm,    newstr(fnm));
+        replace_dynstr(&dbh->errmsg, newstr(errmsg));
+    }
+    return(dbh);
+}
+
+void dbh_free(dbh_t **dbh_ptr)
+{
+    dbh_t *dbh;
+    if (dbh_ptr) {
+        dbh = *dbh_ptr;
+        if (dbh) {
+            db_close(dbh); // close check for dbh->open == YES so we dont need to
+            nzfree(&dbh->fnm);
+            nzfree(&dbh->errmsg);
+            free((dbh_t *) dbh);
+            *dbh_ptr = (dbh_t *) NULL;
+        }
+    }
+    
+}
+
+int db_open(dbh_t **dbh_ptr, char *fnm)
 {
     dbh_t   *rval;
     stat_t  db_stat;
@@ -377,26 +433,25 @@ int db_open(dbh_t **dbh, char *fnm)
     int	    err;
     char    *errmsg;
     
-    if (dbh == (dbh_t **) NULL ) {
+    if (dbh_ptr == (dbh_t **) NULL ) {
         fprintf(stderr, "#BLIB:  Internal error null pointer passed into %s at line %d\n",__PRETTY_FUNCTION__,__LINE__);
         return(SQLITE_CANTOPEN);
     }
-    if (*dbh != (dbh_t *) NULL ) { // must have an previous open
-        rval = *dbh;
+    
+    if (*dbh_ptr != (dbh_t *) NULL ) { // must have an previous open
+        rval = *dbh_ptr;
         if (rval->open == YES ) db_close(rval);
         nzfree(&rval->errmsg);
         nzfree(&rval->fnm);
     } else {
-        if ((rval = malloc(sizeof(dbh_t))) == (dbh_t *) NULL ) {
-            fprintf(stderr, "#BLIB:  Error allocating database control block\n");
-            return(SQLITE_CANTOPEN);
-        } else {
-            bzero(rval,sizeof(dbh_t)); // clear out the new block
-        }
+        rval = new_dbh();
     }
     
-    rval->fnm	      = newstr(fnm);
-    rval->errmsg      = newstr("not an error");
+    if (rval == NULL) {
+        return(SQLITE_CANTOPEN);
+    }
+    
+    dbh_set(&rval, fnm, "not an error");
     
     doload_schema=NO;			// see if we need to load schema ie created new database file
     if (stat(fnm,&db_stat) == -1) {
@@ -429,7 +484,7 @@ int db_open(dbh_t **dbh, char *fnm)
     }
     bzero(rval->sqlstack,sizeof(rval->sqlstack));
     rval->sqlidx=-1; // nothing on stack yet
-    *dbh = rval; // give it to them
+    *dbh_ptr = rval; // give it to them
     if (BLIB.verbose) fprintf(stderr, "#BLIB:  Accessing database file \"%s\"\n", rval->fnm);
     rval->status = sqlite3_busy_handler(rval->dbf, db_busy_handler , (void*) "Busy" );
     return(rval->status);
@@ -574,16 +629,16 @@ int  copy_results_volume(dbh_t *dbh, void *recp)
     
     bzero(rec,sizeof(vol_t));
     
-    db_fldsmklist(&flds, "bck_id", FLD_INT64, &rec->bck_id);
-    db_fldsmklist(&flds, "label" , FLD_TEXT, &rec->label);
-    db_fldsmklist(&flds, "state", FLD_TEXT, &rec->state);
-    db_fldsmklist(&flds, "media", FLD_TEXT, &rec->media);
-    db_fldsmklist(&flds, "usage", FLD_INT, &rec->usage);
+    db_fldsmklist(&flds, "bck_id",    FLD_INT64, &rec->bck_id);
+    db_fldsmklist(&flds, "label" ,    FLD_TEXT, &rec->label);
+    db_fldsmklist(&flds, "state",     FLD_TEXT, &rec->state);
+    db_fldsmklist(&flds, "media",     FLD_TEXT, &rec->media);
+    db_fldsmklist(&flds, "usage",     FLD_INT, &rec->usage);
     db_fldsmklist(&flds, "groupname", FLD_TEXT, &rec->groupname);
-    db_fldsmklist(&flds, "location", FLD_TEXT, &rec->location);
+    db_fldsmklist(&flds, "location",  FLD_TEXT, &rec->location);
     
-    db_fldsmklist(&flds, "librarydate", FLD_INT, &rec->librarydate);
-    db_fldsmklist(&flds, "offsitedate", FLD_INT, &rec->offsitedate);
+    db_fldsmklist(&flds, "librarydate", FLD_DATE, &rec->librarydate);
+    db_fldsmklist(&flds, "offsitedate", FLD_DATE, &rec->offsitedate);
     
     dbh->sqlcmd->getflds = flds;
     db_columns(dbh);
@@ -601,9 +656,9 @@ int  copy_results_backup(dbh_t *dbh, void *recp)
     
     db_fldsmklist(&flds, "bck_id"    , FLD_INT64, &rec->bck_id);
     db_fldsmklist(&flds, "node"      , FLD_TEXT , &rec->node);
-    db_fldsmklist(&flds, "start"     , FLD_INT  , &rec->start);
-    db_fldsmklist(&flds, "end"       , FLD_INT  , &rec->end);
-    db_fldsmklist(&flds, "expiredate", FLD_INT  , &rec->expiredate);
+    db_fldsmklist(&flds, "start"     , FLD_DATE  , &rec->start);
+    db_fldsmklist(&flds, "end"       , FLD_DATE  , &rec->end);
+    db_fldsmklist(&flds, "expiredate", FLD_DATE  , &rec->expiredate);
     db_fldsmklist(&flds, "desc"      , FLD_TEXT , &rec->desc);
     
     dbh->sqlcmd->getflds = flds;
@@ -623,8 +678,8 @@ int  copy_results_bck_objects(dbh_t *dbh, void *recp)
     db_fldsmklist(&flds, "bck_id"      , FLD_INT64, &rec->bck_id);
     db_fldsmklist(&flds, "objname"     , FLD_TEXT , &rec->objname);
     db_fldsmklist(&flds, "obj_instance", FLD_INT  , &rec->obj_instance);
-    db_fldsmklist(&flds, "start"       , FLD_INT  , &rec->start);
-    db_fldsmklist(&flds, "end"         , FLD_INT  , &rec->end);
+    db_fldsmklist(&flds, "start"       , FLD_DATE  , &rec->start);
+    db_fldsmklist(&flds, "end"         , FLD_DATE  , &rec->end);
     db_fldsmklist(&flds, "size"        , FLD_INT64, &rec->size);
     
     dbh->sqlcmd->getflds = flds;
@@ -647,8 +702,8 @@ int copy_results_vol_obj(dbh_t *dbh, void *recp)
     db_fldsmklist(&flds, "obj_instance", FLD_INT  , &rec->obj_instance);
     db_fldsmklist(&flds, "label"       , FLD_TEXT , &rec->label);
     db_fldsmklist(&flds, "fileno"      , FLD_INT  , &rec->fileno);
-    db_fldsmklist(&flds, "start"       , FLD_INT  , &rec->start);
-    db_fldsmklist(&flds, "end"         , FLD_INT  , &rec->end);
+    db_fldsmklist(&flds, "start"       , FLD_DATE  , &rec->start);
+    db_fldsmklist(&flds, "end"         , FLD_DATE  , &rec->end);
     db_fldsmklist(&flds, "size"        , FLD_INT64, &rec->size);
     
     dbh->sqlcmd->getflds = flds;
@@ -669,8 +724,8 @@ int	copy_results_bck_errors(dbh_t  *dbh, void *recp)
     db_fldsmklist(&flds, "bck_id"      , FLD_INT64, &rec->bck_id);
     db_fldsmklist(&flds, "label"       , FLD_TEXT , &rec->label);
     db_fldsmklist(&flds, "objname"     , FLD_TEXT , &rec->objname);
-    db_fldsmklist(&flds, "obj_instance", FLD_INT, &rec->obj_instance);
-    db_fldsmklist(&flds, "errtime"     , FLD_INT  , &rec->errtime);
+    db_fldsmklist(&flds, "obj_instance", FLD_INT  , &rec->obj_instance);
+    db_fldsmklist(&flds, "errtime"     , FLD_DATE , &rec->errtime);
     db_fldsmklist(&flds, "errmsg"      , FLD_TEXT , &rec->errmsg);
     
     dbh->sqlcmd->getflds = flds;
@@ -702,6 +757,10 @@ int db_flds_bind(dbh_t *dbh, sqlcmd_t *sqlcmd)
                     break;
                 case FLD_INT64:
                     db_status = sqlite3_bind_int64(sqlcmd->stmt, fld->fldidx, *(sqlite3_int64 *)fld->fldval);
+                    break;
+                case FLD_DATE:
+                case FLD_DOUBLE:
+                    db_status = sqlite3_bind_double(sqlcmd->stmt, fld->fldidx, *(double *) fld->fldval);
                     break;
                 default:
                     fprintf(stderr, "#BLIB:  Unsupported key type  %d passed to %s\n", fld->fldtype,__PRETTY_FUNCTION__);
@@ -741,6 +800,10 @@ int 	db_columns(dbh_t *dbh)
                     break;
                 case FLD_INT64:
                     *(int64_t *) fld->fldval = sqlite3_column_int64(sqlcmd->stmt, fld->fldidx-1);
+                    break;
+                case FLD_DATE:
+                case FLD_DOUBLE:
+                    *(double *) fld->fldval = sqlite3_column_double(sqlcmd->stmt, fld->fldidx-1);
                     break;
                 default:
                     fprintf(stderr, "#BLIB:  Unsupported key type  %d passed to %s\n", fld->fldtype,__PRETTY_FUNCTION__);
@@ -792,6 +855,11 @@ dbfld_t *db_fldsmklist(list_t **fldhead,const char *fldname,  fld_type_t fldtype
             fld->fldlen = strlen((char *) fldptr);
             fld->fldval = (char *) fldptr;
             break;
+        case FLD_DATE:
+        case FLD_DOUBLE:
+            fld->fldlen = sizeof(double);
+            fld->fldval = (double *) fldptr;
+            break;
         default:
             fprintf(stderr, "Internal error unknown field type %d in %s\n", fldtype, __PRETTY_FUNCTION__);
             exit(EINVAL);
@@ -835,6 +903,11 @@ void db_flds_display(dbfld_t *fld)
         case FLD_TEXT:
             fprintf(outfd, "%s",    (char *) fld->fldval);
             break;
+        case FLD_DATE: // TODO: maybe format the date ?
+        case FLD_DOUBLE:
+            fprintf(outfd, "%f\n", *(double *) fld->fldval);
+            break;
+            
         default:
             fprintf(outfd, "Internal error unknown field type %d in %s\n", fld->fldtype, __PRETTY_FUNCTION__);
             exit(EINVAL);
@@ -859,6 +932,12 @@ const char *fldtype_name(fld_type_t fldtype)
             break;
         case FLD_INT64:
             rval="FLD_INT64";
+            break;
+        case FLD_DATE:
+            rval="FLD_DATE";
+            break;
+        case FLD_DOUBLE:
+            rval="FLD_DOUBLE";
             break;
         default:
             snprintf(buf,sizeof(buf), "Unknown field type: %d\n", fldtype);
@@ -1101,9 +1180,9 @@ int	db_find_bck_objects_by_name(dbh_t *dbh, objname_t *objname, bckobj_t *bckobj
     
     // sqltext="select * from main.bck_objects where objname >=? order by objname,obj_instance desc";
     if (flag == FND_EQUAL) {
-        sqltext="select * from main.bck_objects where objname =? order by objname, bck_id desc obj_instance"; 
+        sqltext="select * from main.bck_objects where objname =? order by objname, bck_id desc, obj_instance"; 
     } else {
-        sqltext="select * from main.bck_objects where objname >=? order by objname, bck_id desc obj_instance";
+        sqltext="select * from main.bck_objects where objname >=? order by objname, bck_id desc, obj_instance";
     }
     
     
@@ -1275,6 +1354,8 @@ fld_type_t db_fldtype_from_valtype(valtype_e valtype)
             rval=FLD_TEXT;
             break;
         case VT_DATE:
+            rval=FLD_DATE;
+            break;
         case VT_INT:
             rval=FLD_INT;
             break;
@@ -1402,8 +1483,8 @@ int db_insert_volumes(dbh_t *dbh, vol_t *vol)
     
     db_fldsmklist(&flds , "groupname"  , FLD_TEXT , (void *) &vol->groupname);
     db_fldsmklist(&flds , "location"   , FLD_TEXT , (void *) &vol->location);
-    db_fldsmklist(&flds , "librarydate", FLD_INT  , (void *) &vol->librarydate);
-    db_fldsmklist(&flds , "offsitedate", FLD_INT  , (void *) &vol->offsitedate);
+    db_fldsmklist(&flds , "librarydate", FLD_DATE  , (void *) &vol->librarydate);
+    db_fldsmklist(&flds , "offsitedate", FLD_DATE  , (void *) &vol->offsitedate);
     
     if (!db_exec_sql_flds_pushpop(dbh, sqltext, flds)) {
 	    replace_dynstr(&dbh->errmsg, newstr("#BLIB:  Error inserting into volumes: %s\n", dbh->errmsg));
@@ -1430,9 +1511,9 @@ int db_insert_backups(dbh_t *dbh, backups_t *bck_rec)
     
     db_fldsmklist(&flds , "bck_id"     , FLD_INT64, (void *) &bck_rec->bck_id);
     db_fldsmklist(&flds , "node"       , FLD_TEXT , (void *) &bck_rec->node);
-    db_fldsmklist(&flds , "start"      , FLD_INT  , (void *) &bck_rec->start);
-    db_fldsmklist(&flds , "end"        , FLD_INT  , (void *) &bck_rec->end);
-    db_fldsmklist(&flds , "expiredate" , FLD_INT  , (void *) &bck_rec->expiredate);
+    db_fldsmklist(&flds , "start"      , FLD_DATE  , (void *) &bck_rec->start);
+    db_fldsmklist(&flds , "end"        , FLD_DATE  , (void *) &bck_rec->end);
+    db_fldsmklist(&flds , "expiredate" , FLD_DATE  , (void *) &bck_rec->expiredate);
     db_fldsmklist(&flds , "desc"       , FLD_TEXT , (void *) &bck_rec->desc);
     
     if (!db_exec_sql_flds_pushpop(dbh, sqltext, flds)) {
@@ -1470,8 +1551,8 @@ objid_t db_insert_bck_objects(dbh_t *dbh, bckobj_t *bckobjrec)
     db_fldsmklist(&flds , "bck_id"      , FLD_INT64, (void *) &bckobjrec->bck_id);
     db_fldsmklist(&flds , "objname"     , FLD_TEXT , (void *) &bckobjrec->objname);
     db_fldsmklist(&flds , "obj_instance", FLD_INT  , (void *) &obj_instance);
-    db_fldsmklist(&flds , "start"       , FLD_INT  , (void *) &bckobjrec->start);
-    db_fldsmklist(&flds , "end"         , FLD_INT  , (void *) &bckobjrec->end);
+    db_fldsmklist(&flds , "start"       , FLD_DATE  , (void *) &bckobjrec->start);
+    db_fldsmklist(&flds , "end"         , FLD_DATE  , (void *) &bckobjrec->end);
     db_fldsmklist(&flds , "size"        , FLD_INT64, (void *) &bckobjrec->size);
     
     if (db_exec_sql_flds_pushpop(dbh, sqltext, flds)) {
@@ -1507,8 +1588,8 @@ int db_insert_vol_obj(dbh_t *dbh, vol_obj_t *volobjrec)
     db_fldsmklist(&flds , "obj_instance", FLD_INT  , (void *) &volobjrec->obj_instance);
     db_fldsmklist(&flds , "label"       , FLD_TEXT , (void *) &volobjrec->label);
     db_fldsmklist(&flds , "fileno"      , FLD_INT  , (void *) &volobjrec->fileno);
-    db_fldsmklist(&flds , "start"       , FLD_INT  , (void *) &volobjrec->start);
-    db_fldsmklist(&flds , "end"         , FLD_INT  , (void *) &volobjrec->end);
+    db_fldsmklist(&flds , "start"       , FLD_DATE , (void *) &volobjrec->start);
+    db_fldsmklist(&flds , "end"         , FLD_DATE , (void *) &volobjrec->end);
     db_fldsmklist(&flds , "size"        , FLD_INT64, (void *) &volobjrec->size);    
     
     if (!(rval = db_exec_sql_flds_pushpop(dbh, sqltext, flds))) {
@@ -1653,7 +1734,7 @@ bcount_t db_vol_obj_sumsize(dbh_t *dbh, vol_obj_t *volobjrec)
 
 //////////////////////////////////////////////////////////////////////////////////
 
-int db_update_bck_object_size_end(dbh_t *dbh, bckid_t bckid, objname_t *objname, objid_t obj_instance,  time_t end, bcount_t totalsize)
+int db_update_bck_object_size_end(dbh_t *dbh, bckid_t bckid, objname_t *objname, objid_t obj_instance,  blib_tim_t end, bcount_t totalsize)
 {
     list_t	*flds = (list_t *) NULL;
     
@@ -1702,7 +1783,7 @@ int	db_insert_bckerror(dbh_t *dbh, bck_errors_t *bckerror)
     db_fldsmklist(&flds , "label"       , FLD_TEXT , (void *) &bckerror->label);
     db_fldsmklist(&flds , "objname"     , FLD_TEXT , (void *) &bckerror->objname);
     db_fldsmklist(&flds , "obj_instance", FLD_INT  , (void *) &bckerror->obj_instance);
-    db_fldsmklist(&flds , "errtime"     , FLD_INT  , (void *) &bckerror->errtime);
+    db_fldsmklist(&flds , "errtime"     , FLD_DATE  , (void *) &bckerror->errtime);
     db_fldsmklist(&flds , "errmsg"      , FLD_TEXT , (void *) &bckerror->errmsg);
     
     if (!db_exec_sql_flds_pushpop(dbh, sqltext, flds)) {
@@ -1716,10 +1797,10 @@ int	db_insert_bckerror(dbh_t *dbh, bck_errors_t *bckerror)
 
 
 
-time_t db_lookup_endofbackup(dbh_t *dbh,bckid_t bck_id)
+blib_tim_t db_lookup_endofbackup(dbh_t *dbh,bckid_t bck_id)
 {
     list_t   *flds = (list_t *) NULL;
-    time_t	end = 0;
+    blib_tim_t	end = 0;
     
     db_fldsmklist(&flds, "bck_id"   , FLD_INT64,  (void *) &bck_id);
     
@@ -1742,7 +1823,7 @@ int db_inc_volume_usage(dbh_t *dbh, bckid_t bck_id)
     
 }
 
-int db_update_backups_end(dbh_t *dbh, bckid_t bck_id, time_t end)
+int db_update_backups_end(dbh_t *dbh, bckid_t bck_id, blib_tim_t end)
 {
     list_t	*flds = (list_t *) NULL;
     sqlcmd_t *sqlcmd = (sqlcmd_t *) NULL;
@@ -1799,9 +1880,9 @@ int	db_update_backups(dbh_t *dbh,backups_t *bckrec)
     list_t	*flds = (list_t *) NULL;
     
     db_fldsmklist(&flds , "node"       , FLD_TEXT , (void *) &bckrec->node);
-    db_fldsmklist(&flds , "start"      , FLD_INT  , (void *) &bckrec->start);
-    db_fldsmklist(&flds , "end"        , FLD_INT  , (void *) &bckrec->end);
-    db_fldsmklist(&flds , "expiredate" , FLD_INT  , (void *) &bckrec->expiredate);
+    db_fldsmklist(&flds , "start"      , FLD_DATE  , (void *) &bckrec->start);
+    db_fldsmklist(&flds , "end"        , FLD_DATE  , (void *) &bckrec->end);
+    db_fldsmklist(&flds , "expiredate" , FLD_DATE  , (void *) &bckrec->expiredate);
     db_fldsmklist(&flds , "desc"       , FLD_TEXT , (void *) &bckrec->desc);
     db_fldsmklist(&flds , "bck_id"     , FLD_INT64, (void *) &bckrec->bck_id);
     
@@ -1968,7 +2049,7 @@ int  db_get_duration(dbh_t *dbh, vol_t *volrec)
     int     rval=0;
     
     db_fldsmklist(&flds, "bck_id" , FLD_INT64 , &volrec->bck_id);
-    db_fldsmklist(&flds, "label", FLD_TEXT,  &volrec->label);
+    db_fldsmklist(&flds, "label"  , FLD_TEXT  ,  &volrec->label);
     
     if (db_exec_sql_flds_push(dbh, "select sum(end-start) from vol_obj where bck_id=? and label=?", flds)) {
         rval = sqlite3_column_int(dbh->sqlcmd->stmt, 0);
@@ -2143,7 +2224,7 @@ int db_read_vol_volumes2(dbh_t *dbh, vol_t *volume, find_type_t flag)
 /////////////////// DISPLAY RECORDS /////////////////////////////
 /////////////////////////////////////////////////////////////////
 #define BCK_ERR_HDR     "[bck_id       |label|             objname| obj_instance|errtime|errmsg]"
-#define BCK_ERR_FMT_LINE    "%-13llu  %-17.17s  %-17s %3d %-17.17s  %s\n"
+#define BCK_ERR_FMT_LINE    "%-13llu  %-23.23s  %-17s %3d %-23.23s  %s\n"
 
 void db_display_bck_errors(FILE *fd, bck_errors_t *bckerrrec)
 {
@@ -2154,7 +2235,7 @@ void db_display_bck_errors(FILE *fd, bck_errors_t *bckerrrec)
     12345678901234567890123456789012345678901234567890123456789012345678901234567890
      */
                     
-    copy_datestr(&errtime, (datestr_t *) fmtctime(bckerrrec->errtime));
+    copy_datestr(&errtime, (datestr_t *) time_cvt_blib_to_str(bckerrrec->errtime));
     fprintf(fd, BCK_ERR_FMT_LINE, 
                               (llu_t ) bckerrrec->bck_id
                             , bckerrrec->label.str
@@ -2167,14 +2248,14 @@ void db_display_bck_errors(FILE *fd, bck_errors_t *bckerrrec)
 
 
 #define BCKOBJ_FMT_HDR  "[bck_id       |objname        |obj_instance  |start          |end|   size]"
-#define BCKOBJ_FMT_LINE "%-13llu    %-17.17s %3d %s %s %-13llu\n"
+#define BCKOBJ_FMT_LINE "%-13llu    %-23.23s %3d %s %s %-13llu\n"
 
 void db_display_bck_object(FILE *fd, bckobj_t *bo)
 {
     datestr_t start, end;
 
-    copy_datestr(&start, (datestr_t *) fmtctime(bo->start));
-    copy_datestr(&end,   (datestr_t *) fmtctime(bo->end));
+    copy_datestr(&start, (datestr_t *) time_cvt_blib_to_str(bo->start));
+    copy_datestr(&end,   (datestr_t *) time_cvt_blib_to_str(bo->end));
     fprintf(fd, BCKOBJ_FMT_LINE, 
             (llu_t ) bo->bck_id, 
             pstr(bo->objname.str,""), 
@@ -2187,14 +2268,14 @@ void db_display_bck_object(FILE *fd, bckobj_t *bo)
 
 
 #define VOLOBJ_FMT_HDR  "[bck_id       |objname|obj_instance|label|fileno|start|end|size]"
-#define VOLOBJ_FMT_LINE     "%-13llu  %-17s %3d %-17.17s %3d %s %s %llu\n"
+#define VOLOBJ_FMT_LINE     "%-13llu  %-17s %3d %-23.23s %3d %s %s %llu\n"
 
 void db_display_vol_obj(FILE *fd, vol_obj_t *vo)
 {
     datestr_t start, end;
     
-    copy_datestr(&start, (datestr_t *) fmtctime(vo->start));
-    copy_datestr(&end,   (datestr_t *) fmtctime(vo->end));
+    copy_datestr(&start, (datestr_t *) time_cvt_blib_to_str(vo->start));
+    copy_datestr(&end,   (datestr_t *) time_cvt_blib_to_str(vo->end));
     fprintf(fd, VOLOBJ_FMT_LINE, 
             (llu_t ) vo->bck_id, 
             pstr(vo->objname.str,""), 
@@ -2208,14 +2289,14 @@ void db_display_vol_obj(FILE *fd, vol_obj_t *vo)
 }
 
 #define VOL_FMT_HDR  "[bck_id|label|state|media|usage|groupname|location|librarydate|offsitedate]"
-#define VOL_FMT_LINE "%-13llu  %-17s %s %s %3d %-17.17s %s %s %s\n"
+#define VOL_FMT_LINE "%-13llu  %-17s %s %s %3d %-23.23s %s %s %s\n"
 
 
 void db_display_volume(FILE *fd, vol_t *vol)
 {
     datestr_t librarydate, offsitedate;
-    copy_datestr(&librarydate, (datestr_t *) fmtctime(vol->librarydate));
-    copy_datestr(&offsitedate, (datestr_t *) fmtctime(vol->offsitedate));
+    copy_datestr(&librarydate, (datestr_t *) time_cvt_blib_to_str(vol->librarydate));
+    copy_datestr(&offsitedate, (datestr_t *) time_cvt_blib_to_str(vol->offsitedate));
     fprintf(fd, VOL_FMT_LINE, 
             (llu_t ) vol->bck_id, 
             pstr(vol->label.str,""),
