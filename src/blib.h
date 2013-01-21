@@ -1,8 +1,11 @@
 #ifndef __BLIB_H__
 #define __BLIB_H__
 /*
- * @(#)$Id: blib.h,v 1.4 2010/11/16 04:10:58 mark Exp mark $
+ * @(#)$Id: blib.h,v 1.5 2011/04/11 03:51:05 mark Exp mark $
  * $Log: blib.h,v $
+ * Revision 1.5  2011/04/11 03:51:05  mark
+ * add includelogs
+ *
  * Revision 1.4  2010/11/16 04:10:58  mark
  * rc1
  *
@@ -65,16 +68,17 @@ char *strsep(char **stringp, const char *delim);
 
 typedef struct blib_global_s blib_global_t;
 struct blib_global_s {
-    char    	*progid;
-    int	    	debug;
-    int	   	quiet;
-    int	   	verbose;
-    fio_t	*blib_log;
-    uint32_t	volumes_inlib;
-    uint32_t	volumes_free;
-    uint32_t 	volumes_allocated;
-    uint32_t	volumes_other;
-    files_t	*includelogs;
+    char    	 *progid;
+    int	       	 debug;
+    int	   	     quiet;
+    int	   	     verbose;
+    fio_t	     *blib_log;
+    uint32_t	 volumes_inlib;
+    uint32_t	 volumes_free;
+    uint32_t 	 volumes_allocated;
+    uint32_t	 volumes_other;
+    files_t	     *includelogs;
+    unsigned int date_width;
 };
 
 // ${BLIB_VOLUME}|${BLIB_FILENO}|${BLIB_STATE}|${BLIB_MEDIA}|${BLIB_USAGE}|${BLIB_GROUP}|${BLIB_LOCATION}|${BLIB_LIBRARYDATE}|${BLIB_RECORDDATE}|${BLIB_OFFSITEDATE}|${BLIB_EXPIREDATE}|${BLIB_DESC}
