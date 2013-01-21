@@ -1,6 +1,10 @@
-static char *rcsid="@(#) $Id: parseslashcmd.c,v 1.9 2011/04/15 03:40:09 mark Exp $";
+static char *rcsid="@(#) $Id: parseslashcmd.c,v 1.10 2013/01/20 10:29:44 mark Exp mark $";
 /*
  * $Log: parseslashcmd.c,v $
+ * Revision 1.10  2013/01/20 10:29:44  mark
+ * MG changes for new decimal time switch from time_t to blib_tim_t
+ * fix memory leak
+ *
  * Revision 1.9  2011/04/15 03:40:09  mark
  * add /errcount
  *
@@ -69,8 +73,8 @@ cmdqual_t CMDQUALS[]  = {
     {CMD_VERIFY     ,CMD  ,DB_RO     ,"/verify"         ,NULL        ,VT_NONE   ,REQVAL_NONE ,NULL      ,NULL      , "Verify internal conistancy of database tables"},
     {CMD_ERRCOUNT   ,CMD  ,DB_RO     ,"/errcount"       ,"bck_id"    ,VT_INT64  ,REQVAL_REQ  ,NULL      ,NULL      , "Return BLIB_ERRCOUNT for a given backup id"},
     {QUAL_NEW       ,QUAL ,DB_RW     ,"/new"	            ,NULL          ,VT_NONE	   , REQVAL_NONE , NULL      ,NULL      , "only valid for /import"},
-    {QUAL_SINCE     ,QUAL ,DB_NONE   ,"/since"	       ,NULL          ,VT_DATE	   , REQVAL_REQ  , NULL      ,NULL      , "with /replaylog /since=ctime:n to replay log since n"},
-    {QUAL_UNTIL     ,QUAL ,DB_NONE   ,"/until"	      ,NULL           ,VT_DATE	   , REQVAL_REQ  , NULL      ,NULL      , "with /replaylog /until=ctime:n to replay log since n"},
+    {QUAL_SINCE     ,QUAL ,DB_NONE   ,"/since"	       ,NULL          ,VT_DATE	   , REQVAL_REQ  , NULL      ,NULL      , "with /replaylog /since=ctime:n[.n] to replay log since n"},
+    {QUAL_UNTIL     ,QUAL ,DB_NONE   ,"/until"	      ,NULL           ,VT_DATE	   , REQVAL_REQ  , NULL      ,NULL      , "with /replaylog /until=ctime:n[.n] to replay log since n"},
     {QUAL_LOG       ,QUAL   ,DB_NONE  ,"/log"	      ,NULL	      ,VT_FILENAM  , REQVAL_OPT  , NULL      ,NULL      , "log command to optional log file def: BLIB_LOG"},
     {QUAL_NOLOG     ,QUAL   ,DB_NONE  ,"/nolog"           ,NULL	      ,VT_NONE     , REQVAL_NONE , NULL      ,NULL      , "Do NOT log this command to BLIB_LOG"},
     {QUAL_STATE     ,QUAL   ,DB_NONE  ,"/state"	      ,"state"	      ,VT_STATE    , REQVAL_REQ  , NULL      ,"FREE"    , "Volume state Free or Allocated" },
@@ -792,7 +796,7 @@ void	log_cmd(fio_t *logfd, cmd_t *hd)
     
     if (logfd && logfd->open ) {
         if (hd && hd->param && (hd->param->cmdid != CMD_REPLAY)) {
-            fprintf(logfd->fd, "%lu: ",(lu_t) nowgm());
+            fprintf(logfd->fd, "%f: ", nowgm());
             ptr=hd;
             while(ptr) {
                 display_cmd(logfd->fd, ptr);
@@ -1079,7 +1083,7 @@ void	do_cmd_help(FILE *fd)
             "\tGreater than . or >\n"
             "\tOptional ?= or =? valid only for /includelogs will optional include the file only when errors are found\n"
             "\t in the backup beging reported\n"
-            "Times maybe entered as absolute ctime values using the format /qual=ctime:%d\n", (int) nowgm());
+            "Times maybe entered as absolute ctime values using the format /qual=ctime:%f\n", nowgm());
     
 }
 
