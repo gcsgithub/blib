@@ -1,6 +1,10 @@
-static char *rcsid="@(#) $Id: execute_cmds.c,v 1.11 2011/04/17 05:34:32 mark Exp $";
+static char *rcsid="@(#) $Id: execute_cmds.c,v 1.12 2013/01/20 10:18:55 mark Exp mark $";
 /*
  * $Log: execute_cmds.c,v $
+ * Revision 1.12  2013/01/20 10:18:55  mark
+ * MG chnages from new decimal time
+ * display_backup_volumes, overrides for function display_backup_volumes() to control header/footer + force show as FREE
+ *
  * Revision 1.11  2011/04/17 05:34:32  mark
  * improve errcount to include incompleted backups as errors BLIB_ERRCOUNT = BLIB_BCKINCOMPLETED + BLIB_BCKERRORS
  *
@@ -392,12 +396,12 @@ int   make_filter_rec(cmd_t *qual_ptr, filt_t  *filtrec)
     return(rval);
 }
 
-char  *doenv(fio_t *outfio, char *symbol, valtype_e val_type,void *value)
+char  *doenv(fio_t *outfio, char *symbol, valtype_e val_type, void *value)
 {
     static char    buf[2048];
-    char            *sp;
-    char            val[2048];
-    int             rlen, len, idx;
+    char           *sp;
+    char           val[2048];
+    int            rlen, len, idx;
     
     val[0] = '\0';
     switch(val_type) {
@@ -463,20 +467,18 @@ int display_volume(fio_t *fd, vol_t *volrec, dbh_t *dbh)
         // filecount =  db_count_vol_obj_label(dbh, db_read.bck_id, &db_read.label);
     }
     
-    doenv(fd, "BLIB_BCK_ID"	, VT_INT64	, &volrec->bck_id);
-    doenv(fd, "BLIB_VOLUME"	, VT_LABEL	, &volrec->label);
-    doenv(fd, "BLIB_STATE"	, VT_STATE	, &volrec->state);
-    doenv(fd, "BLIB_MEDIA"	, VT_STR	, &volrec->media);
-    doenv(fd, "BLIB_USAGE"	, VT_INT	, &volrec->usage);
-    doenv(fd, "BLIB_GROUP"	, VT_STR	, &volrec->groupname);
-    doenv(fd, "BLIB_LOCATION"	, VT_STR	, &volrec->location);
-    doenv(fd, "BLIB_LIBRARYDATE"  , VT_DATE	, &volrec->librarydate);
-    doenv(fd, "BLIB_OFFSITEDATE"  , VT_DATE	, &volrec->offsitedate);
-    
-
-    doenv(fd, "BLIB_RECORDDATE"   , VT_DATE	, &bck_rec.start);
-    doenv(fd, "BLIB_EXPIREDATE"   , VT_DATE	, &bck_rec.expiredate);
-    doenv(fd, "BLIB_DESC"         , VT_STR  , &bck_rec.desc);
+    doenv(fd, "BLIB_BCK_ID"	     , VT_INT64	, &volrec->bck_id);
+    doenv(fd, "BLIB_VOLUME"	     , VT_LABEL	, &volrec->label);
+    doenv(fd, "BLIB_STATE"	     , VT_STATE	, &volrec->state);
+    doenv(fd, "BLIB_MEDIA"	     , VT_STR	, &volrec->media);
+    doenv(fd, "BLIB_USAGE"	     , VT_INT	, &volrec->usage);
+    doenv(fd, "BLIB_GROUP"	     , VT_STR	, &volrec->groupname);
+    doenv(fd, "BLIB_LOCATION"	 , VT_STR	, &volrec->location);
+    doenv(fd, "BLIB_LIBRARYDATE" , VT_DATE	, &volrec->librarydate);
+    doenv(fd, "BLIB_OFFSITEDATE" , VT_DATE	, &volrec->offsitedate);
+    doenv(fd, "BLIB_RECORDDATE"  , VT_DATE	, &bck_rec.start);
+    doenv(fd, "BLIB_EXPIREDATE"  , VT_DATE	, &bck_rec.expiredate);
+    doenv(fd, "BLIB_DESC"        , VT_STR   , &bck_rec.desc);
 
     // doenv(fd, "BLIB_FILENO"       , VT_INT	, &volrec->filecount);
     // doenv(fd, "BLIB_BYTESONTAPE"  , VT_INT64	, &volrec->size);
@@ -563,7 +565,7 @@ int filter_rec(filt_t *filtrec, vol_t *rec)
         if (filtcmp(filtrec->groupname  , &rec->groupname   , sizeof(rec->groupname)))  return(0);	// mismatched
         if (filtcmp(filtrec->location   , &rec->location    , sizeof(rec->location)))   return(0);	// mismatched
         
-        if (filtcmp(filtrec->usage      ,(int *)  	&rec->usage      , sizeof(rec->usage)))	  	return(0);	// mismatched
+        if (filtcmp(filtrec->usage      , &rec->usage       , sizeof(rec->usage)))	  	return(0);	// mismatched
         // if (filtcmp(filtrec->filecount  ,(int *)  	&rec->filecount  , sizeof(rec->filecount)))	return(0);	// mismatched
         // if (filtcmp(filtrec->recorddate ,(blib_tim_t *) &rec->recorddate , sizeof(rec->recorddate)))   	return(0);	// mismatched
         if (filtcmp(filtrec->offsitedate,(blib_tim_t *) &rec->offsitedate, sizeof(rec->offsitedate)))   return(0);	// mismatched
@@ -994,7 +996,7 @@ void do_cmd_runexpiration(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_
                 if (!BLIB.quiet)
                     fprintf(outfd->fd, "# Volumes moved from allocated to Free\n");
                 
-                display_backup_volumes(dbh,&bckrec, outfd, BLIB.quiet, 1 /* show as moving to free */ );
+                display_backup_volumes(dbh,&bckrec, outfd, !BLIB.quiet, 1 /* show as moving to free */ );
             }
             
             if (db_delete_backup_id(dbh, bckrec.bck_id)) {
@@ -2080,7 +2082,8 @@ void display_backup(fio_t *outfd, bckid_t bckid, cmp_e flag, dbh_t *dbh)
         if (flag != CMP_EQ) {
                 fndmode=FND_FIRST;
         }
-    } else {
+    }
+    else {
         fndmode=FND_FIRST;
     }
     
@@ -2099,7 +2102,7 @@ void display_backup(fio_t *outfd, bckid_t bckid, cmp_e flag, dbh_t *dbh)
                 expire.str,
                 bckrec.desc.str);
         if (bckid) { // did they ask for a specific one?
-            display_backup_volumes(dbh,&bckrec, outfd, BLIB.quiet, 0 /* show actual state */ );
+            display_backup_volumes(dbh,&bckrec, outfd, !BLIB.quiet, 0 /* show actual state */ );
         }
         
         if (fndmode==FND_FIRST) {
