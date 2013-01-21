@@ -1,4 +1,4 @@
-static const char *rcsid="@(#) $Id: data_access.c,v 1.11 2011/04/17 05:33:33 mark Exp mark $";
+static const char *rcsid="@(#) $Id: data_access.c,v 1.12 2013/01/20 10:03:12 mark Exp mark $";
 /*
  *  data_access.c
  *  blib
@@ -6,6 +6,10 @@ static const char *rcsid="@(#) $Id: data_access.c,v 1.11 2011/04/17 05:33:33 mar
  *  Created by mark on 08/10/2008.
  *  Copyright 2008 Garetech Computer Solutions. All rights reserved.
  * $Log: data_access.c,v $
+ * Revision 1.12  2013/01/20 10:03:12  mark
+ * MG introduce FLD_DATE and new functions to handle the date in blib_tim_t (aka double) format
+ * expands the time to inclue 100th second. expand any of the time outputs
+ *
  * Revision 1.11  2011/04/17 05:33:33  mark
  * improve errcount to include incomplete backups in the count
  * added function db_count_notset()
@@ -59,42 +63,44 @@ static const char *version()
 
 int load_schema(dbh_t *dbh)
 { // create tables and indexes
-    
+    // bck_id|node|start|end|expiredate|desc
     char *create_table_backups =
     "create table backups ( "
-    "bck_id		unsigned long long,"
-    "node		varchar("NODE_SIZ_STR"),"
-    "start		unsigned int,"
-    "end		unsigned int,"
-    "expiredate		unsigned int,"
-    "desc		varchar("DESC_SIZ_STR")"
+            "bck_id		    unsigned long long,"
+            "node		    varchar("NODE_SIZ_STR"),"
+            "start		    date,"
+            "end		    date,"
+            "expiredate		date,"
+            "desc		    varchar("DESC_SIZ_STR")"
     ")";
     char *create_index_backups_1 = "create unique index b_pkey_1 on backups  (bck_id);";
     
+    // bck_id|label|state|media|usage|groupname|location|librarydate|recorddate|offsitedate
     char *create_table_volumes =  
     "create table volumes ( "
-    "bck_id		unsigned long long,"
-    "label		char(" LABEL_SIZ_STR "),"
-    "state		char(" STATE_SIZ_STR "), "
-    "media		char(" MEDIA_NAM_SIZ_STR "),"
-    "usage		unsigned int,"
-    "groupname		varchar(" GROUPNAM_SIZ_STR "),"
-    "location		varchar(" LOCNAM_SIZ_STR "),"
-    "librarydate	date,"
-    "recorddate		date,"
-    "offsitedate	date"
+            "bck_id		    unsigned long long,"
+            "label		    char(" LABEL_SIZ_STR "),"
+            "state		    char(" STATE_SIZ_STR "), "
+            "media		    char(" MEDIA_NAM_SIZ_STR "),"
+            "usage		    unsigned int,"
+            "groupname		varchar(" GROUPNAM_SIZ_STR "),"
+            "location		varchar(" LOCNAM_SIZ_STR "),"
+            "librarydate	date,"
+            "recorddate		date,"
+            "offsitedate	date"
     ")";
     char *create_index_volumes_1 = "create unique index labelpkey_1 on volumes  (label);";
     /****************************************************************************************/
     
+    // bck_id|objname|obj_instance|start|end|size
     char *create_table_bck_objects =  
     "create table bck_objects ( "
-                "bck_id         unsigned long long,"
-                "objname	  	varchar("OBJ_NAME_SIZ_STR "),"
-                "obj_instance	unsigned int,"		// muliple objects copies of an object backed
-                "start          date,"
-                "end            date,"
-                "size           unsigned long long"
+            "bck_id         unsigned long long,"
+            "objname	  	varchar("OBJ_NAME_SIZ_STR "),"
+            "obj_instance	unsigned int,"		// muliple objects copies of an object backed
+            "start          date,"
+            "end            date,"
+            "size           unsigned long long"
     ")";
     /* Old schema
                 bck_id               unsigned long long,
@@ -107,31 +113,32 @@ int load_schema(dbh_t *dbh)
     char *create_index_bck_objects_1 = "create unique index bo_pkey_1 on bck_objects  (objname, obj_instance, bck_id);";
     /****************************************************************************************/
     
+    // bck_id|objname|obj_instance|label|fileno|start|end|size
     char *create_table_vol_obj =  
     "create table vol_obj ( "
-    "bck_id		unsigned long long,"
-    "objname		varchar(" OBJ_NAME_SIZ_STR "),"
-    "obj_instance	unsigned int, " // multiple objects backed up with the same name
-    "label		varchar(" LABEL_SIZ_STR "),"
-    "fileno 		unsigned int,"
-    "start		date,"
-    "end		date,"
-    "size		unsigned long long"
+            "bck_id		    unsigned long long,"
+            "objname		varchar(" OBJ_NAME_SIZ_STR "),"
+            "obj_instance	unsigned int, " // multiple objects backed up with the same name
+            "label		    varchar(" LABEL_SIZ_STR "),"
+            "fileno 		unsigned int,"
+            "start		    date,"
+            "end		    date,"
+            "size		    unsigned long long"
     ")";
     
     char *create_index_vol_obj_1 = "create index vo_pkey_1 on vol_obj  (bck_id,objname, fileno);";
     char *create_index_vol_obj_2 = "create index vo_pkey_2 on vol_obj  (bck_id,label, fileno);";
     char *create_index_vol_obj_3 = "create unique index vo_pkey_3 on vol_obj  (bck_id,objname,obj_instance,label);";
     
-    
+    // bck_id|label|objname|obj_instance|errtime|errmsg
     char *create_table_bck_errors = 
     "create table bck_errors ("
-    "bck_id		unsigned long long,"
-    "label		varchar(" LABEL_SIZ_STR "),"
-    "objname		varchar(" OBJ_NAME_SIZ_STR ")," 
-    "obj_instance	unsigned int, "
-    "errtime		date,"
-    "errmsg		varchar(" ERRMSG_SIZ_STR ")"
+            "bck_id		    unsigned long long,"
+            "label		    varchar(" LABEL_SIZ_STR "),"
+            "objname		varchar(" OBJ_NAME_SIZ_STR ")," 
+            "obj_instance	unsigned int, "
+            "errtime		date,"
+            "errmsg		    varchar(" ERRMSG_SIZ_STR ")"
     ")";
     
     char *create_index_bck_errors_1 = "create index be_pkey_1 on bck_errors  (bck_id,label,objname);";
@@ -628,17 +635,18 @@ int  copy_results_volume(dbh_t *dbh, void *recp)
     rec = (vol_t *) recp;
     
     bzero(rec,sizeof(vol_t));
+    // bck_id|label|state|media|usage|groupname|location|librarydate|recorddate|offsitedate
+    db_fldsmklist(&flds, "bck_id",      FLD_INT64, &rec->bck_id);
+    db_fldsmklist(&flds, "label" ,      FLD_TEXT , &rec->label);
+    db_fldsmklist(&flds, "state",       FLD_TEXT , &rec->state);
+    db_fldsmklist(&flds, "media",       FLD_TEXT , &rec->media);
+    db_fldsmklist(&flds, "usage",       FLD_INT  , &rec->usage);
+    db_fldsmklist(&flds, "groupname",   FLD_TEXT , &rec->groupname);
+    db_fldsmklist(&flds, "location",    FLD_TEXT , &rec->location);
     
-    db_fldsmklist(&flds, "bck_id",    FLD_INT64, &rec->bck_id);
-    db_fldsmklist(&flds, "label" ,    FLD_TEXT, &rec->label);
-    db_fldsmklist(&flds, "state",     FLD_TEXT, &rec->state);
-    db_fldsmklist(&flds, "media",     FLD_TEXT, &rec->media);
-    db_fldsmklist(&flds, "usage",     FLD_INT, &rec->usage);
-    db_fldsmklist(&flds, "groupname", FLD_TEXT, &rec->groupname);
-    db_fldsmklist(&flds, "location",  FLD_TEXT, &rec->location);
-    
-    db_fldsmklist(&flds, "librarydate", FLD_DATE, &rec->librarydate);
-    db_fldsmklist(&flds, "offsitedate", FLD_DATE, &rec->offsitedate);
+    db_fldsmklist(&flds, "librarydate", FLD_DATE , &rec->librarydate);
+    db_fldsmklist(&flds, "recorddate",  FLD_DATE , &rec->recorddate);
+    db_fldsmklist(&flds, "offsitedate", FLD_DATE , &rec->offsitedate);
     
     dbh->sqlcmd->getflds = flds;
     db_columns(dbh);
@@ -1314,7 +1322,7 @@ int	db_end_vol_obj(dbh_t *dbh, vol_obj_t *volobjrec)
     list_t	*flds = (list_t *) NULL;
     int	rval;
     
-    db_fldsmklist(&flds, "end"         , FLD_INT  , (void *) &volobjrec->end);
+    db_fldsmklist(&flds, "end"         , FLD_DATE , (void *) &volobjrec->end);
     db_fldsmklist(&flds, "size"        , FLD_INT64, (void *) &volobjrec->size);
     db_fldsmklist(&flds, "bck_id"      , FLD_INT64, (void *) &volobjrec->bck_id);
     db_fldsmklist(&flds, "objname"     , FLD_TEXT , (void *) &volobjrec->objname);
@@ -1483,8 +1491,8 @@ int db_insert_volumes(dbh_t *dbh, vol_t *vol)
     
     db_fldsmklist(&flds , "groupname"  , FLD_TEXT , (void *) &vol->groupname);
     db_fldsmklist(&flds , "location"   , FLD_TEXT , (void *) &vol->location);
-    db_fldsmklist(&flds , "librarydate", FLD_DATE  , (void *) &vol->librarydate);
-    db_fldsmklist(&flds , "offsitedate", FLD_DATE  , (void *) &vol->offsitedate);
+    db_fldsmklist(&flds , "librarydate", FLD_DATE , (void *) &vol->librarydate);
+    db_fldsmklist(&flds , "offsitedate", FLD_DATE , (void *) &vol->offsitedate);
     
     if (!db_exec_sql_flds_pushpop(dbh, sqltext, flds)) {
 	    replace_dynstr(&dbh->errmsg, newstr("#BLIB:  Error inserting into volumes: %s\n", dbh->errmsg));
@@ -1738,11 +1746,11 @@ int db_update_bck_object_size_end(dbh_t *dbh, bckid_t bckid, objname_t *objname,
 {
     list_t	*flds = (list_t *) NULL;
     
-    db_fldsmklist(&flds, "end"         , FLD_INT  , (void *) &end);
-    db_fldsmklist(&flds, "size"        , FLD_INT  , (void *) &totalsize);
-    db_fldsmklist(&flds, "bckid"       , FLD_INT64, (void *) &bckid);
-    db_fldsmklist(&flds, "objname"     , FLD_TEXT , (void *) objname);
-    db_fldsmklist(&flds, "obj_instance", FLD_INT  , (void *) &obj_instance);
+    db_fldsmklist(&flds, "end"         , FLD_DATE  , (void *) &end);
+    db_fldsmklist(&flds, "size"        , FLD_INT64 , (void *) &totalsize);
+    db_fldsmklist(&flds, "bckid"       , FLD_INT64 , (void *) &bckid);
+    db_fldsmklist(&flds, "objname"     , FLD_TEXT  , (void *) objname);
+    db_fldsmklist(&flds, "obj_instance", FLD_INT   , (void *) &obj_instance);
     
     // update the most recent
     if (db_exec_sql_flds_pushpop(dbh, "update bck_objects set end=?, size=? where bck_id=? and objname=? and end=0 "
@@ -1831,7 +1839,7 @@ int db_update_backups_end(dbh_t *dbh, bckid_t bck_id, blib_tim_t end)
     sqlcmd = sqlstack_push(dbh);
     
     
-    db_fldsmklist(&flds, "end"    , FLD_INT  , (void *) &end);
+    db_fldsmklist(&flds, "end"    , FLD_DATE , (void *) &end);
     db_fldsmklist(&flds, "bckid"  , FLD_INT64, (void *) &bck_id);
     sqlcmd->putflds = flds;
     
@@ -2308,10 +2316,6 @@ void db_display_volume(FILE *fd, vol_t *vol)
             librarydate.str,
             offsitedate.str
             );
-
-    
-
-    
 }
 
 
