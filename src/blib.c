@@ -1,6 +1,9 @@
-static char *rcsid="@(#) $Id: blib.c,v 1.4 2011/04/11 03:49:50 mark Exp $";
+static char *rcsid="@(#) $Id: blib.c,v 1.5 2013/01/20 10:37:18 mark Exp mark $";
 /*
  * $Log: blib.c,v $
+ * Revision 1.5  2013/01/20 10:37:18  mark
+ * mg remove unused variables
+ *
  * Revision 1.4  2011/04/11 03:49:50  mark
  * generally fix OSrval's, fix records being added with invalid bck_id, add /verify
  *
@@ -48,7 +51,7 @@ int main(int argc,  char *argv[] /* , char *envp[] */)
     setup_defaults();
     
     optarg = NULL;
-    while (!dousage && ((c = getopt(argc, argv, "qdvVf:h?")) != -1)) {
+    while (!dousage && ((c = getopt(argc, argv, "qdvVf:w:h?")) != -1)) {
         switch (c) {
             case 'q':
                 BLIB.quiet++;
@@ -66,6 +69,9 @@ int main(int argc,  char *argv[] /* , char *envp[] */)
             case 'f':
                 set_default(QUAL_DATABASE, optarg); // not sure why you would but /database will over rule -f
                 break;
+            case 'w':
+                BLIB.date_width = atoi(optarg);
+                break;
             case 'h':
                 usage(BLIB.progid);
                 exit(0);
@@ -74,6 +80,17 @@ int main(int argc,  char *argv[] /* , char *envp[] */)
                 dousage++;
                 break;
         }
+    }
+    if (BLIB.date_width == 0) {
+        BLIB.date_width = 20; // default date width for display  20-Apr-2013:11:39:12
+    }
+    else if (BLIB.date_width > 23) {
+        fprintf(stderr, "# a maximum date width is 23 defaulting to that as %u is >\n", BLIB.date_width);
+        BLIB.date_width = 23;
+    }
+    else if (BLIB.date_width < 12) {
+        fprintf(stderr, "# a minimum date length of 11 is required to show dd-Mmm-YYYY %u is too small\n", BLIB.date_width);
+        BLIB.date_width = 11;
     }
     
     argc -= (optind-1);

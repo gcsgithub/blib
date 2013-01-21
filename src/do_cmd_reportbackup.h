@@ -1,7 +1,7 @@
 #ifndef __DO_CMD_REPORTBACKUP_H__
 #define __DO_CMD_REPORTBACKUP_H__
 /*
- *  @(#) $Id: do_cmd_reportbackup.h,v 1.1 2010/11/16 04:04:23 root Exp mark $
+ *  @(#) $Id: do_cmd_reportbackup.h,v 1.2 2011/04/14 02:30:12 mark Exp mark $
  *
  *  do_cmd_reportbackup.h
  *  blib
@@ -10,6 +10,9 @@
  *  Copyright 2010 Garetech Computer Solutions. All rights reserved.
  *
  *   $Log: do_cmd_reportbackup.h,v $
+ *   Revision 1.2  2011/04/14 02:30:12  mark
+ *   fix format of text output
+ *
  *   Revision 1.1  2010/11/16 04:04:23  root
  *   Initial revision
  *
@@ -42,10 +45,11 @@ void    table_row(fio_t *outfd,fmt_type_e fmttype,  char *class, char *path, cha
 int     html_write(fio_t *outfd, char flag, char *tag, char *class, char *val, ... );
 int     tabout(fio_t *outfd, int offset);
 void    style_sheet(char *base, fio_t *outfd);
-#define DIV_TEXT_FMT "+----------------------------+--------------+------------------------------------------+--------+---------------------+---------------+------------+----+\n"
-#define HDR_TEXT_FMT "| %-150s|\n"
-#define ROW_TEXT_FMT "| %-27.27s| %-13s| %-41s|%8s|%20s |%14s |%11s |%4s|\n"
-#define ERR_TEXT_FMT "| %-27.27s| %-13s| %-106s|\n"
+void    create_dash_line(char *buf, size_t max, size_t dash_count);
+void    text_div(FILE *fd);
 
+void text_row(FILE *fd, char *path, char *barcode, char *start_end, char *duration, char *bytes, char *mbytes, char *gbytes, char *errs);
+void    text_hdr(FILE *fd, char *hdr_txt);
+void text_err(FILE *fd, char *err_lineno, char *when, char *errmsg);
 #endif /* __DO_CMD_REPORTBACKUP_H__ */
 
