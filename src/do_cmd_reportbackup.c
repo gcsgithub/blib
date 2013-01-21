@@ -1,4 +1,4 @@
-static char *rcsid="@(#) $Id: do_cmd_reportbackup.c,v 1.4 2011/04/14 02:29:33 mark Exp mark $";
+static char *rcsid="@(#) $Id: do_cmd_reportbackup.c,v 1.5 2013/01/20 10:07:09 mark Exp mark $";
 
 /*
  *  do_cmd_reportbackup.c
@@ -7,6 +7,9 @@ static char *rcsid="@(#) $Id: do_cmd_reportbackup.c,v 1.4 2011/04/14 02:29:33 ma
  *  Created by mark on 08/10/2010.
  *  Copyright 2010 Garetech Computer Solutions. All rights reserved.
  * $Log: do_cmd_reportbackup.c,v $
+ * Revision 1.5  2013/01/20 10:07:09  mark
+ * MG changes from time_t to blib_tim_t and required support functions for decimal time
+ *
  * Revision 1.4  2011/04/14 02:29:33  mark
  * fix up error reporting
  *
@@ -256,7 +259,7 @@ int read_bck_objects(dbh_t *dbh, fmt_type_e fmttype, fio_t *outfd, backups_t *bc
     tapecount=0;
     
     if (fmttype == FMT_XHTML) html_write(outfd,'O', "tfoot", NULL, NULL);
-    else			fprintf(outfd->fd, DIV_TEXT_FMT);
+    else			          text_div(outfd->fd);
     
     sp="Tape Summary";
     dbstatus_vol_obj = db_find_volumes_by_bckid(dbh, bckrec->bck_id, &volrec, FND_FIRST);
@@ -269,7 +272,7 @@ int read_bck_objects(dbh_t *dbh, fmt_type_e fmttype, fio_t *outfd, backups_t *bc
         dbstatus_vol_obj = db_find_volumes_by_bckid(dbh, bckrec->bck_id, &volrec, FND_NEXT);
     }
     if (fmttype == FMT_XHTML)   html_write(outfd,'C', "tfoot", NULL, NULL);
-    else                        fprintf(outfd->fd, DIV_TEXT_FMT);
+    else                        text_div(outfd->fd);
     return(gtot_errs);
 }
 
@@ -355,7 +358,7 @@ void table_row(fio_t *outfd, fmt_type_e fmttype ,char *iclass,  char *path, char
     char	mbytes_str[80];
     char	gbytes_str[80];
     char	err_str[80];
-    
+    blib_global_t *gbl = &BLIB;
     
     if (path==NL) path="";
     shrink_string_by_middle(path_str, sizeof(path_str)-1, path); // reduce string from the middle to fit a give length so we can see start..end
@@ -390,16 +393,16 @@ void table_row(fio_t *outfd, fmt_type_e fmttype ,char *iclass,  char *path, char
     
     if (bcode) {
         if (fileno>=0)	 snprintf(bcode_str,sizeof(bcode_str) , "%s:%d", bcode, fileno);
-        else		 snprintf(bcode_str,sizeof(bcode_str) , "%s"   , bcode);
+        else		     snprintf(bcode_str,sizeof(bcode_str) , "%s"   , bcode);
     } else {
         bzero(bcode_str,sizeof(bcode_str)); 
     }
     
     if (stime) {
-        snprintf(stime_str, sizeof(stime_str) , "%-20.20s", stime);
+        snprintf(stime_str, sizeof(stime_str) , "%-*.*s",gbl->date_width, gbl->date_width, stime);
     }
     if (etime) {
-        snprintf(etime_str, sizeof(etime_str) , "%-20.20s", etime);
+        snprintf(etime_str, sizeof(etime_str) , "%-*.*s",gbl->date_width, gbl->date_width, etime);
     }
     
     if ((stime) && (etime)) {
@@ -461,17 +464,17 @@ void table_row(fio_t *outfd, fmt_type_e fmttype ,char *iclass,  char *path, char
     }  else {
         // FMT_TEXT
         if (errline ) {
-            fprintf(outfd->fd, ERR_TEXT_FMT, err_str,  // err line number
-                    stime,   // when
-                    etime    // error message string
+            text_err(outfd->fd, err_str,  // err line number
+                                stime,   // when
+                                etime    // error message string
                     );
         } else {
             if (last_was_err) {
-                fprintf(outfd->fd, DIV_TEXT_FMT);
+                text_div(outfd->fd);
                 last_was_err=0;
             }
-            fprintf(outfd->fd, ROW_TEXT_FMT, path, bcode_str, time_str, duration_str, bytes_str, mbytes_str, gbytes_str, err_str);	 
-            fprintf(outfd->fd, DIV_TEXT_FMT);
+            text_row(outfd->fd, path, bcode_str, time_str, duration_str,            bytes_str, mbytes_str, gbytes_str, err_str);
+            text_div(outfd->fd);
         }
     }
 }
@@ -607,21 +610,100 @@ void write_text_header(fio_t *outfd,backups_t *bckrec, char *title2)
              (char *) time_cvt_blib_to_str(bckrec->start),
              pstr(bckrec->node.str,""),
              pstr(bckrec->desc.str,""));
-    fprintf(outfd->fd, DIV_TEXT_FMT);
-    fprintf(outfd->fd, HDR_TEXT_FMT, hdr_str);
+    text_div(outfd->fd);
+    text_hdr(outfd->fd, hdr_str);
     if (title2) {
-        fprintf(outfd->fd, HDR_TEXT_FMT, title2);
+        text_hdr(outfd->fd, title2);
     }
 }
 
 void write_text_table_header(fio_t *outfd)
 {
     
-    fprintf(outfd->fd, DIV_TEXT_FMT);
-    fprintf(outfd->fd, ROW_TEXT_FMT, "Pathname", "Barcode:file#", "Start-End Time", "Seconds", "Bytes", "MBytes", "GBytes", "Errs");
-    fprintf(outfd->fd, DIV_TEXT_FMT);
+    text_div(outfd->fd);
+    text_row(outfd->fd, "Pathname", "Barcode:file#", "Start-End Time", "Seconds", "Bytes", "MBytes", "GBytes", "Errs");
+    text_div(outfd->fd);
 }
-/*
+
+
+
+            
+void create_dash_line(char *buf, size_t max, size_t dash_count)
+{
+    size_t idx;
+    
+    max--; // make sure we have at least 1 for null termination;
+    
+    for (idx=0;idx<max;idx++) {
+        buf[idx] = '-';
+        if (idx == dash_count) {
+            break;
+        }
+        
+    }
+    // idx will always be either dash_count ot max-1 which ever the lesser
+    // ie the buffer is safe with in 0..max-1
+    buf[idx] = '\0';
+}
+
+/*********************/
+void text_div(FILE *fd)
+{
+    blib_global_t *gbl = &BLIB;
+    char    start_end_buf[132];
+    int     start_end_len;
+    
+    start_end_len = 2 + (gbl->date_width*2);
+    // create a slash line of length
+    create_dash_line(start_end_buf, sizeof(start_end_buf), start_end_len);
+    
+    fprintf(fd, "+----------------------------+--------------+%s+--------+---------------------+---------------+------------+----+\n", start_end_buf);
+    
+}
+
+/************************************/
+void text_hdr(FILE *fd, char *hdr_txt)
+{
+    blib_global_t *gbl = &BLIB;
+    int msglen;
+    
+    msglen = 110 +  (2*gbl->date_width);
+    fprintf(fd, "| %-*s|\n", msglen, hdr_txt);
+}
+
+/****************************************************************/
+void text_err(FILE *fd, char *err_lineno, char *when, char *errmsg)
+{
+    blib_global_t *gbl = &BLIB;
+    int msglen;
+
+    msglen = 68 +  (2*gbl->date_width);
+    fprintf(fd,"| %-27.27s| %-13s| %-*s|\n", err_lineno, when, msglen,  errmsg);
+}
+
+/**********************************************************************/
+void text_row(FILE *fd, char *path, char *barcode, char *start_end, char *duration, char *bytes, char *mbytes, char *gbytes, char *errs)
+{
+    blib_global_t *gbl = &BLIB;
+    int start_end_len;
+    
+    // | 15-Oct-2010:05:32:54.00-15-Oct-2010:05:45:08.00|
+    // | 15-Oct-2010:05:32:54-15-Oct-2010:05:45:08|
+    // | 15-Oct-2010:05:32-15-Oct-2010:05:45|
+    // | 15-Oct-2010-15-Oct-2010|
+    start_end_len = 2 + (gbl->date_width*2)-1;
+    
+    fprintf(fd, "| %-27.27s| %-13s| %-*s|%8s|%20s |%14s |%11s |%4s|\n",
+            path,
+            barcode,
+            start_end_len, start_end,
+            duration,
+            bytes,
+            mbytes,
+            gbytes,
+            errs);
+}
+    /*
  +--------------------------------------+-------------+-------------------+--------+------------+----------+----------+------+
  | Pathname                             |Barcode:file#| Start-End Time    | Seconds|    Bytes   |  MBytes  |  GBytes  | Errs |
  +--------------------------------------+-------------+-------------------+--------+------------+----------+----------+------+
@@ -634,5 +716,11 @@ void write_text_table_header(fio_t *outfd)
  123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
  1         2         3         4         5         6         7         8         9         11        12        13
  | /usr                                 |  OBG028D:1  | 21:02:43-21:09:02 |    379 |  1818238368|  1734.01|   1.6934|
- */
 
+
+fd);
+#define DIV_TEXT_FMT "+----------------------------+--------------+------------------------------------------+--------+---------------------+---------------+------------+----+\n"
+#define HDR_TEXT_FMT "| %-150s|\n"
+#define ROW_TEXT_FMT "| %-27.27s| %-13s| %-41s|%8s|%20s |%14s |%11s |%4s|\n"
+#define ERR_TEXT_FMT "| %-27.27s| %-13s| %-106s|\n"
+ */
