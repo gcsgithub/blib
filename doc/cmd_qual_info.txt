@@ -1,0 +1,125 @@
+Special cases:
+	QUAL_DATABASE ,"/database" , REQVAL_REQ , NULL ,NULL , "name of the database BLIBDBS"},
+		Dont allow in log file as we may want to replay log into a new database
+	QUAL_NEW ,"/new" ,VT_NONE , REQVAL_NONE , NULL ,NULL , "only valid for /import"},
+===============================================================================================================================
+For every command
+	QUAL_LOG ,"/log" , REQVAL_OPT , NULL ,NULL , "log command to optional log file def: BLIB_LOG"},
+	QUAL_NOLOG ,"/nolog" ,VT_NONE , REQVAL_NONE , NULL ,NULL , "Do NOT log this command to BLIB_LOG"},
+	
+	QUAL_OUTPUT ,"/output" , REQVAL_REQ , NULL ,NULL , "output result to file"},
+
+===============================================================================================================================
+{CMD_ADD ,DB_WO ,"/add" ,"label" ,VT_LABEL , REQVAL_REQ , VALIDLABEL , "Add a new volume name to database"},
+{CMD_MODIFY ,"/modify" ,"label" ,VT_LABEL , REQVAL_REQ , VALIDLABEL , "Modify an existing volume"},
+{CMD_REPORT ,"/report" ,VT_NONE , REQVAL_NONE , NULL ,NULL , "Report all or filtered list of volumes in database"},
+	Implict value: Label
+	QUAL_STATE ,"/state" ,"state" ,VT_STATE , REQVAL_REQ , NULL ,"FREE" , "Volume state Free or Allocated" },
+	QUAL_MEDIA ,"/media" ,"media" ,VT_STR , REQVAL_REQ , NULL , "media type def: %s..." },
+	QUAL_USAGE ,"/usage" ,"usage" ,VT_INT , REQVAL_OPT , NULL , "Increment/Set usage counter"},
+	QUAL_GROUP ,"/group" ,"groupname" ,VT_STR , REQVAL_REQ , NULL , "The Backup group this volume belongs too MYBLIB_GROUP"},
+	QUAL_LOCATION ,"/location" ,"location" ,VT_STR , REQVAL_REQ , NULL , "where is it"},
+	QUAL_LIBDATE ,"/libdate" ,"librarydate" ,VT_DATE , REQVAL_REQ , NULL , "date volume was added to library normally calculated"},
+	QUAL_OFFSITE ,"/offsite" ,"offsitedate" ,VT_DATE , REQVAL_REQ , NULL , "suggested Date the tape should be offsite by"},
+
+===============================================================================================================================
+{CMD_DISPLAY ,"/display" ,"label" ,VT_LABEL , REQVAL_REQ , VALIDLABEL , "Display existing volume and any fsets"},
+{CMD_REMOVE ,"/remove" ,"label" ,VT_LABEL , REQVAL_REQ , VALIDLABEL , "Remove and existing volume and any fsets from database"}, 
+	Implict value: Label
+
+===============================================================================================================================
+{CMD_REPORTFRE ,"/reportfree" ,VT_INT , REQVAL_OPT , NULL ,NULL , "Report free volumes for compatibility"},
+{CMD_REPORTEXP ,"/reportexpired" ,VT_INT , REQVAL_OPT , NULL ,NULL , "Report expired volumes for compatibility"},
+	Implict value: count of volumes to report
+	# QUAL_HTML ,"/html" ,VT_NONE , REQVAL_NONE , NULL ,NULL , "output in html rather than plain text"},
+	# QUAL_MAIL ,"/mail" ,VT_STR , REQVAL_REQ , NULL ,NULL , "email backup report to address"},
+	# QUAL_STYSHT ,"/stylesheet" , REQVAL_REQ , NULL ,DEF_STYSHT, "stylesheet to include for /html output"},
+
+===============================================================================================================================
+{CMD_DOEXPIRE ,"/runexpiration" ,VT_INT , REQVAL_OPT , NULL ,NULL , "free up all or up too n expired tapes"},
+	Implict value: count of volumes to free
+
+===============================================================================================================================
+{CMD_REPLAY ,"/replaylog" , REQVAL_REQ , NULL ,NULL , "Replay log file [/new to begin a new database]"},
+	Implicit value: log file
+	QUAL_SINCE ,"/since" ,VT_DATE , REQVAL_REQ , NULL ,NULL , "with /replaylog /since=ctime:n to replay log since n"},
+
+===============================================================================================================================
+{CMD_NEWBCK ,DB_WO ,"/newbackup" ,VT_NONE , REQVAL_NONE , NULL ,NULL , "Establish a new backup and return its bck_id"},
+	QUAL_RECORD ,"/record" ,"recorddate" ,VT_DATE , REQVAL_REQ , NULL , "start time"},
+	QUAL_EXPIRE ,"/expire" ,"expiredate" ,VT_DATE , REQVAL_REQ , NULL , "Date the backup id will expire and return volumes to /state=FREE"},
+	QUAL_DESC ,"/desc" ,"desc" ,VT_STR , REQVAL_REQ , NULL , "Description of the backup or error"},
+	QUAL_NODE ,"/node" ,"node" ,VT_STR , REQVAL_REQ , NULL , "name of node the backup was recorded on"},
+	QUAL_BCKID ,"/bck_id" ,"bck_id" ,VT_INT64 , REQVAL_REQ , NULL , "bck_id that we intend working on"},
+
+===============================================================================================================================
+{CMD_STARTBCK ,DB_WO ,"/startbackup" ,"objname" ,VT_STR , REQVAL_REQ , NULL , "start backup of object on a given /label="},
+	Implict value: name of object being backup'd up
+	QUAL_RECORD ,"/record" ,"recorddate" ,VT_DATE , REQVAL_REQ , NULL , "start time"},
+	QUAL_OBJINS ,"/objinstance" ,"obj_instance" ,VT_INT , REQVAL_REQ , NULL , "BLIB_OBJINSTANCE returned by /startbackup usually 1"},
+	QUAL_BCKID ,"/bck_id" ,"bck_id" ,VT_INT64 , REQVAL_REQ , NULL , "bck_id that we intend working on"},
+	QUAL_LABEL ,"/label" ,"label" ,VT_LABEL , REQVAL_REQ , NULL , "Volume label to be used"},
+
+===============================================================================================================================
+{CMD_CHG_VOL ,"/change_volume" ,"objname" ,VT_STR , REQVAL_REQ , NULL , "close current volume of object start new on /label="},
+	Implict value: name of object being backup'd up
+
+	QUAL_OBJINS ,"/objinstance" ,"obj_instance" ,VT_INT , REQVAL_REQ , NULL , "BLIB_OBJINSTANCE returned by /startbackup usually 1"},
+	QUAL_BCKID ,"/bck_id" ,"bck_id" ,VT_INT64 , REQVAL_REQ , NULL , "bck_id that we intend working on"},
+	QUAL_LABEL ,"/label" ,"label" ,VT_LABEL , REQVAL_REQ , NULL , "Volume label to be used"},
+	QUAL_SIZE ,"/size" ,"size" ,VT_INT64 , REQVAL_REQ , NULL , "Bytes to record"},
+	QUAL_ENDBCK ,"/end" ,"end" ,VT_DATE , REQVAL_REQ , NULL , "end time"},
+
+===============================================================================================================================
+{CMD_ENDBCK ,DB_WO ,"/endbackup" ,"objname" ,VT_STR , REQVAL_REQ , NULL , "finish backup of object"}, 
+	Implict value: name of object being backup'd up
+	
+	QUAL_ENDBCK ,"/end" ,"end" ,VT_DATE , REQVAL_REQ , NULL , "end time"},
+	QUAL_SIZE ,"/size" ,"size" ,VT_INT64 , REQVAL_REQ , NULL , "Bytes to record"},
+	QUAL_OBJINS ,"/objinstance" ,"obj_instance" ,VT_INT , REQVAL_REQ , NULL , "BLIB_OBJINSTANCE returned by /startbackup usually 1"},
+	QUAL_BCKID ,"/bck_id" ,"bck_id" ,VT_INT64 , REQVAL_REQ , NULL , "bck_id that we intend working on"},
+	QUAL_LABEL ,"/label" ,"label" ,VT_LABEL , REQVAL_REQ , NULL , "Volume label to be used"},
+
+===============================================================================================================================
+{CMD_ERRBCK ,DB_WO ,"/errbackup" ,"objname" ,VT_STR , REQVAL_REQ , NULL , "report an error during backup against /errbackup= /bck_id= /label="}, 
+	QUAL_RECORD ,"/record" ,"recorddate" ,VT_DATE , REQVAL_REQ , NULL , "start time"},
+	QUAL_DESC ,"/desc" ,"desc" ,VT_STR , REQVAL_REQ , NULL , "Description of the backup or error"},
+	QUAL_OBJINS ,"/objinstance" ,"obj_instance" ,VT_INT , REQVAL_REQ , NULL , "BLIB_OBJINSTANCE returned by /startbackup usually 1"},
+	QUAL_BCKID ,"/bck_id" ,"bck_id" ,VT_INT64 , REQVAL_REQ , NULL , "bck_id that we intend working on"},
+	QUAL_LABEL ,"/label" ,"label" ,VT_LABEL , REQVAL_REQ , NULL , "Volume label to be used"},
+
+===============================================================================================================================
+{CMD_FINBCK ,"/finishbackup" ,VT_STR , REQVAL_NONE , NULL ,NULL , "finish a backup id (verify and summary updates)"},
+	QUAL_BCKID ,"/bck_id" ,"bck_id" ,VT_INT64 , REQVAL_REQ , NULL , "bck_id that we intend working on"},
+
+===============================================================================================================================
+{CMD_DELBCK ,"/removebackup" ,"bck_id" ,VT_INT64 , REQVAL_REQ , NULL , "Remove all data refering to backup id given"},
+	Implict value: bck_id
+
+===============================================================================================================================
+{CMD_MODBCK ,"/modifybackup" ,"bck_id" ,VT_INT64 , REQVAL_REQ , NULL , "Modify backup info for given bck_id"}, 
+	Implict value: bck_id
+	QUAL_RECORD ,"/record" ,"recorddate" ,VT_DATE , REQVAL_REQ , NULL , "start time"},
+	QUAL_ENDBCK ,"/end" ,"end" ,VT_DATE , REQVAL_REQ , NULL , "end time"},
+	QUAL_EXPIRE ,"/expire" ,"expiredate" ,VT_DATE , REQVAL_REQ , NULL , "Date the backup id will expire and return volumes to /state=FREE"},
+	QUAL_SIZE ,"/size" ,"size" ,VT_INT64 , REQVAL_REQ , NULL , "Bytes to record"},
+	QUAL_DESC ,"/desc" ,"desc" ,VT_STR , REQVAL_REQ , NULL , "Description of the backup or error"},
+	QUAL_NODE ,"/node" ,"node" ,VT_STR , REQVAL_REQ , NULL , "name of node the backup was recorded on"},
+
+===============================================================================================================================
+{CMD_REPBCK ,"/reportbackup" ,"bck_id" ,VT_INT64 , REQVAL_REQ , NULL , "report backup info for given bck_id"}, 
+	Implicit value: bck_id
+	QUAL_DESC ,"/desc" ,"desc" ,VT_STR , REQVAL_REQ , NULL , "Description of the backup or error"},
+	QUAL_HTML ,"/html" ,VT_NONE , REQVAL_NONE , NULL ,NULL , "output in html rather than plain text"},
+	QUAL_MAIL ,"/mail" ,VT_STR , REQVAL_REQ , NULL ,NULL , "email backup report to address"},
+	QUAL_STYSHT ,"/stylesheet" , REQVAL_REQ , NULL ,DEF_STYSHT, "stylesheet to include for /html output"},
+
+===============================================================================================================================
+{CMD_LISTBCK ,"/listbackups" ,"bck_id" ,VT_INT64 , REQVAL_OPT , NULL , "list all backups or given backupid"}, 
+	Implicit value: bck_id
+
+===============================================================================================================================
+{CMD_LISTOBJ ,"/listobjects" ,"objname" ,VT_STR , REQVAL_OPT , NULL , "list all backups for all backups or a given object name"},
+	Implicit value: objname
+
+===============================================================================================================================

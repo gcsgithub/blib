@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesStackState
+   version = "1.0">
+   <StackStates>
+      <StackState
+         stackFrameDescription = "copy_results_volume:data_access.c">
+         <expressions>
+         </expressions>
+      </StackState>
+      <StackState
+         stackFrameDescription = "db_fldsmklist:data_access.c">
+         <expressions>
+         </expressions>
+      </StackState>
+      <StackState
+         stackFrameDescription = "do_upd_vol:data_access.c">
+         <expressions>
+            <expression
+               value = "(char *)(cmd)-&gt;val">
+            </expression>
+         </expressions>
+      </StackState>
+      <StackState
+         stackFrameDescription = "db_flds_bind:data_access.c">
+         <expressions>
+         </expressions>
+      </StackState>
+      <StackState
+         stackFrameDescription = "make_filter_rec:execute_cmds.c">
+         <expressions>
+         </expressions>
+      </StackState>
+      <StackState
+         stackFrameDescription = "modify_vol:execute_cmds.c">
+         <expressions>
+            <expression
+               value = "(char *)(qual_ptr)-&gt;val">
+            </expression>
+         </expressions>
+      </StackState>
+      <StackState
+         stackFrameDescription = "db_update_volume:data_access.c">
+         <expressions>
+         </expressions>
+      </StackState>
+   </StackStates>
+</VariablesStackState>
