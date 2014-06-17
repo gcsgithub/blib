@@ -1,6 +1,9 @@
-static char *rcsid="@(#) $Id: parseslashcmd.c,v 1.10 2013/01/20 10:29:44 mark Exp mark $";
+static char *rcsid="@(#) $Id: parseslashcmd.c,v 1.11 2013/01/21 16:54:54 mark Exp mark $";
 /*
  * $Log: parseslashcmd.c,v $
+ * Revision 1.11  2013/01/21 16:54:54  mark
+ * MG fix old int cast from nowgm(), update help text for new decimal date
+ *
  * Revision 1.10  2013/01/20 10:29:44  mark
  * MG changes for new decimal time switch from time_t to blib_tim_t
  * fix memory leak
@@ -52,23 +55,23 @@ cmdqual_t CMDQUALS[]  = {
     {CMD_ENV        ,CMD  ,DB_RO     ,"/env"              ,NULL           ,VT_NONE   ,REQVAL_NONE ,NULL      ,NULL      ,"Display environment in effect"},
     {CMD_ADD        ,CMD  ,DB_WO     ,"/add"              ,"label"       ,VT_LABEL  ,REQVAL_REQ  ,VALIDLABEL,NULL      ,"Add a new volume name to database"},
     {CMD_DISPLAY    ,CMD  ,DB_RO     ,"/display"	      ,"label"       ,VT_LABEL  ,REQVAL_REQ  ,VALIDLABEL,NULL      ,"Display existing volume and any fsets"},
-    {CMD_MODIFY     ,CMD  ,DB_RW     ,"/modify"	      ,"label"       ,VT_LABEL  ,REQVAL_REQ  ,VALIDLABEL,NULL      ,"Modify an existing volume"},
-    {CMD_REMOVE     ,CMD  ,DB_RW     ,"/remove"          ,"label"       ,VT_LABEL  ,REQVAL_REQ  ,VALIDLABEL,NULL      ,"Remove and existing volume and any fsets from database"},
-    {CMD_REPORTFRE  ,CMD  ,DB_RO     ,"/reportfree"     ,NULL	       ,VT_INT	   ,REQVAL_OPT  ,NULL      ,NULL      ,"Report free volumes for compatibility"},
-    {CMD_REPORTEXP  ,CMD  ,DB_RO     ,"/reportexpired" ,NULL	       ,VT_INT	   ,REQVAL_OPT  ,NULL      ,NULL      ,"Report expired volumes for compatibility"},
-    {CMD_DOEXPIRE   ,CMD  ,DB_RW     ,"/runexpiration" ,NULL          ,VT_INT	   ,REQVAL_OPT  ,NULL      ,NULL      ,"free up all or up too n expired tapes"},
-    {CMD_REPORT     ,CMD  ,DB_RO     ,"/report"	      ,NULL	       ,VT_NONE   ,REQVAL_NONE ,NULL      ,NULL      ,"Report all or filtered list of volumes in database"},
-    {CMD_REPLAY     ,CMD  ,DB_RW     ,"/replaylog"	 ,NULL	       ,VT_FILENAM,REQVAL_REQ  ,NULL      ,NULL      ,"Replay log file [/new to begin a new database]"},
-    {CMD_NEWBCK     ,CMD  ,DB_WO     ,"/newbackup"	 ,NULL	       ,VT_NONE   ,REQVAL_NONE ,NULL      ,NULL      ,"Establish a new backup and return its bck_id"},
-    {CMD_STARTBCK   ,CMD  ,DB_WO     ,"/startbackup"    ,"objname"   ,VT_STR    ,REQVAL_REQ  ,NULL      ,NULL      ,"start backup of object on a given /label="},
-    {CMD_CHG_VOL    ,CMD  ,DB_RW     ,"/change_volume" ,"objname"   ,VT_STR    ,REQVAL_REQ  ,NULL      ,NULL      ,"close current volume of object start new on /label="},
-    {CMD_ENDBCK     ,CMD  ,DB_WO     ,"/endbackup"	    ,"objname",VT_STR    ,REQVAL_REQ  ,NULL      ,NULL      ,"finish backup of object"},
-    {CMD_ERRBCK     ,CMD  ,DB_WO     ,"/errbackup"	    ,"objname",VT_STR    ,REQVAL_REQ  ,NULL      ,NULL      ,"report an error during backup against /errbackup= /bck_id= /label="},
+    {CMD_MODIFY     ,CMD  ,DB_RW     ,"/modify"	          ,"label"       ,VT_LABEL  ,REQVAL_REQ  ,VALIDLABEL,NULL      ,"Modify an existing volume"},
+    {CMD_REMOVE     ,CMD  ,DB_RW     ,"/remove"           ,"label"       ,VT_LABEL  ,REQVAL_REQ  ,VALIDLABEL,NULL      ,"Remove and existing volume and any fsets from database"} ,
+    {CMD_REPORTFRE  ,CMD  ,DB_RO     ,"/reportfree"       ,NULL	       ,VT_INT	   ,REQVAL_OPT  ,NULL      ,NULL      ,"Report free volumes for compatibility"},
+    {CMD_REPORTEXP  ,CMD  ,DB_RO     ,"/reportexpired"    ,NULL	       ,VT_INT	   ,REQVAL_OPT  ,NULL      ,NULL      ,"Report expired volumes for compatibility"},
+    {CMD_DOEXPIRE   ,CMD  ,DB_RW     ,"/runexpiration"    ,NULL          ,VT_INT	   ,REQVAL_OPT  ,NULL      ,NULL      ,"free up all or up too n expired tapes"},
+    {CMD_REPORT     ,CMD  ,DB_RO     ,"/report"	          ,NULL	       ,VT_NONE   ,REQVAL_NONE ,NULL      ,NULL      ,"Report all or filtered list of volumes in database"},
+    {CMD_REPLAY     ,CMD  ,DB_RW     ,"/replaylog"	      ,NULL	       ,VT_FILENAM,REQVAL_REQ  ,NULL      ,NULL      ,"Replay log file [/new to begin a new database]"},
+    {CMD_NEWBCK     ,CMD  ,DB_WO     ,"/newbackup"	      ,NULL	       ,VT_NONE   ,REQVAL_NONE ,NULL      ,NULL      ,"Establish a new backup and return its bck_id"},
+    {CMD_STARTBCK   ,CMD  ,DB_WO     ,"/startbackup"      ,"objname"   ,VT_STR    ,REQVAL_REQ  ,NULL      ,NULL      ,"start backup of object on a given /label="},
+    {CMD_CHG_VOL    ,CMD  ,DB_RW     ,"/change_volume"    ,"objname"   ,VT_STR    ,REQVAL_REQ  ,NULL      ,NULL      ,"close current volume of object start new on /label="},
+    {CMD_ENDBCK     ,CMD  ,DB_WO     ,"/endbackup"	      ,"objname",VT_STR    ,REQVAL_REQ  ,NULL      ,NULL      ,"finish backup of object"},
+    {CMD_ERRBCK     ,CMD  ,DB_WO     ,"/errbackup"	    ,"objname",   VT_STR    ,REQVAL_REQ  ,NULL      ,NULL      ,"report an error during backup against /errbackup= /bck_id= /label="},
     {CMD_FINBCK     ,CMD  ,DB_RW     ,"/finishbackup"   ,NULL	      ,VT_STR    ,REQVAL_NONE ,NULL      ,NULL      ,"finish a backup id (verify and summary updates)"},
     {CMD_DELBCK     ,CMD  ,DB_RW     ,"/removebackup"   ,"bck_id"	 ,VT_INT64  ,REQVAL_REQ  ,NULL      ,NULL      ,"Remove all data refering to backup id given"},
     {CMD_MODBCK     ,CMD  ,DB_NONE   ,"/modifybackup"   ,"bck_id"    ,VT_INT64  ,REQVAL_REQ  ,NULL      ,NULL      ,"Modify backup info for given bck_id"},
-    {CMD_REPBCK     ,CMD  ,DB_RO     ,"/reportbackup"   ,"bck_id"	 ,VT_INT64  ,REQVAL_REQ  ,NULL      ,NULL      ,"report backup info for given bck_id"},
-    {CMD_LISTBCK    ,CMD  ,DB_RO     ,"/listbackups"    ,"bck_id"	 ,VT_INT64  ,REQVAL_OPT  ,NULL      ,NULL      ,"list all backups or given backupid"},
+    {CMD_REPBCK     ,CMD  ,DB_RO     ,"/reportbackup"   ,"bck_id"	 ,VT_INT64  ,REQVAL_OPT  ,NULL      ,NULL      ,"report backup info for given bck_id"},
+    {CMD_LISTBCK    ,CMD  ,DB_RO     ,"/listbackups"    ,"bck_id"	 ,VT_INT64  ,REQVAL_OPT  ,NULL      ,NULL      ,"list all backups or given backupid or for a given /label="},
     {CMD_LISTOBJ    ,CMD  ,DB_RO     ,"/listobjects"    ,"objname"   ,VT_STR    ,REQVAL_OPT  ,NULL      ,NULL      ,"list all backups for all backups or a given object name"},
     {CMD_VERIFY     ,CMD  ,DB_RO     ,"/verify"         ,NULL        ,VT_NONE   ,REQVAL_NONE ,NULL      ,NULL      , "Verify internal conistancy of database tables"},
     {CMD_ERRCOUNT   ,CMD  ,DB_RO     ,"/errcount"       ,"bck_id"    ,VT_INT64  ,REQVAL_REQ  ,NULL      ,NULL      , "Return BLIB_ERRCOUNT for a given backup id"},
@@ -1004,10 +1007,10 @@ cmd_t	    *checksyntax(cmd_t *hd)
 
 void	do_cmd_help(FILE *fd)
 {
-    int	idx;
+    int	      idx;
     cmdqual_t *cmdp;
-    char    *tail="";
-    char    *defval;
+    char      *tail="";
+    char      *defval;
     
     idx=1;
     

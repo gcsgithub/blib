@@ -1,8 +1,11 @@
 #ifndef __PARSESLASHCMD_H__
 #define __PARSESLASHCMD_H__
 /*
- * @(#) $Id: parseslashcmd.h,v 1.6 2011/04/14 02:33:55 mark Exp mark $
+ * @(#) $Id: parseslashcmd.h,v 1.7 2011/04/15 03:40:14 mark Exp mark $
  *  $Log: parseslashcmd.h,v $
+ *  Revision 1.7  2011/04/15 03:40:14  mark
+ *  add /errcount
+ *
  *  Revision 1.6  2011/04/14 02:33:55  mark
  *  optional include
  *
@@ -174,13 +177,13 @@ struct cmdqual_s {
     cmdqual_e   cmdid;
     cmdtype_e	cmdtype;
     dbaccess_e	dbaccess;
-    char	*cmdtxt;
-    char	*sql_fldnam;
+    char	    *cmdtxt;
+    char	    *sql_fldnam;
     valtype_e	val_type;
     reqval_e	val_opt;
-    char	*validchar;
-    char	*defval;
-    char	*helptxt;
+    char	    *validchar;
+    char	    *defval;
+    char	    *helptxt;
 };
 
 typedef struct cmd_s cmd_t;
