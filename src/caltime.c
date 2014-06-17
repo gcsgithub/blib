@@ -1,6 +1,9 @@
-static const char *rcsCALTIME="@(#)$Id: caltime.c,v 1.2 2000/09/06 02:48:37 garrettm Exp root $";
+static const char *rcsCALTIME="@(#)$Id: caltime.c,v 1.3 2008/05/13 04:40:25 root Exp $";
 /* Calc time functions
  ** $Log: caltime.c,v $
+ ** Revision 1.3  2008/05/13 04:40:25  root
+ ** add -c to display c time as well
+ **
  ** Revision 1.2  2000/09/06 02:48:37  garrettm
  ** add Month Sep :)
  **

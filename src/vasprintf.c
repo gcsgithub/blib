@@ -1,8 +1,11 @@
 #include "vasprintf.h"
 #ifdef NEED_ASPRINTF
-static const char *rcsid = "@(#)$Id: vasprintf.c,v 2.5 2010/04/07 08:34:31 mark Exp mark $";
+static const char *rcsid = "@(#)$Id: vasprintf.c,v 1.2 2010/11/16 04:10:30 mark Exp $";
 /*
  * $Log: vasprintf.c,v $
+ * Revision 1.2  2010/11/16 04:10:30  mark
+ * rc1
+ *
  * Revision 2.5  2010/04/07 08:34:31  mark
  * fix error with hangling args list
  *

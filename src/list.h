@@ -1,8 +1,11 @@
 #ifndef __LIST_H__
 #define __LIST_H__
 /*
- * @(#) $Id: list.h,v 1.2 2010/11/16 04:11:16 mark Exp mark $
+ * @(#) $Id: list.h,v 1.3 2013/01/20 10:15:26 mark Exp $
  * $Log: list.h,v $
+ * Revision 1.3  2013/01/20 10:15:26  mark
+ * MG remove time_ent()
+ *
  * Revision 1.2  2010/11/16 04:11:16  mark
  * rc1
  *

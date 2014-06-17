@@ -1,6 +1,9 @@
-static char *rcsid="@(#) $Id: blib.c,v 1.5 2013/01/20 10:37:18 mark Exp mark $";
+static char *rcsid="@(#) $Id: blib.c,v 1.6 2013/01/21 16:52:21 mark Exp $";
 /*
  * $Log: blib.c,v $
+ * Revision 1.6  2013/01/21 16:52:21  mark
+ * MG add -w with BLIB.date_width to allow the Start-End date output to be varied in length
+ *
  * Revision 1.5  2013/01/20 10:37:18  mark
  * mg remove unused variables
  *

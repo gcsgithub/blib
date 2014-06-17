@@ -1,8 +1,11 @@
 #ifndef __UTIL_H__
 #define __UTIL_H__
 /*
- * @(#) $Id: util.h,v 1.3 2008/10/20 13:01:39 mark Exp mark $
+ * @(#) $Id: util.h,v 1.4 2010/11/16 04:10:54 mark Exp $
  * $Log: util.h,v $
+ * Revision 1.4  2010/11/16 04:10:54  mark
+ * rc1
+ *
  * Revision 1.3  2008/10/20  13:01:39  mark
  * checkpoint
  *

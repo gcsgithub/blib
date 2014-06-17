@@ -1,4 +1,4 @@
-static char *rcsid="@(#) $Id: do_cmd_reportbackup.c,v 1.5 2013/01/20 10:07:09 mark Exp mark $";
+static char *rcsid="@(#) $Id: do_cmd_reportbackup.c,v 1.6 2013/01/21 16:50:47 mark Exp $";
 
 /*
  *  do_cmd_reportbackup.c
@@ -7,6 +7,9 @@ static char *rcsid="@(#) $Id: do_cmd_reportbackup.c,v 1.5 2013/01/20 10:07:09 ma
  *  Created by mark on 08/10/2010.
  *  Copyright 2010 Garetech Computer Solutions. All rights reserved.
  * $Log: do_cmd_reportbackup.c,v $
+ * Revision 1.6  2013/01/21 16:50:47  mark
+ * MG allow -w to set the width of the Start-End field and size it to match the variablility
+ *
  * Revision 1.5  2013/01/20 10:07:09  mark
  * MG changes from time_t to blib_tim_t and required support functions for decimal time
  *

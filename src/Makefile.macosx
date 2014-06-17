@@ -1,5 +1,8 @@
-# @(#) $Id:$
-# $Log:$
+# @(#) $Id: Makefile.macosx,v 1.1 2014/06/17 04:36:49 mark Exp $
+# $Log: Makefile.macosx,v $
+# Revision 1.1  2014/06/17 04:36:49  mark
+# Initial revision
+#
 #
 #CFLAGS = -I. -g -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED
 #CFLAGS = -I. -g -D_XOPEN_SOURCE=500

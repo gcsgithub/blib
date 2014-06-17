@@ -7,6 +7,9 @@
  *  Created by mark on 31/10/2010.
  *  Copyright 2010 Garetech Computer Solutions. All rights reserved.
  * $Log: timefunc.h,v $
+ * Revision 1.3  2013/01/20 10:16:48  mark
+ * >> MG change time_t to blib_tim_t for new decimal time and required function changes
+ *
  * Revision 1.2  2011/04/14 02:34:23  mark
  * added copy_datestr_time used in reporting error lines in html
  *

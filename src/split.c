@@ -1,6 +1,9 @@
-static char *rcsid="@(#) $Id: split.c,v 1.1 2008/10/19 22:18:59 root Exp mark $";
+static char *rcsid="@(#) $Id: split.c,v 1.2 2010/11/16 04:10:23 mark Exp $";
 /*
  * $Log: split.c,v $
+ * Revision 1.2  2010/11/16 04:10:23  mark
+ * rc1
+ *
  * Revision 1.1  2008/10/19  22:18:59  root
  * Initial revision
  *

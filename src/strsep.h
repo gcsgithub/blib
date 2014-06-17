@@ -1,7 +1,10 @@
 #ifndef __APPLE__
 /*
- * @(#) $Id: strsep.h,v 1.2 2008/09/27 13:11:22 mark Exp mark $
+ * @(#) $Id: strsep.h,v 1.3 2008/10/20 13:01:38 mark Exp $
  * $Log: strsep.h,v $
+ * Revision 1.3  2008/10/20 13:01:38  mark
+ * checkpoint
+ *
  * Revision 1.2  2008/09/27 13:11:22  mark
  * initial checkin
  *

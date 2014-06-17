@@ -1,6 +1,9 @@
-static const char *rcsid="@(#) $Id: list.c,v 1.2 2010/11/16 04:10:20 mark Exp mark $";
+static const char *rcsid="@(#) $Id: list.c,v 1.3 2013/01/20 10:14:42 mark Exp $";
 /*
  * $Log: list.c,v $
+ * Revision 1.3  2013/01/20 10:14:42  mark
+ * MG remove unused time_ent()
+ *
  * Revision 1.2  2010/11/16 04:10:20  mark
  * rc1
  *

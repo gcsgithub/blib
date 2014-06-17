@@ -1,13 +1,16 @@
 #ifndef __DATA_STRUCTURE_H__
 #define __DATA_STRUCTURE_H__
 /*
- // @(#) $Id: data_structures.h,v 1.4 2013/01/21 16:46:45 mark Exp mark $
+ // @(#) $Id: data_structures.h,v 1.5 2014/06/17 05:07:57 mark Exp $
  //  data_structures.h
  //  blib
  //
  //  Created by mark on 18/10/2010.
  //  Copyright (c) 2010 Garetech Computer Solutions. All rights reserved.
  // $Log: data_structures.h,v $
+ // Revision 1.5  2014/06/17 05:07:57  mark
+ // seems I had added change_date, offsite date since last ci
+ //
  // Revision 1.4  2013/01/21 16:46:45  mark
  // MG add missing recorddate to vol_t structure
  // reformating

@@ -1,5 +1,8 @@
-# @(#) $Id:$
-# $Log:$
+# @(#) $Id: Makefile.tru64,v 1.1 2014/06/17 04:36:58 mark Exp $
+# $Log: Makefile.tru64,v $
+# Revision 1.1  2014/06/17 04:36:58  mark
+# Initial revision
+#
 #
 #CFLAGS = -I. -g -D_XOPEN_SOURCE=500
 CC=cc

@@ -1,7 +1,7 @@
 #ifndef __DO_CMD_REPORTBACKUP_H__
 #define __DO_CMD_REPORTBACKUP_H__
 /*
- *  @(#) $Id: do_cmd_reportbackup.h,v 1.2 2011/04/14 02:30:12 mark Exp mark $
+ *  @(#) $Id: do_cmd_reportbackup.h,v 1.3 2013/01/21 16:53:44 mark Exp $
  *
  *  do_cmd_reportbackup.h
  *  blib
@@ -10,6 +10,9 @@
  *  Copyright 2010 Garetech Computer Solutions. All rights reserved.
  *
  *   $Log: do_cmd_reportbackup.h,v $
+ *   Revision 1.3  2013/01/21 16:53:44  mark
+ *   MG add -w with BLIB.date_width to allow the Start-End date output to be varied in length
+ *
  *   Revision 1.2  2011/04/14 02:30:12  mark
  *   fix format of text output
  *

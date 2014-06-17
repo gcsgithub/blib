@@ -1,4 +1,4 @@
-static char *rcsid="@(#) $Id: fileio.c,v 1.3 2011/04/14 02:31:06 mark Exp mark $";
+static char *rcsid="@(#) $Id: fileio.c,v 1.4 2013/01/20 10:12:23 mark Exp $";
 /*
  *  fileio.c
  *  fmtbckrep_xcode
@@ -7,6 +7,9 @@ static char *rcsid="@(#) $Id: fileio.c,v 1.3 2011/04/14 02:31:06 mark Exp mark $
  *  Copyright 2009 Garetech Computer Solutions. All rights reserved.
  *
  * $Log: fileio.c,v $
+ * Revision 1.4  2013/01/20 10:12:23  mark
+ * MG check fio is not null before trying to use fio->open
+ *
  * Revision 1.3  2011/04/14 02:31:06  mark
  * reindent and changes for optional include
  *

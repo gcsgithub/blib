@@ -2,9 +2,12 @@
 #define __VASPRINTF_H__
 
 /*
- * @(#) $Id: vasprintf.h,v 2.5 2010/04/07 08:34:52 mark Exp mark $
+ * @(#) $Id: vasprintf.h,v 1.2 2010/11/16 04:11:18 mark Exp $
  *
  * $Log: vasprintf.h,v $
+ * Revision 1.2  2010/11/16 04:11:18  mark
+ * rc1
+ *
  * Revision 2.5  2010/04/07 08:34:52  mark
  * fix error with hangling args list
  *

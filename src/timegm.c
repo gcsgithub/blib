@@ -1,7 +1,10 @@
-static const char *rcsid="@(#) $Id:$";
+static const char *rcsid="@(#) $Id: timegm.c,v 1.1 2010/11/22 06:00:31 mark Exp $";
 
 /* 
-** $Log:$
+** $Log: timegm.c,v $
+** Revision 1.1  2010/11/22 06:00:31  mark
+** Initial revision
+**
  */
 #include <time.h>
 #include <stdlib.h>

@@ -1,8 +1,11 @@
 #ifndef __DATA_ACCESS_H__
 #define	__DATA_ACCESS_H__
 /*
- * @(#) $Id: data_access.h,v 1.6 2011/04/17 05:34:17 mark Exp mark $
+ * @(#) $Id: data_access.h,v 1.7 2013/01/20 10:05:33 mark Exp $
  * $Log: data_access.h,v $
+ * Revision 1.7  2013/01/20 10:05:33  mark
+ * MG changes from time_t to blib_tim_t for decimal time 100th second
+ *
  * Revision 1.6  2011/04/17 05:34:17  mark
  * add db_count_notset() - improve errcount
  *

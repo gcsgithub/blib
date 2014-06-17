@@ -1,6 +1,9 @@
-static const char *rcsid="@(#) $Id: util.c,v 1.4 2010/11/16 04:10:27 mark Exp $";
+static const char *rcsid="@(#) $Id: util.c,v 1.5 2013/01/20 10:36:28 mark Exp $";
 /*
  *  $Log: util.c,v $
+ *  Revision 1.5  2013/01/20 10:36:28  mark
+ *  MG :( just spacing changes
+ *
  *  Revision 1.4  2010/11/16 04:10:27  mark
  *  rc1
  *

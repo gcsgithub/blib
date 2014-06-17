@@ -1,4 +1,4 @@
-static char *rcsid="@(#) $Id: mail_utils.c,v 1.2 2011/04/11 03:53:46 mark Exp mark $";
+static char *rcsid="@(#) $Id: mail_utils.c,v 1.3 2011/04/14 02:33:06 mark Exp $";
 /*
  *  mail_utils.c
  *  fmtbckrep_xcode
@@ -6,6 +6,9 @@ static char *rcsid="@(#) $Id: mail_utils.c,v 1.2 2011/04/11 03:53:46 mark Exp ma
  *  Created by mark on 19/05/2009.
  *  Copyright 2009 Garetech Computer Solutions. All rights reserved.
  * $Log: mail_utils.c,v $
+ * Revision 1.3  2011/04/14 02:33:06  mark
+ * optional log file include
+ *
  * Revision 1.2  2011/04/11 03:53:46  mark
  * add include log stuff
  *

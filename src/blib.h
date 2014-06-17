@@ -1,8 +1,11 @@
 #ifndef __BLIB_H__
 #define __BLIB_H__
 /*
- * @(#)$Id: blib.h,v 1.5 2011/04/11 03:51:05 mark Exp mark $
+ * @(#)$Id: blib.h,v 1.6 2013/01/21 16:54:06 mark Exp $
  * $Log: blib.h,v $
+ * Revision 1.6  2013/01/21 16:54:06  mark
+ * MG add date_width to global structure for support of -w and variable date width
+ *
  * Revision 1.5  2011/04/11 03:51:05  mark
  * add includelogs
  *

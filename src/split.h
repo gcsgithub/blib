@@ -1,8 +1,11 @@
 #ifndef __SPLIT_H__
 #define	__SPLIT_H__
 /*
- * @(#) $Id: split.h,v 1.1 2008/10/19 22:18:59 root Exp mark $
+ * @(#) $Id: split.h,v 1.2 2010/11/16 04:11:12 mark Exp $
  * $Log: split.h,v $
+ * Revision 1.2  2010/11/16 04:11:12  mark
+ * rc1
+ *
  * Revision 1.1  2008/10/19  22:18:59  root
  * Initial revision
  *

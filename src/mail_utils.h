@@ -1,7 +1,7 @@
 #ifndef __MAIL_UTILS_H__
 #define	__MAIL_UTILS_H__
 /*
- * @(#) $Id: mail_utils.h,v 1.2 2011/04/11 03:53:53 mark Exp mark $
+ * @(#) $Id: mail_utils.h,v 1.3 2011/04/14 02:33:22 mark Exp $
  *
  *  mail_utils.h
  *  fmtbckrep_xcode
@@ -10,6 +10,9 @@
  *  Copyright 2009 Garetech Computer Solutions. All rights reserved.
  *
  *  $Log: mail_utils.h,v $
+ *  Revision 1.3  2011/04/14 02:33:22  mark
+ *  optional file include
+ *
  *  Revision 1.2  2011/04/11 03:53:53  mark
  *  add include log stuff
  *

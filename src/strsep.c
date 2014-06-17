@@ -1,7 +1,10 @@
 #ifndef __APPLE__
-static char *rcsid="@(#) $Id: strsep.c,v 1.2 2008/09/27 13:11:22 mark Exp mark $";
+static char *rcsid="@(#) $Id: strsep.c,v 1.3 2008/10/20 13:01:38 mark Exp $";
 /*
  *  * $Log: strsep.c,v $
+ *  * Revision 1.3  2008/10/20 13:01:38  mark
+ *  * checkpoint
+ *  *
  *  * Revision 1.2  2008/09/27 13:11:22  mark
  *  * initial checkin
  *  *

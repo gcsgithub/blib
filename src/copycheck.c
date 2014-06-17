@@ -1,4 +1,4 @@
-static const char *rcsid="@(#) $Id: copycheck.c,v 1.2 2011/04/11 03:51:27 mark Exp mark $";
+static const char *rcsid="@(#) $Id: copycheck.c,v 1.3 2013/01/20 10:01:14 mark Exp $";
 /*
 //  copycheck.c
 //  blib
@@ -6,6 +6,9 @@ static const char *rcsid="@(#) $Id: copycheck.c,v 1.2 2011/04/11 03:51:27 mark E
 //  Created by mark on 18/10/2010.
 //  Copyright (c) 2010 Garetech Computer Solutions. All rights reserved.
 // $Log: copycheck.c,v $
+// Revision 1.3  2013/01/20 10:01:14  mark
+// MG tighten up the checking for null parameters before using them.
+//
 // Revision 1.2  2011/04/11 03:51:27  mark
 // add fmt_state
 //

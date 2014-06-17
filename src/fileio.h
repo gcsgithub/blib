@@ -1,7 +1,7 @@
 #ifndef __FILEIO_H__
 #define __FILEIO_H__
 /*
- * @(#) $Id: fileio.h,v 1.2 2011/04/11 03:53:31 mark Exp mark $
+ * @(#) $Id: fileio.h,v 1.3 2011/04/14 02:32:56 mark Exp $
  *
  *  fileio.h
  *  fmtbckrep_xcode
@@ -10,6 +10,9 @@
  *  Copyright 2009 Garetech Computer Solutions. All rights reserved.
  *
  * $Log: fileio.h,v $
+ * Revision 1.3  2011/04/14 02:32:56  mark
+ * add optional_include
+ *
  * Revision 1.2  2011/04/11 03:53:31  mark
  * add include log stuff for mail
  *

@@ -1,4 +1,4 @@
-static const char *rcsid="@(#) $Id:$";
+static const char *rcsid="@(#) $Id: mkargv.c,v 1.1 2010/11/16 04:04:59 root Exp $";
 /*
  *  mkargv.c
  *  blib
@@ -6,7 +6,10 @@ static const char *rcsid="@(#) $Id:$";
  *  Created by mark on 26/10/2010.
  *  Copyright 2010 Garetech Computer Solutions. All rights reserved.
  *
- *  $Log:$
+ *  $Log: mkargv.c,v $
+ *  Revision 1.1  2010/11/16 04:04:59  root
+ *  Initial revision
+ *
  *
  */
 

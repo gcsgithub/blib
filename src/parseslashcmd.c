@@ -1,6 +1,9 @@
-static char *rcsid="@(#) $Id: parseslashcmd.c,v 1.11 2013/01/21 16:54:54 mark Exp mark $";
+static char *rcsid="@(#) $Id: parseslashcmd.c,v 1.12 2014/06/17 05:08:54 mark Exp $";
 /*
  * $Log: parseslashcmd.c,v $
+ * Revision 1.12  2014/06/17 05:08:54  mark
+ * formating
+ *
  * Revision 1.11  2013/01/21 16:54:54  mark
  * MG fix old int cast from nowgm(), update help text for new decimal date
  *

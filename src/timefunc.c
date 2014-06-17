@@ -1,4 +1,4 @@
-static const char *rcsid="@(#) $Id: timefunc.c,v 1.2 2011/04/14 02:34:02 mark Exp mark $";
+static const char *rcsid="@(#) $Id: timefunc.c,v 1.3 2013/01/20 10:15:46 mark Exp $";
 /*
  *  timefunc.c
  *  blib

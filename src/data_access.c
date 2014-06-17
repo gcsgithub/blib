@@ -1,4 +1,4 @@
-static const char *rcsid="@(#) $Id: data_access.c,v 1.13 2013/01/21 16:39:33 mark Exp mark $";
+static const char *rcsid="@(#) $Id: data_access.c,v 1.14 2014/06/17 04:59:06 mark Exp $";
 /*
  *  data_access.c
  *  blib
@@ -6,6 +6,9 @@ static const char *rcsid="@(#) $Id: data_access.c,v 1.13 2013/01/21 16:39:33 mar
  *  Created by mark on 08/10/2008.
  *  Copyright 2008 Garetech Computer Solutions. All rights reserved.
  * $Log: data_access.c,v $
+ * Revision 1.14  2014/06/17 04:59:06  mark
+ * seems I had added change_date, offsite date since last ci
+ *
  * Revision 1.13  2013/01/21 16:39:33  mark
  * MG fix end incorrect type now FLD_DATE
  * size incorrectly set to FLD_INT now correct as FLD_INT64

@@ -1,8 +1,11 @@
 #ifndef __PARSESLASHCMD_H__
 #define __PARSESLASHCMD_H__
 /*
- * @(#) $Id: parseslashcmd.h,v 1.7 2011/04/15 03:40:14 mark Exp mark $
+ * @(#) $Id: parseslashcmd.h,v 1.8 2014/06/17 05:09:12 mark Exp $
  *  $Log: parseslashcmd.h,v $
+ *  Revision 1.8  2014/06/17 05:09:12  mark
+ *  formating
+ *
  *  Revision 1.7  2011/04/15 03:40:14  mark
  *  add /errcount
  *
