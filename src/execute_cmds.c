@@ -1,6 +1,10 @@
-static char *rcsid="@(#) $Id: execute_cmds.c,v 1.12 2013/01/20 10:18:55 mark Exp mark $";
+static char *rcsid="@(#) $Id: execute_cmds.c,v 1.13 2013/01/21 16:49:38 mark Exp mark $";
 /*
  * $Log: execute_cmds.c,v $
+ * Revision 1.13  2013/01/21 16:49:38  mark
+ * MG fix logic on display_backup_volumes BLIB.quiet to !BLIB.quiet
+ * reformating
+ *
  * Revision 1.12  2013/01/20 10:18:55  mark
  * MG chnages from new decimal time
  * display_backup_volumes, overrides for function display_backup_volumes() to control header/footer + force show as FREE
@@ -476,6 +480,7 @@ int display_volume(fio_t *fd, vol_t *volrec, dbh_t *dbh)
     doenv(fd, "BLIB_LOCATION"	 , VT_STR	, &volrec->location);
     doenv(fd, "BLIB_LIBRARYDATE" , VT_DATE	, &volrec->librarydate);
     doenv(fd, "BLIB_OFFSITEDATE" , VT_DATE	, &volrec->offsitedate);
+    doenv(fd, "BLIB_CHANGESDATE" , VT_DATE  , &volrec->change_date);
     doenv(fd, "BLIB_RECORDDATE"  , VT_DATE	, &bck_rec.start);
     doenv(fd, "BLIB_EXPIREDATE"  , VT_DATE	, &bck_rec.expiredate);
     doenv(fd, "BLIB_DESC"        , VT_STR   , &bck_rec.desc);
@@ -526,14 +531,14 @@ int filtcmp(cmd_t *output_qual, void *val, int size)
         case    CMP_OPT:               // TODO: maybe change this its NA to this filter
         case    CMP_ERR:
         case    CMP_NONE:
-            rval=0;	    // error so display everything
+            rval=0;                 // error so display everything
             break;
         case    CMP_LT:
             if (rval >= 0 ) rval=1; // <
             else	    rval=0;
             break;
         case    CMP_LE:
-            if (rval > 0 ) rval=1; // <=
+            if (rval > 0 ) rval=1;  // <=
             else	   rval=0;
             break;
         case    CMP_EQ:
@@ -549,7 +554,7 @@ int filtcmp(cmd_t *output_qual, void *val, int size)
             else	    rval=0;
             break;
         case    CMP_NE:
-            if (rval == 0 ) rval=1;  // !=
+            if (rval == 0 ) rval=1; // !=
             else	    rval=0;
             break;
     }
@@ -802,6 +807,7 @@ void do_cmd_report(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr, db
     datestr_t 	recorddate;
     datestr_t 	offsitedate;
     datestr_t 	expiredate;
+    //datestr_t   change_date;
     
     if (BLIB.debug) fprintf(stderr, "cmd: %s \n", thecmd->param->cmdtxt);
     
@@ -826,7 +832,8 @@ void do_cmd_report(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr, db
     while (dbrstatus) {
         if (filter_rec(&filtrec,&db_read)) {
             copy_datestr(&librarydate, (datestr_t *) time_cvt_blib_to_str(db_read.librarydate));
-            copy_datestr(&offsitedate, (datestr_t *) time_cvt_blib_to_str(db_read.offsitedate)); 
+            copy_datestr(&offsitedate, (datestr_t *) time_cvt_blib_to_str(db_read.offsitedate));
+            // copy_datestr(&offsitedate, (datestr_t *) time_cvt_blib_to_str(db_read.change_date));
             
             bzero(&bck_rec, sizeof(bck_rec));
             filecount = 0;
@@ -839,7 +846,7 @@ void do_cmd_report(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr, db
             copy_datestr(&expiredate,  (datestr_t *) time_cvt_blib_to_str(bck_rec.expiredate));
             
             
-            fprintf(outfd->fd,"%-9.9s %6d %6d %-9.9s %-10.10s %-9.9s %-5.5s %-17.17s %-17.17s %-17.17s  %s\n", 
+            fprintf(outfd->fd,"%-9.9s %6d %6d %-9.9s %-10.10s %-9.9s %-5.5s %-17.17s %-17.17s %-17.17s %s\n", 
                     (char *) &db_read.label,
                     filecount,
                     db_read.usage,
@@ -849,7 +856,8 @@ void do_cmd_report(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr, db
                     lookup_state((char *) &db_read.state), 
                     expiredate.str, 
                     offsitedate.str, 
-                    recorddate.str, 
+                    recorddate.str,
+                    /* change_date.str, */
                     (db_read.bck_id)?(char *) &bck_rec.desc:""
                     );
         }
@@ -1970,6 +1978,7 @@ int display_backup_volumes_for_object(dbh_t *dbh, bckobj_t *bckobjrec,backups_t 
     datestr_t 	recorddate;
     datestr_t 	offsitedate;
     datestr_t 	expiredate;
+    datestr_t   change_date;
     int		    volcount;
     char	    volfileno[16];
     
@@ -2032,17 +2041,24 @@ void	do_cmd_listbackups(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_pt
     
     cmd_t	*output_qual;
     qual_t	qualval;
+    int     have_label;
+    vol_t   volrec;
+    int     fndsts;
     
     bzero(&qualval, sizeof(qual_t));
-    
     
     if (BLIB.debug==99999) fprintf(stderr, "CMD: %s QUAL: %s\n", thecmd->param->cmdtxt, qual_ptr->param->cmdtxt);
     
     output_qual=qual_ptr;
     
+    have_label=0;
     
     while(output_qual) {
-        switch(output_qual->param->cmdid) {	
+        switch(output_qual->param->cmdid) {
+            case QUAL_LABEL:
+                copy_label(&qualval.label,  (char *) output_qual->val);
+                have_label++;
+                break;
             default:
                 fprintf(outfd->fd, "#BLIB:  Error invalid qualifier %s given to %s\n", output_qual->param->cmdtxt, thecmd->param->cmdtxt);
                 return;
@@ -2052,7 +2068,22 @@ void	do_cmd_listbackups(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_pt
     }
     
     if (thecmd->valset == VAL_SET) {
+        if (have_label) {
+            fprintf(outfd->fd, "#BLIB: Error /label is invalid when bck_id is provided by /listbackups\n");
+            return;
+        }
 	    qualval.bck_id = *(bckid_t *) thecmd->val;
+    }
+    else {
+        if (have_label) {
+            fndsts = db_find_volume_bylabel(dbh, &qualval.label, &volrec, FND_EQUAL);
+            if (fndsts) {
+                qualval.bck_id = volrec.bck_id;
+            }
+            else {
+                fprintf(outfd->fd, "#BLIB: warning label %s not found\n", qualval.label.str);
+            }
+        }
     }
 
     display_backup(outfd, qualval.bck_id,thecmd->cmpflg,   dbh); 
