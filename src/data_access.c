@@ -1,4 +1,4 @@
-static const char *rcsid="@(#) $Id: data_access.c,v 1.12 2013/01/20 10:03:12 mark Exp mark $";
+static const char *rcsid="@(#) $Id: data_access.c,v 1.13 2013/01/21 16:39:33 mark Exp mark $";
 /*
  *  data_access.c
  *  blib
@@ -6,6 +6,12 @@ static const char *rcsid="@(#) $Id: data_access.c,v 1.12 2013/01/20 10:03:12 mar
  *  Created by mark on 08/10/2008.
  *  Copyright 2008 Garetech Computer Solutions. All rights reserved.
  * $Log: data_access.c,v $
+ * Revision 1.13  2013/01/21 16:39:33  mark
+ * MG fix end incorrect type now FLD_DATE
+ * size incorrectly set to FLD_INT now correct as FLD_INT64
+ * fix missing field recorddate
+ * reformating
+ *
  * Revision 1.12  2013/01/20 10:03:12  mark
  * MG introduce FLD_DATE and new functions to handle the date in blib_tim_t (aka double) format
  * expands the time to inclue 100th second. expand any of the time outputs
@@ -87,7 +93,8 @@ int load_schema(dbh_t *dbh)
             "location		varchar(" LOCNAM_SIZ_STR "),"
             "librarydate	date,"
             "recorddate		date,"
-            "offsitedate	date"
+            "offsitedate	date,"
+            "change_date    date"
     ")";
     char *create_index_volumes_1 = "create unique index labelpkey_1 on volumes  (label);";
     /****************************************************************************************/
@@ -268,12 +275,12 @@ int db_prepare_sql(dbh_t *dbh, sqlcmd_t *sqlcmd, char *sqltextfmt, ...)
     sts=0;
     if (sqltextfmt) {
         va_start(args,sqltextfmt);
-        len = VASPRINTF(&sqltext, sqltextfmt, args);
+            len = VASPRINTF(&sqltext, sqltextfmt, args);
         va_end(args);
         if (!sqltextfmt) {
             fprintf(stderr, "Failure in " __PRETTY_FUNCTION__ "to allocate error message %llu bytes\n", (llu_t) len);
             exit(ENOMEM);	    // whats the point if we that screwed that we cant allocate a few bytes
-        }    
+        }
         sqlcmd->sqllen =  replace_dynstr(&sqlcmd->sqltxt, newstr(sqltext));
         dbh->status = sqlite3_prepare_v2(dbh->dbf, sqlcmd->sqltxt,-1, &sqlcmd->stmt, 0);
         sts = dbcheck(dbh,NULL);
@@ -635,7 +642,7 @@ int  copy_results_volume(dbh_t *dbh, void *recp)
     rec = (vol_t *) recp;
     
     bzero(rec,sizeof(vol_t));
-    // bck_id|label|state|media|usage|groupname|location|librarydate|recorddate|offsitedate
+    // bck_id|label|state|media|usage|groupname|location|librarydate|recorddate|offsitedate|change_date
     db_fldsmklist(&flds, "bck_id",      FLD_INT64, &rec->bck_id);
     db_fldsmklist(&flds, "label" ,      FLD_TEXT , &rec->label);
     db_fldsmklist(&flds, "state",       FLD_TEXT , &rec->state);
@@ -647,6 +654,7 @@ int  copy_results_volume(dbh_t *dbh, void *recp)
     db_fldsmklist(&flds, "librarydate", FLD_DATE , &rec->librarydate);
     db_fldsmklist(&flds, "recorddate",  FLD_DATE , &rec->recorddate);
     db_fldsmklist(&flds, "offsitedate", FLD_DATE , &rec->offsitedate);
+    db_fldsmklist(&flds, "change_date", FLD_DATE , &rec->change_date);
     
     dbh->sqlcmd->getflds = flds;
     db_columns(dbh);
@@ -899,6 +907,9 @@ int db_fldsdump(list_t *fldhead)
 void db_flds_display(dbfld_t *fld)
 {
     FILE *outfd=stderr;
+    datestr_t   adate;
+    
+    bzero(&adate, sizeof(adate));
     
     fprintf(outfd, "#BLIB:  Entry: %s type: %s value:", fld->fldname, fldtype_name(fld->fldtype));
     switch(fld->fldtype) {
@@ -911,9 +922,10 @@ void db_flds_display(dbfld_t *fld)
         case FLD_TEXT:
             fprintf(outfd, "%s",    (char *) fld->fldval);
             break;
-        case FLD_DATE: // TODO: maybe format the date ?
+        case FLD_DATE:
+            copy_datestr(&adate, (datestr_t *) time_cvt_blib_to_str(*(blib_tim_t *) fld->fldval));
         case FLD_DOUBLE:
-            fprintf(outfd, "%f\n", *(double *) fld->fldval);
+            fprintf(outfd, "%f %s\n", *(double *) fld->fldval, adate.str );
             break;
             
         default:
@@ -1240,13 +1252,13 @@ int db_find_volume_expired(dbh_t *dbh, vol_t *rec, find_type_t flag)
     
     char *sqltext="select volumes.* from volumes,  backups where volumes.bck_id = backups.bck_id and expiredate <= strftime('%%s','now') and state='A' order by recorddate asc";
     
-    rval =  db_find(dbh, sqltext, NULL, (void *)rec, copy_results_volume , flag);
+    rval =  db_find(dbh, sqltext, /*key*/ NULL , (void *)rec, copy_results_volume , flag);
     
     return(rval);
 }
 
 
-int db_find_vol_obj_id_notbckid_label(dbh_t *dbh, list_t *key, vol_obj_t *volobj2del,find_type_t flag)
+int db_find_vol_obj_id_notbckid_label(dbh_t *dbh, list_t *key, vol_obj_t *volobj2del, find_type_t flag)
 {
     
     int rval;
@@ -1423,6 +1435,7 @@ void db_update_volume(dbh_t *dbh,filt_t *filtrec, vol_t *rec)
     do_upd_vol(dbh,rec->label.str,filtrec->location);    
     do_upd_vol(dbh,rec->label.str,filtrec->usage);
     do_upd_vol(dbh,rec->label.str,filtrec->offsitedate);
+    // TODO: does this require more ???
 }
 
 int db_delete_volume(dbh_t *dbh, vol_t *vol2del)
@@ -2508,7 +2521,7 @@ int     db_verify(fio_t *outfd, dbh_t *dbh)
 //////////////////////////////
     
  /*
- volumes    [bck_id|label|state|media|usage|groupname|location|librarydate|recorddate|offsitedate]
+ volumes    [bck_id|label|state|media|usage|groupname|location|librarydate|recorddate|offsitedate|change_date]
     (bck_id>0, label) -> vol_obj
     (bck_id > 0 )   -> backups
  */
