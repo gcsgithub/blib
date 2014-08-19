@@ -226,28 +226,34 @@ fio_t   *fio_from_fd(int fd)
     fio_t	*fio;
     char	*filename;
     char 	*ext;
+    FILE    *file;
     
+    file = NULL;
     fio = fio_new(MAX_BUF);
     ext="";
     switch(fd) {
         case 0:
             filename="stdin";
+            file = stdin;
             break;
         case 1:
             filename="stdout";
+            file = stdout;
             break;
         case 2:
             filename="stderr";
+            file = stderr;
             break;
         default:
             filename="unknown";
+            file = fdopen(fd, fio->open_mode);
             break;
     }
     fio->ext = newstr(ext);
     fio->fnm = newstr(filename);
     fio->open=1;	// its open
     fio->useropenflag = 1; // not our job to open/close this fd
-    fio->fd = fd;
+    fio->fd = file;
     return(fio);
     
 }
@@ -442,7 +448,7 @@ files_t *make_files_ent(char *fnm)
 
 int file_isavailable(char *fnm)
 {
-    if (access(fnm, "r") == -1) {
+    if (access(fnm, R_OK) == -1) {
         return(0);
     }
     else {

@@ -1967,7 +1967,7 @@ int display_backup_volumes_for_object(dbh_t *dbh, bckobj_t *bckobjrec,backups_t 
     datestr_t 	recorddate;
     datestr_t 	offsitedate;
     datestr_t 	expiredate;
-    //datestr_t   change_date;
+    //datestr_t   changedate;
     int		    volcount;
     char	    volfileno[16];
     

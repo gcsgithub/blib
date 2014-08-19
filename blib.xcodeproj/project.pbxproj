@@ -522,7 +522,11 @@
 				GCC_WARN_UNUSED_PARAMETER = YES;
 				GCC_WARN_UNUSED_VALUE = YES;
 				INSTALL_PATH = /usr/local/etc;
-				OTHER_CFLAGS = "";
+				OTHER_CFLAGS = (
+					"-DNEED_ASPRINTF",
+					"-DNEED_STRSEP",
+					"-DNEED_TIMEGM",
+				);
 				PRODUCT_NAME = blib;
 				SDKROOT = macosx;
 			};
@@ -539,6 +543,11 @@
 				GCC_WARN_UNUSED_PARAMETER = YES;
 				GCC_WARN_UNUSED_VALUE = YES;
 				INSTALL_PATH = /usr/local/bin;
+				OTHER_CFLAGS = (
+					"-DNEED_ASPRINTF",
+					"-DNEED_STRSEP",
+					"-DNEED_TIMEGM",
+				);
 				PRODUCT_NAME = blib;
 				SDKROOT = macosx;
 			};
@@ -816,6 +825,7 @@
 				4D0A84CA19A2343000688888 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		4D0A84D319A2343D00688888 /* Build configuration list for PBXNativeTarget "caltime" */ = {
 			isa = XCConfigurationList;
@@ -824,6 +834,7 @@
 				4D0A84D519A2343D00688888 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		4DC4EF7B199899C400C473C9 /* Build configuration list for PBXNativeTarget "sqlite3" */ = {
 			isa = XCConfigurationList;

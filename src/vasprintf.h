@@ -67,12 +67,13 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #ifdef NEED_ASPRINTF
-int	my_asprintf(char **buf,  char *fmt, ... );
-int	my_vasprintf(char **buf,  char *fmt, va_list args );
-#define	VASPRINTF   my_vasprintf
-#define	ASPRINTF    my_asprintf
+	int	my_asprintf(char **buf,  char *fmt, ... );
+	int	my_vasprintf(char **buf,  char *fmt, va_list args );
+#	define	VASPRINTF   my_vasprintf
+#	define	ASPRINTF    my_asprintf
 #else
-#define	VASPRINTF   vasprintf
-#define	ASPRINTF    asprintf
+#	define	VASPRINTF   vasprintf
+#	define	ASPRINTF    asprintf
 #endif /* NEED_ASPRINTF */
+
 #endif /* __VASPRINTF_H__ */

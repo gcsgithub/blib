@@ -2650,7 +2650,9 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "2048"
-            endingLineNumber = "2048">
+            endingLineNumber = "2048"
+            landmarkName = "do_cmd_listbackups()"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -2664,7 +2666,9 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "928"
-            endingLineNumber = "928">
+            endingLineNumber = "928"
+            landmarkName = "do_cmd_report_exp()"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -2975,6 +2979,22 @@
             startingLineNumber = "119"
             endingLineNumber = "119"
             landmarkName = "main()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "src/fileio.c"
+            timestampString = "430142978.406657"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "249"
+            endingLineNumber = "249"
+            landmarkName = "fio_from_fd()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
