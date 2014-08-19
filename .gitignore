@@ -22,11 +22,11 @@
 *.x86_64
 *.hex
 
-etc
-old
-test
-bin
-RCS
+etc/
+old/
+test/
+bin/
+RCS/
 .depend
 .gitignore
 DerivedData/
@@ -36,3 +36,7 @@ src/caltime
 src/ctime
 src/sqlite
 src/sqlite3
+*.o
+*.xcuserstate
+blib.xcodeproj/project.xcworkspace/xcuserdata/mark.xcuserdatad/UserInterfaceState.xcuserstate
+
