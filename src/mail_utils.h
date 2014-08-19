@@ -1,7 +1,7 @@
 #ifndef __MAIL_UTILS_H__
 #define	__MAIL_UTILS_H__
 /*
- * @(#) $Id: mail_utils.h,v 1.3 2011/04/14 02:33:22 mark Exp $
+ * @(#) $Id: mail_utils.h,v 1.3 2011/04/14 02:33:22 mark Exp mark $
  *
  *  mail_utils.h
  *  fmtbckrep_xcode

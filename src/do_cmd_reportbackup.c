@@ -1,4 +1,4 @@
-static char *rcsid="@(#) $Id: do_cmd_reportbackup.c,v 1.6 2013/01/21 16:50:47 mark Exp $";
+static char *rcsid="@(#) $Id: do_cmd_reportbackup.c,v 1.6 2013/01/21 16:50:47 mark Exp mark $";
 
 /*
  *  do_cmd_reportbackup.c
@@ -73,7 +73,7 @@ void	do_cmd_reportbackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_p
                 break;
             case QUAL_DESC:
                 copy_desc(&qualval.desc, (char *) qual->val);
-                break;	
+                break;
             case QUAL_STYSHT:
                 qualval.stylesheet = (char *) qual->param->defval;
                 break;
@@ -103,7 +103,7 @@ void	do_cmd_reportbackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_p
         case  FMT_TEXT:
             bck_errs = create_text_report(dbh, report_tmp_fio, &bckrec, qualval.desc.str);
             break;
-    	case FMT_XHTML:
+        case FMT_XHTML:
             bck_errs = create_xhtml_report(dbh, report_tmp_fio, &bckrec, qualval.desc.str, qualval.stylesheet);
             break;
         default:
@@ -123,7 +123,7 @@ void	do_cmd_reportbackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_p
                                                                         // the list will be mime attached
         if (mailto(&BLIB.includelogs, mailtoaddress, bckrec.desc.str, BLIB.debug, bck_errs) == -1 ) {
             fprintf(stderr, "#BLIB:  Failed to send email to \"%s\"\n", mailtoaddress);
-        }        
+        }
     } else {
         fio_copy_file(report_tmp_fio, outfd);
     }
@@ -203,7 +203,7 @@ int read_bck_objects(dbh_t *dbh, fmt_type_e fmttype, fio_t *outfd, backups_t *bc
     dbstatus_bckobj = db_find_bck_objects_by_bckid(dbh, bckrec->bck_id, &bckobjrec, FND_FIRST);
     // LOOPing  OBJNAMES  (BCK_OBJECTS keyed by bck_id)
     while (dbstatus_bckobj) {
-    	dbstatus_vol_obj = db_find_vol_obj_from_objects(dbh, &bckobjrec, &volobjrec, FND_FIRST);
+        dbstatus_vol_obj = db_find_vol_obj_from_objects(dbh, &bckobjrec, &volobjrec, FND_FIRST);
         
         //      LOOPing LABELS (VOL_OBJ keyed by bck_objects.bck_id, bck_objects.objname)
         while (dbstatus_vol_obj) {
@@ -211,7 +211,7 @@ int read_bck_objects(dbh_t *dbh, fmt_type_e fmttype, fio_t *outfd, backups_t *bc
             copy_label(&prev_label, cur_label.str);
             copy_label(&cur_label, volobjrec.label.str);
             labelsinobject++;
-		    
+            
             duration = difftime(volobjrec.end, volobjrec.start);
             
             copy_datestr(&start, (datestr_t *) time_cvt_blib_to_str(volobjrec.start));
@@ -227,15 +227,15 @@ int read_bck_objects(dbh_t *dbh, fmt_type_e fmttype, fio_t *outfd, backups_t *bc
             
             dbstatus_bckerrs = db_find_bck_errors(dbh, &volobjrec, &bckerrrec ,FND_FIRST); // key on bck_id, objname
             tot_errs=0;
-            while (dbstatus_bckerrs) {  
+            while (dbstatus_bckerrs) {
                 copy_datestr_time(&start, (datestr_t *) time_cvt_blib_to_str(bckerrrec.errtime));
                 table_row(outfd, fmttype , "err", bckerrrec.objname.str, bckerrrec.label.str, -1, start.str ,bckerrrec.errmsg.str  , -1 , -1,  ++tot_errs);
                 dbstatus_bckerrs = db_find_bck_errors(dbh, &volobjrec, &bckerrrec ,FND_NEXT);
             }
             
             dbstatus_vol_obj = db_find_vol_obj_from_objects(dbh, &bckobjrec, &volobjrec, FND_NEXT); // Next label
-            //if (cmp_labels(&cur_label, &volobjrec.label)) { // if a new label
-            //}
+                                                                                                    //if (cmp_labels(&cur_label, &volobjrec.label)) { // if a new label
+                                                                                                    //}
         }
         
         dbstatus_bckobj = db_find_bck_objects_by_bckid(dbh, bckrec->bck_id, &bckobjrec, FND_NEXT); // next backup object
@@ -314,7 +314,7 @@ void write_xhtml_table_header(fio_t *outfd, backups_t *bckrec, char *title2)
                pstr(bckrec->node.str,""),
                pstr(bckrec->desc.str,""));
     if (title2) {
-    	html_write(outfd,'I',"p", NOCLASS, "%s", title2);
+        html_write(outfd,'I',"p", NOCLASS, "%s", title2);
     }
     html_write(outfd,'C',"caption"  , NOCLASS,NOVAL);
     
@@ -343,7 +343,7 @@ void write_xhtml_table_header(fio_t *outfd, backups_t *bckrec, char *title2)
  123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
  1         2         3         4         5         6         7         8         9         11        12        13
  | /usr                                 |  OBG028D:1  | 21:02:43-21:09:02 |    379 |  1818238368|  1734.01|   1.6934|
- */ 
+ */
 void table_row(fio_t *outfd, fmt_type_e fmttype ,char *iclass,  char *path, char *bcode, int fileno, char *stime, char *etime, double duration, bcount_t bytes, bcount_t errs)
 {
     static	char	*class;
@@ -378,7 +378,7 @@ void table_row(fio_t *outfd, fmt_type_e fmttype ,char *iclass,  char *path, char
                 class = "l0errline";
                 row=1;
             }
-        } else {   
+        } else {
             class = iclass;
         }
     } else {
@@ -398,7 +398,7 @@ void table_row(fio_t *outfd, fmt_type_e fmttype ,char *iclass,  char *path, char
         if (fileno>=0)	 snprintf(bcode_str,sizeof(bcode_str) , "%s:%d", bcode, fileno);
         else		     snprintf(bcode_str,sizeof(bcode_str) , "%s"   , bcode);
     } else {
-        bzero(bcode_str,sizeof(bcode_str)); 
+        bzero(bcode_str,sizeof(bcode_str));
     }
     
     if (stime) {
@@ -468,9 +468,9 @@ void table_row(fio_t *outfd, fmt_type_e fmttype ,char *iclass,  char *path, char
         // FMT_TEXT
         if (errline ) {
             text_err(outfd->fd, err_str,  // err line number
-                                stime,   // when
-                                etime    // error message string
-                    );
+                     stime,   // when
+                     etime    // error message string
+                     );
         } else {
             if (last_was_err) {
                 text_div(outfd->fd);
@@ -535,7 +535,7 @@ int	html_write(fio_t *outfd, char flag, char *tag, char *class, char *val, ... )
     if (flag == 'L') { /* Literal value only no tags involved or they included in the string */
         va_start(args, val);
         vfprintf(outfd->fd, val, args);
-        va_end(args);	
+        va_end(args);
     }
     
     if ((flag == 'C') || (flag == 'I') || (flag == 'L') || (flag == 'O')) {
@@ -630,7 +630,7 @@ void write_text_table_header(fio_t *outfd)
 
 
 
-            
+
 void create_dash_line(char *buf, size_t max, size_t dash_count)
 {
     size_t idx;
@@ -679,7 +679,7 @@ void text_err(FILE *fd, char *err_lineno, char *when, char *errmsg)
 {
     blib_global_t *gbl = &BLIB;
     int msglen;
-
+    
     msglen = 68 +  (2*gbl->date_width);
     fprintf(fd,"| %-27.27s| %-13s| %-*s|\n", err_lineno, when, msglen,  errmsg);
 }
@@ -706,7 +706,7 @@ void text_row(FILE *fd, char *path, char *barcode, char *start_end, char *durati
             gbytes,
             errs);
 }
-    /*
+/*
  +--------------------------------------+-------------+-------------------+--------+------------+----------+----------+------+
  | Pathname                             |Barcode:file#| Start-End Time    | Seconds|    Bytes   |  MBytes  |  GBytes  | Errs |
  +--------------------------------------+-------------+-------------------+--------+------------+----------+----------+------+
@@ -719,11 +719,11 @@ void text_row(FILE *fd, char *path, char *barcode, char *start_end, char *durati
  123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
  1         2         3         4         5         6         7         8         9         11        12        13
  | /usr                                 |  OBG028D:1  | 21:02:43-21:09:02 |    379 |  1818238368|  1734.01|   1.6934|
-
-
-fd);
-#define DIV_TEXT_FMT "+----------------------------+--------------+------------------------------------------+--------+---------------------+---------------+------------+----+\n"
-#define HDR_TEXT_FMT "| %-150s|\n"
-#define ROW_TEXT_FMT "| %-27.27s| %-13s| %-41s|%8s|%20s |%14s |%11s |%4s|\n"
-#define ERR_TEXT_FMT "| %-27.27s| %-13s| %-106s|\n"
+ 
+ 
+ fd);
+ #define DIV_TEXT_FMT "+----------------------------+--------------+------------------------------------------+--------+---------------------+---------------+------------+----+\n"
+ #define HDR_TEXT_FMT "| %-150s|\n"
+ #define ROW_TEXT_FMT "| %-27.27s| %-13s| %-41s|%8s|%20s |%14s |%11s |%4s|\n"
+ #define ERR_TEXT_FMT "| %-27.27s| %-13s| %-106s|\n"
  */

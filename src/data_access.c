@@ -1,4 +1,4 @@
-static const char *rcsid="@(#) $Id: data_access.c,v 1.14 2014/06/17 04:59:06 mark Exp $";
+static const char *rcsid="@(#) $Id: data_access.c,v 1.14 2014/06/17 04:59:06 mark Exp mark $";
 /*
  *  data_access.c
  *  blib
@@ -7,7 +7,7 @@ static const char *rcsid="@(#) $Id: data_access.c,v 1.14 2014/06/17 04:59:06 mar
  *  Copyright 2008 Garetech Computer Solutions. All rights reserved.
  * $Log: data_access.c,v $
  * Revision 1.14  2014/06/17 04:59:06  mark
- * seems I had added change_date, offsite date since last ci
+ * seems I had added changedate, offsite date since last ci
  *
  * Revision 1.13  2013/01/21 16:39:33  mark
  * MG fix end incorrect type now FLD_DATE
@@ -72,68 +72,68 @@ static const char *version()
 
 int load_schema(dbh_t *dbh)
 { // create tables and indexes
-    // bck_id|node|start|end|expiredate|desc
+  // bck_id|node|start|end|expiredate|desc
     char *create_table_backups =
     "create table backups ( "
-            "bck_id		    unsigned long long,"
-            "node		    varchar("NODE_SIZ_STR"),"
-            "start		    date,"
-            "end		    date,"
-            "expiredate		date,"
-            "desc		    varchar("DESC_SIZ_STR")"
+    "bck_id		    unsigned long long,"
+    "node		    varchar("NODE_SIZ_STR"),"
+    "start		    date,"
+    "end		    date,"
+    "expiredate		date,"
+    "desc		    varchar("DESC_SIZ_STR")"
     ")";
     char *create_index_backups_1 = "create unique index b_pkey_1 on backups  (bck_id);";
     
     // bck_id|label|state|media|usage|groupname|location|librarydate|recorddate|offsitedate
-    char *create_table_volumes =  
+    char *create_table_volumes =
     "create table volumes ( "
-            "bck_id		    unsigned long long,"
-            "label		    char(" LABEL_SIZ_STR "),"
-            "state		    char(" STATE_SIZ_STR "), "
-            "media		    char(" MEDIA_NAM_SIZ_STR "),"
-            "usage		    unsigned int,"
-            "groupname		varchar(" GROUPNAM_SIZ_STR "),"
-            "location		varchar(" LOCNAM_SIZ_STR "),"
-            "librarydate	date,"
-            "recorddate		date,"
-            "offsitedate	date,"
-            "change_date    date"
+    "bck_id		    unsigned long long,"
+    "label		    char(" LABEL_SIZ_STR "),"
+    "state		    char(" STATE_SIZ_STR "), "
+    "media		    char(" MEDIA_NAM_SIZ_STR "),"
+    "usage		    unsigned int,"
+    "groupname		varchar(" GROUPNAM_SIZ_STR "),"
+    "location		varchar(" LOCNAM_SIZ_STR "),"
+    "librarydate	date,"
+    "recorddate		date,"
+    "offsitedate	date,"
+    "changedate     date"
     ")";
     char *create_index_volumes_1 = "create unique index labelpkey_1 on volumes  (label);";
     /****************************************************************************************/
     
     // bck_id|objname|obj_instance|start|end|size
-    char *create_table_bck_objects =  
+    char *create_table_bck_objects =
     "create table bck_objects ( "
-            "bck_id         unsigned long long,"
-            "objname	  	varchar("OBJ_NAME_SIZ_STR "),"
-            "obj_instance	unsigned int,"		// muliple objects copies of an object backed
-            "start          date,"
-            "end            date,"
-            "size           unsigned long long"
+    "bck_id         unsigned long long,"
+    "objname	  	varchar("OBJ_NAME_SIZ_STR "),"
+    "obj_instance	unsigned int,"		// muliple objects copies of an object backed
+    "start          date,"
+    "end            date,"
+    "size           unsigned long long"
     ")";
     /* Old schema
-                bck_id               unsigned long long,
-                objname              varchar(1024),
-                start                date,
-                end                  date,
-                size                 unsigned long long
+     bck_id               unsigned long long,
+     objname              varchar(1024),
+     start                date,
+     end                  date,
+     size                 unsigned long long
      */
     
     char *create_index_bck_objects_1 = "create unique index bo_pkey_1 on bck_objects  (objname, obj_instance, bck_id);";
     /****************************************************************************************/
     
     // bck_id|objname|obj_instance|label|fileno|start|end|size
-    char *create_table_vol_obj =  
+    char *create_table_vol_obj =
     "create table vol_obj ( "
-            "bck_id		    unsigned long long,"
-            "objname		varchar(" OBJ_NAME_SIZ_STR "),"
-            "obj_instance	unsigned int, " // multiple objects backed up with the same name
-            "label		    varchar(" LABEL_SIZ_STR "),"
-            "fileno 		unsigned int,"
-            "start		    date,"
-            "end		    date,"
-            "size		    unsigned long long"
+    "bck_id		    unsigned long long,"
+    "objname		varchar(" OBJ_NAME_SIZ_STR "),"
+    "obj_instance	unsigned int, " // multiple objects backed up with the same name
+    "label		    varchar(" LABEL_SIZ_STR "),"
+    "fileno 		unsigned int,"
+    "start		    date,"
+    "end		    date,"
+    "size		    unsigned long long"
     ")";
     
     char *create_index_vol_obj_1 = "create index vo_pkey_1 on vol_obj  (bck_id,objname, fileno);";
@@ -141,14 +141,14 @@ int load_schema(dbh_t *dbh)
     char *create_index_vol_obj_3 = "create unique index vo_pkey_3 on vol_obj  (bck_id,objname,obj_instance,label);";
     
     // bck_id|label|objname|obj_instance|errtime|errmsg
-    char *create_table_bck_errors = 
+    char *create_table_bck_errors =
     "create table bck_errors ("
-            "bck_id		    unsigned long long,"
-            "label		    varchar(" LABEL_SIZ_STR "),"
-            "objname		varchar(" OBJ_NAME_SIZ_STR ")," 
-            "obj_instance	unsigned int, "
-            "errtime		date,"
-            "errmsg		    varchar(" ERRMSG_SIZ_STR ")"
+    "bck_id		    unsigned long long,"
+    "label		    varchar(" LABEL_SIZ_STR "),"
+    "objname		varchar(" OBJ_NAME_SIZ_STR "),"
+    "obj_instance	unsigned int, "
+    "errtime		date,"
+    "errmsg		    varchar(" ERRMSG_SIZ_STR ")"
     ")";
     
     char *create_index_bck_errors_1 = "create index be_pkey_1 on bck_errors  (bck_id,label,objname);";
@@ -174,7 +174,7 @@ int load_schema(dbh_t *dbh)
     return(dbh->status);
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
 int db_exec_sql_bckid(dbh_t *dbh, char *sqltext, bckid_t bck_id)
 {
     int rval;
@@ -187,6 +187,23 @@ int db_exec_sql_bckid(dbh_t *dbh, char *sqltext, bckid_t bck_id)
     db_fldsfreelist(&flds);
     return(rval);
 }
+
+///////////////////////////////////////////////////////////////////////
+int db_exec_sql_change_state(dbh_t *dbh, bckid_t bck_id, blib_tim_t thetime, char *state)
+{
+    int rval;
+    list_t	*flds = (list_t *) NULL;
+    
+    db_fldsmklist(&flds, "state",      FLD_TEXT, (void *) state);
+    db_fldsmklist(&flds, "changedate", FLD_DATE, (void *) &thetime);
+    db_fldsmklist(&flds, "bckid"  ,    FLD_INT64,(void *) &bck_id);
+    
+    rval = db_exec_sql_flds_pushpop(dbh, "update volumes set state=?, changedate=? where bck_id=?", flds);
+    
+    db_fldsfreelist(&flds);
+    return(rval);
+}
+
 
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
@@ -242,7 +259,7 @@ int db_exec_sql_flds(dbh_t *dbh, char *sqltext, list_t *flds)
     return(rval);
 }
 
-//////////////////////////////////////////////////////////////////////    
+//////////////////////////////////////////////////////////////////////
 int db_finalize_stmt(dbh_t *dbh)
 {
     int rval=0;
@@ -278,7 +295,7 @@ int db_prepare_sql(dbh_t *dbh, sqlcmd_t *sqlcmd, char *sqltextfmt, ...)
     sts=0;
     if (sqltextfmt) {
         va_start(args,sqltextfmt);
-            len = VASPRINTF(&sqltext, sqltextfmt, args);
+        len = VASPRINTF(&sqltext, sqltextfmt, args);
         va_end(args);
         if (!sqltextfmt) {
             fprintf(stderr, "Failure in " __PRETTY_FUNCTION__ "to allocate error message %llu bytes\n", (llu_t) len);
@@ -354,7 +371,7 @@ objid_t db_get_obj_instance(dbh_t *dbh, bckid_t bck_id, objname_t *objname )
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 int db_newdb(dbh_t **dbh, char *fnm)
-{   
+{
     int status, err;
     char    ans[80];
     stat_t  db_stat;
@@ -389,7 +406,7 @@ int db_newdb(dbh_t **dbh, char *fnm)
             }
         } else {
             fprintf(stderr, "#BLIB:  Sorry /new cannot be used unless your interative on a terminal\n");
-            exit(ENOTTY);   
+            exit(ENOTTY);
         }
     }
     
@@ -487,7 +504,7 @@ int db_open(dbh_t **dbh_ptr, char *fnm)
         err = rval->status;					// save open fail status
         errmsg = newstr((char *) sqlite3_errmsg(rval->dbf));	// save errmsg from open fail
         sqlite3_close(rval->dbf);				// dont care about status, best effort
-        // set the errmsg to the  saved open fail
+                                                // set the errmsg to the  saved open fail
         replace_dynstr(&rval->errmsg ,  errmsg);
         rval->status = err;					// restore saved status of open fail
     } else {
@@ -519,11 +536,11 @@ int db_busy_handler(void *tag,int lockoccurence)
     if (BLIB.debug>4) fprintf(stderr, "%s: %s called with occurence: %d\n", (char *) tag, __PRETTY_FUNCTION__, lockoccurence);
     
     
-    if (lockoccurence) { // 1st time we going to try again imediatly 
+    if (lockoccurence) { // 1st time we going to try again imediatly
         div = lockoccurence % 10000;
-    	if (div  ==  0) {
+        if (div  ==  0) {
             fprintf(stderr, "%s:%s:Database is still locked after %d tries\n", (char *) tag, __PRETTY_FUNCTION__, lockoccurence);
-    	}
+        }
         spin = (onesecond/1000) * rnd * (lockoccurence); // an attempt to provide random wait
         while(spin--);
         if (lockoccurence > 2000000 ) {
@@ -548,7 +565,7 @@ int db_close(dbh_t *dbh)
         if (dbh->status == 5 ) {
             fprintf(stderr, "wtf its broken\n");
         }
-        dbcheck(dbh,"#BLIB:  Error closing database: %d\n", dbh->status);    		    
+        dbcheck(dbh,"#BLIB:  Error closing database: %d\n", dbh->status);
     } else {
         dbh->status = 0;
         replace_dynstr(&dbh->errmsg,  newstr("#BLIB:  Database already closed"));
@@ -584,40 +601,40 @@ int	dbcheck(dbh_t *dbh, char *errmsg, ...)
         }
     }  else {
         errstr=(char *) NULL;
-    }  
+    }
     switch(dbh->status) {
-        case BLIBDB_OK:         //  0    Successful result 
+        case BLIBDB_OK:         //  0    Successful result
         case BLIBDB_ROW:        // 100   sqlite3_step() has another row ready
         case BLIBDB_DONE:       // 101   sqlite3_step() has finished executing
             return(TRUE);
             break;
             
-        case SQLITE_ERROR:      //  1    SQL error or missing database 
-        case SQLITE_INTERNAL:   //  2    Internal logic error in SQLite 
-        case SQLITE_PERM:       //  3    Access permission denied 
-        case SQLITE_ABORT:      //  4    Callback routine requested an abort 
-        case SQLITE_BUSY:       //  5    The database file is locked 
-        case SQLITE_LOCKED:     //  6    A table in the database is locked 
-        case SQLITE_NOMEM:      //  7    A malloc() failed 
-        case SQLITE_READONLY:   //  8    Attempt to write a readonly database 
+        case SQLITE_ERROR:      //  1    SQL error or missing database
+        case SQLITE_INTERNAL:   //  2    Internal logic error in SQLite
+        case SQLITE_PERM:       //  3    Access permission denied
+        case SQLITE_ABORT:      //  4    Callback routine requested an abort
+        case SQLITE_BUSY:       //  5    The database file is locked
+        case SQLITE_LOCKED:     //  6    A table in the database is locked
+        case SQLITE_NOMEM:      //  7    A malloc() failed
+        case SQLITE_READONLY:   //  8    Attempt to write a readonly database
         case SQLITE_INTERRUPT:  //  9    Operation terminated by sqlite3_interrupt()
-        case SQLITE_IOERR:      // 10    Some kind of disk I/O error occurred 
-        case SQLITE_CORRUPT:    // 11    The database disk image is malformed 
-        case SQLITE_NOTFOUND:   // 12    NOT USED. Table or record not found 
-        case SQLITE_FULL:       // 13    Insertion failed because database is full 
-        case SQLITE_CANTOPEN:   // 14    Unable to open the database file 
-        case SQLITE_PROTOCOL:   // 15    NOT USED. Database lock protocol error 
-        case SQLITE_EMPTY:      // 16    Database is empty 
-        case SQLITE_SCHEMA:     // 17    The database schema changed 
-        case SQLITE_TOOBIG:     // 18    String or BLOB exceeds size limit 
-        case BLIBDB_CONSTRAINT: // 19    Abort due to constraint violation 
-        case SQLITE_MISMATCH:   // 20    Data type mismatch 
-        case SQLITE_MISUSE:     // 21    Library used incorrectly 
-        case SQLITE_NOLFS:      // 22    Uses OS features not supported on host 
-        case SQLITE_AUTH:       // 23    Authorization denied 
-        case SQLITE_FORMAT:     // 24    Auxiliary database format error 
-        case SQLITE_RANGE:      // 25    2nd parameter to sqlite3_bind out of range 
-        case SQLITE_NOTADB:     // 26    File opened that is not a database file 
+        case SQLITE_IOERR:      // 10    Some kind of disk I/O error occurred
+        case SQLITE_CORRUPT:    // 11    The database disk image is malformed
+        case SQLITE_NOTFOUND:   // 12    NOT USED. Table or record not found
+        case SQLITE_FULL:       // 13    Insertion failed because database is full
+        case SQLITE_CANTOPEN:   // 14    Unable to open the database file
+        case SQLITE_PROTOCOL:   // 15    NOT USED. Database lock protocol error
+        case SQLITE_EMPTY:      // 16    Database is empty
+        case SQLITE_SCHEMA:     // 17    The database schema changed
+        case SQLITE_TOOBIG:     // 18    String or BLOB exceeds size limit
+        case BLIBDB_CONSTRAINT: // 19    Abort due to constraint violation
+        case SQLITE_MISMATCH:   // 20    Data type mismatch
+        case SQLITE_MISUSE:     // 21    Library used incorrectly
+        case SQLITE_NOLFS:      // 22    Uses OS features not supported on host
+        case SQLITE_AUTH:       // 23    Authorization denied
+        case SQLITE_FORMAT:     // 24    Auxiliary database format error
+        case SQLITE_RANGE:      // 25    2nd parameter to sqlite3_bind out of range
+        case SQLITE_NOTADB:     // 26    File opened that is not a database file
             if (errstr) {
                 replace_dynstr(&dbh->errmsg ,  newstr("%s: %s", errstr, (char *) sqlite3_errmsg(dbh->dbf)));
             } else {
@@ -645,7 +662,7 @@ int  copy_results_volume(dbh_t *dbh, void *recp)
     rec = (vol_t *) recp;
     
     bzero(rec,sizeof(vol_t));
-    // bck_id|label|state|media|usage|groupname|location|librarydate|recorddate|offsitedate|change_date
+    // bck_id|label|state|media|usage|groupname|location|librarydate|recorddate|offsitedate|changedate
     db_fldsmklist(&flds, "bck_id",      FLD_INT64, &rec->bck_id);
     db_fldsmklist(&flds, "label" ,      FLD_TEXT , &rec->label);
     db_fldsmklist(&flds, "state",       FLD_TEXT , &rec->state);
@@ -657,7 +674,7 @@ int  copy_results_volume(dbh_t *dbh, void *recp)
     db_fldsmklist(&flds, "librarydate", FLD_DATE , &rec->librarydate);
     db_fldsmklist(&flds, "recorddate",  FLD_DATE , &rec->recorddate);
     db_fldsmklist(&flds, "offsitedate", FLD_DATE , &rec->offsitedate);
-    db_fldsmklist(&flds, "change_date", FLD_DATE , &rec->change_date);
+    db_fldsmklist(&flds, "changedate",  FLD_DATE , &rec->changedate);
     
     dbh->sqlcmd->getflds = flds;
     db_columns(dbh);
@@ -669,7 +686,7 @@ int  copy_results_backup(dbh_t *dbh, void *recp)
 {
     list_t	*flds = (list_t *) NULL;
     
-    backups_t *rec;    
+    backups_t *rec;
     rec = (backups_t *) recp;
     bzero(rec,sizeof(backups_t));
     
@@ -692,7 +709,7 @@ int  copy_results_bck_objects(dbh_t *dbh, void *recp)
     bckobj_t *rec;
     
     rec = (bckobj_t *) recp;
-    bzero(rec,sizeof(bckobj_t));    
+    bzero(rec,sizeof(bckobj_t));
     
     db_fldsmklist(&flds, "bck_id"      , FLD_INT64, &rec->bck_id);
     db_fldsmklist(&flds, "objname"     , FLD_TEXT , &rec->objname);
@@ -714,7 +731,7 @@ int copy_results_vol_obj(dbh_t *dbh, void *recp)
     
     rec = (vol_obj_t *) recp;
     
-    bzero(rec,sizeof(vol_obj_t));    
+    bzero(rec,sizeof(vol_obj_t));
     
     db_fldsmklist(&flds, "bck_id"      , FLD_INT64, &rec->bck_id);
     db_fldsmklist(&flds, "objname"     , FLD_TEXT , &rec->objname);
@@ -728,7 +745,7 @@ int copy_results_vol_obj(dbh_t *dbh, void *recp)
     dbh->sqlcmd->getflds = flds;
     db_columns(dbh);
     db_fldsfreelist(&dbh->sqlcmd->getflds);
-    return(dbh->status); 
+    return(dbh->status);
 }
 
 int	copy_results_bck_errors(dbh_t  *dbh, void *recp)
@@ -738,7 +755,7 @@ int	copy_results_bck_errors(dbh_t  *dbh, void *recp)
     
     rec = (bck_errors_t *) recp;
     
-    bzero(rec,sizeof(bck_errors_t));    
+    bzero(rec,sizeof(bck_errors_t));
     
     db_fldsmklist(&flds, "bck_id"      , FLD_INT64, &rec->bck_id);
     db_fldsmklist(&flds, "label"       , FLD_TEXT , &rec->label);
@@ -750,7 +767,7 @@ int	copy_results_bck_errors(dbh_t  *dbh, void *recp)
     dbh->sqlcmd->getflds = flds;
     db_columns(dbh);
     db_fldsfreelist(&dbh->sqlcmd->getflds);
-    return(dbh->status); 
+    return(dbh->status);
     
 }
 
@@ -791,7 +808,7 @@ int db_flds_bind(dbh_t *dbh, sqlcmd_t *sqlcmd)
                 return(db_status);
             }
             fld_ent = fld_ent->np;
-    	}
+        }
     }
     return(db_status);
 }
@@ -833,7 +850,7 @@ int 	db_columns(dbh_t *dbh)
                 return(dbh->status);
             }
             fld_ent = fld_ent->np;
-    	}
+        }
     }
     return(dbh->status);
 }
@@ -883,7 +900,7 @@ dbfld_t *db_fldsmklist(list_t **fldhead,const char *fldname,  fld_type_t fldtype
             fprintf(stderr, "Internal error unknown field type %d in %s\n", fldtype, __PRETTY_FUNCTION__);
             exit(EINVAL);
             break;
-    }    
+    }
     
     ent = new_entry(fld);
     list_insert_tail(fldhead, ent);
@@ -1100,7 +1117,7 @@ int db_find(dbh_t *dbh, char *sqltext,list_t *key, void *results, int (*copyresu
         }
     }
     if (dbh->sqlcmd) db_fldsfreelist(&dbh->sqlcmd->putflds); // always drop the flds our callers insist on reminding us with fresh values
-    // apparently rebinding does work
+                                                             // apparently rebinding does work
     return(rval);
 }
 
@@ -1165,7 +1182,7 @@ int db_find_volume_for_vol_obj(dbh_t *dbh, vol_obj_t *volobjrec, vol_t *volrec, 
     
     sqltext="select * from main.volumes where label=?"; // there can only be one conner, need to check that it does have our bck_id caller can do that
     
-    db_fldsmklist(&flds, "label"     , FLD_TEXT , &volobjrec->label);    
+    db_fldsmklist(&flds, "label"     , FLD_TEXT , &volobjrec->label);
     
     bzero(volrec, sizeof(vol_t));
     rval =  db_find(dbh, sqltext, flds, (void *)volrec, copy_results_volume , flag);
@@ -1203,7 +1220,7 @@ int	db_find_bck_objects_by_name(dbh_t *dbh, objname_t *objname, bckobj_t *bckobj
     
     // sqltext="select * from main.bck_objects where objname >=? order by objname,obj_instance desc";
     if (flag == FND_EQUAL) {
-        sqltext="select * from main.bck_objects where objname =? order by objname, bck_id desc, obj_instance"; 
+        sqltext="select * from main.bck_objects where objname =? order by objname, bck_id desc, obj_instance";
     } else {
         sqltext="select * from main.bck_objects where objname >=? order by objname, bck_id desc, obj_instance";
     }
@@ -1288,35 +1305,41 @@ int db_find_current_volobj(dbh_t *dbh, vol_obj_t *volobjrec)
     rval =  db_find(dbh, sqltext, key_bckid, (void *)volobjrec, copy_results_vol_obj , FND_EQUAL);
     
     return(rval);
-}    
+}
 
 ///////////////////////////////////////////////////////////////////
 int	db_setvolume_free(dbh_t *dbh, char *label)
 {
     list_t	*flds= (list_t *) NULL;
+    blib_tim_t  now;
+    now = nowgm();
     
-    db_fldsmklist(&flds, "label", FLD_TEXT, (void *) label);
+    db_fldsmklist(&flds, "changedate", FLD_DATE, (void *) &now);
+    db_fldsmklist(&flds, "label",      FLD_TEXT, (void *) label);
     
-    if (db_exec_sql_flds_pushpop(dbh, "update volumes set state='F' where label=?", flds))  {
-	    replace_dynstr(&dbh->errmsg, newstr("#BLIB:  Volume: %s now free\n",label ));
+    if (db_exec_sql_flds_pushpop(dbh, "update volumes set state='F', changedate=? where label=?", flds))  {
+        replace_dynstr(&dbh->errmsg, newstr("#BLIB:  Volume: %s now free\n",label ));
     } else {
-	    replace_dynstr(&dbh->errmsg, newstr("#BLIB:  failed freeing \"%s\" : %s!!\n", label, dbh->errmsg));
-	    if (BLIB.debug > 2) db_fldsdump(flds);
+        replace_dynstr(&dbh->errmsg, newstr("#BLIB:  failed freeing \"%s\" : %s!!\n", label, dbh->errmsg));
+        if (BLIB.debug > 2) db_fldsdump(flds);
     }
     
     db_fldsfreelist(&flds);
-    return(dbh->status);    
+    return(dbh->status);
 }
 
 int db_setvolume_used(dbh_t *dbh, blabel_t *label, bckid_t bckid)
 {
     list_t	*flds= (list_t *) NULL;
     int	rval;
+    blib_tim_t  now;
+    now = nowgm();
     
     db_fldsmklist(&flds, "bck_id"    , FLD_INT64, (void *) &bckid);
+    db_fldsmklist(&flds, "changedate", FLD_DATE,  (void *) &now);
     db_fldsmklist(&flds, "label"     , FLD_TEXT , (void *) label);
     
-    if (db_exec_sql_flds_pushpop(dbh, "update volumes set bck_id=?, state='A'  where label=?", flds))  {
+    if (db_exec_sql_flds_pushpop(dbh, "update volumes set bck_id=?, state='A', changedate=?  where label=?", flds))  {
         replace_dynstr(&dbh->errmsg, newstr("#BLIB:  Volume: %s now Allocated\n",(char *) label));
         rval=1;
     } else {
@@ -1329,7 +1352,7 @@ int db_setvolume_used(dbh_t *dbh, blabel_t *label, bckid_t bckid)
     }
     
     db_fldsfreelist(&flds);
-    return(rval);   
+    return(rval);
 }
 
 int	db_end_vol_obj(dbh_t *dbh, vol_obj_t *volobjrec)
@@ -1359,7 +1382,7 @@ int	db_end_vol_obj(dbh_t *dbh, vol_obj_t *volobjrec)
     }
     
     db_fldsfreelist(&flds);
-    return(rval);    
+    return(rval);
 }
 
 fld_type_t db_fldtype_from_valtype(valtype_e valtype)
@@ -1395,9 +1418,11 @@ fld_type_t db_fldtype_from_valtype(valtype_e valtype)
 int do_upd_vol(dbh_t *dbh, char *label, cmd_t *cmd )
 {
     sqlcmd_t 	*sqlcmd;
-    list_t	*flds = (list_t *) NULL;
+    list_t      *flds = (list_t *) NULL;
     fld_type_t	fldtype;
-    char	*volfldname;
+    char        *volfldname;
+    char        *updsqltxt;
+    blib_tim_t  now;
     
     if ((cmd) && (label)) {
         sqlcmd = sqlstack_push(dbh);
@@ -1406,10 +1431,21 @@ int do_upd_vol(dbh_t *dbh, char *label, cmd_t *cmd )
         volfldname = cmd->param->sql_fldnam;
         
         db_fldsmklist(&flds, cmd->param->sql_fldnam, fldtype , (void *) cmd->val);
+        if (strcasecmp(volfldname, "state") == 0) {
+            // only if the field was state do we update changedate
+            updsqltxt = "update volumes set %s=?,changedate=? where label=?";
+            now = nowgm();
+            db_fldsmklist(&flds, "changedate" , FLD_DATE , (void *) &now);
+        }
+        else {
+            updsqltxt = "update volumes set %s=? where label=?";
+        }
+
         db_fldsmklist(&flds, "label"               , FLD_TEXT, (void *) label);
         sqlcmd->putflds = flds;
         
-        if (db_prepare_sql(dbh, sqlcmd, "update volumes set %s=? where label=?", volfldname))  {
+        
+        if (db_prepare_sql(dbh, sqlcmd, updsqltxt, volfldname))  {
             dbh->status = sqlite3_step(sqlcmd->stmt);	    // do it
             if (dbcheck(dbh,NULL)) {
                 if (!BLIB.quiet ) fprintf(stderr, "#BLIB:  \"%s\" updated!!\n", volfldname);
@@ -1435,7 +1471,7 @@ void db_update_volume(dbh_t *dbh,filt_t *filtrec, vol_t *rec)
     do_upd_vol(dbh,rec->label.str,filtrec->state);
     do_upd_vol(dbh,rec->label.str,filtrec->media);
     do_upd_vol(dbh,rec->label.str,filtrec->groupname);
-    do_upd_vol(dbh,rec->label.str,filtrec->location);    
+    do_upd_vol(dbh,rec->label.str,filtrec->location);
     do_upd_vol(dbh,rec->label.str,filtrec->usage);
     do_upd_vol(dbh,rec->label.str,filtrec->offsitedate);
     // TODO: does this require more ???
@@ -1511,8 +1547,8 @@ int db_insert_volumes(dbh_t *dbh, vol_t *vol)
     db_fldsmklist(&flds , "offsitedate", FLD_DATE , (void *) &vol->offsitedate);
     
     if (!db_exec_sql_flds_pushpop(dbh, sqltext, flds)) {
-	    replace_dynstr(&dbh->errmsg, newstr("#BLIB:  Error inserting into volumes: %s\n", dbh->errmsg));
-	    if (BLIB.debug > 2 ) db_fldsdump(flds);
+        replace_dynstr(&dbh->errmsg, newstr("#BLIB:  Error inserting into volumes: %s\n", dbh->errmsg));
+        if (BLIB.debug > 2 ) db_fldsdump(flds);
     }
     
     db_fldsfreelist(&flds);
@@ -1541,8 +1577,8 @@ int db_insert_backups(dbh_t *dbh, backups_t *bck_rec)
     db_fldsmklist(&flds , "desc"       , FLD_TEXT , (void *) &bck_rec->desc);
     
     if (!db_exec_sql_flds_pushpop(dbh, sqltext, flds)) {
-	    replace_dynstr(&dbh->errmsg, newstr("#BLIB:  Error inserting into backups: %s\n", dbh->errmsg));
-	    if (BLIB.debug > 2 ) db_fldsdump(flds);
+        replace_dynstr(&dbh->errmsg, newstr("#BLIB:  Error inserting into backups: %s\n", dbh->errmsg));
+        if (BLIB.debug > 2 ) db_fldsdump(flds);
     }
     
     db_fldsfreelist(&flds);
@@ -1568,8 +1604,8 @@ objid_t db_insert_bck_objects(dbh_t *dbh, bckobj_t *bckobjrec)
     
     obj_instance = bckobjrec->obj_instance;
     if (obj_instance == 0 ) {
-    	obj_instance = db_get_obj_instance(dbh, bckobjrec->bck_id, &bckobjrec->objname);
-    	obj_instance++;
+        obj_instance = db_get_obj_instance(dbh, bckobjrec->bck_id, &bckobjrec->objname);
+        obj_instance++;
     }
     
     db_fldsmklist(&flds , "bck_id"      , FLD_INT64, (void *) &bckobjrec->bck_id);
@@ -1584,7 +1620,7 @@ objid_t db_insert_bck_objects(dbh_t *dbh, bckobj_t *bckobjrec)
         dbcheck(dbh, "commit error");
     } else {
         replace_dynstr(&dbh->errmsg, newstr("#BLIB:  Error inserting new backup object: %s\n", dbh->errmsg));
-        db_exec_sql(dbh, "rollback transaction");  
+        db_exec_sql(dbh, "rollback transaction");
     }
     
     db_fldsfreelist(&flds);
@@ -1614,7 +1650,7 @@ int db_insert_vol_obj(dbh_t *dbh, vol_obj_t *volobjrec)
     db_fldsmklist(&flds , "fileno"      , FLD_INT  , (void *) &volobjrec->fileno);
     db_fldsmklist(&flds , "start"       , FLD_DATE , (void *) &volobjrec->start);
     db_fldsmklist(&flds , "end"         , FLD_DATE , (void *) &volobjrec->end);
-    db_fldsmklist(&flds , "size"        , FLD_INT64, (void *) &volobjrec->size);    
+    db_fldsmklist(&flds , "size"        , FLD_INT64, (void *) &volobjrec->size);
     
     if (!(rval = db_exec_sql_flds_pushpop(dbh, sqltext, flds))) {
         replace_dynstr(&dbh->errmsg, newstr("#BLIB:  Error inserting new vol_obj: %s\n", dbh->errmsg));
@@ -1625,71 +1661,6 @@ int db_insert_vol_obj(dbh_t *dbh, vol_obj_t *volobjrec)
     
     return(rval);
 }
-
-#ifdef db_clear_old_back_for_label_tmp
-// This should now be removed since we cant use a tape with out doing a delete backup against the bck_id whic would do this code equiv 
-/////////////////////////////////////////////////////////////////////////////////
-int db_clear_old_back_for_label(dbh_t *dbh, vol_obj_t *volobjrec)
-{
-    /* we writing over this label so clear off any rememberance of it from previous backups
-     remove old references to the label
-     for x_bck_id, x_objname in (select bck_id, objname from vol_obj where bck_id != <bckid> and label=<label>)
-     do
-     delete from bck_objects where bck_id=<x_bck_id> and objname=<x_objname>;
-     delete from vol_obj     where bck_id=<x_bck_id> and objname=<x_objname> and label=<label>;
-     done
-     */
-    int 	dbstatus;
-    vol_obj_t	volobj2del;
-    
-    list_t	*key_bck_id= (list_t *) NULL;
-    
-    list_t	*key_bck_objects= (list_t *) NULL;
-    
-    list_t	*key_vol_obj= (list_t *) NULL;
-    dbfld_t	*vol_obj_objname;
-    dbfld_t	*vol_obj_label;
-    
-    bzero(&volobj2del,       	sizeof(vol_obj_t));
-    
-    /* 
-     delete from bck_objects where bck_id=bo.bck_id and objname=bo.objname and label=bo.label
-     */
-    
-    //--------------Key find on vol_obj -- select bck_id, objname from vol_obj where bck_id != <bckid> and label=<label> into volobj2del
-    db_fldsmklist(&key_bck_id,"bck_id", FLD_INT64, (void *) &volobjrec->bck_id);
-    db_fldsmklist(&key_bck_id,"label" , FLD_TEXT , (void *) &volobjrec->label);
-    
-    //-------------- Key delete from bck_objects -- delete from bck_objects where bck_id=<volobj2del.bck_id> and objname=<volobj2del.objname>
-    db_fldsmklist(&key_bck_objects,"bck_id"  , FLD_INT64, (void *) &volobj2del.bck_id);
-    db_fldsmklist(&key_bck_objects,"objname" , FLD_TEXT , (void *) &volobj2del.objname);
-    
-    //-------------- Key delete from vol_obj ----- delete from vol_obj where bck_id=<volobj2del.bck_id> and objname=<volobj2del.objname> and label=<volobj2del.label>
-    db_fldsmklist(&key_vol_obj,"bck_id" , FLD_INT64, (void *) &volobj2del.bck_id);
-    vol_obj_objname = db_fldsmklist(&key_vol_obj,"objname", FLD_TEXT , (void *) &volobj2del.objname);
-    vol_obj_label   = db_fldsmklist(&key_vol_obj,"label"  , FLD_TEXT , (void *) &volobj2del.label);
-    
-    
-    dbstatus = db_find_vol_obj_id_notbckid_label(dbh, key_bck_id, &volobj2del, FND_FIRST);
-    while (dbstatus) {
-        vol_obj_objname->fldlen	  = strlen((char *) &volobj2del.objname);
-        // vol_obj_objname->fldval   = (already set)
-        
-        db_exec_sql_flds_pushpop(dbh, "delete from bck_objects where bck_id=? and objname=?", key_bck_objects);
-        
-        vol_obj_objname->fldlen	  = strlen((char *) &volobj2del.objname);
-        vol_obj_label->fldlen	  = strlen((char *) &volobj2del.label);
-        
-        db_exec_sql_flds_pushpop(dbh, "delete from vol_obj where bck_id=? and objname=? and label=?", key_vol_obj);
-        
-        dbstatus = db_find_vol_obj_id_notbckid_label(dbh,  NULL, &volobj2del, FND_NEXT);
-    }
-    db_fldsfreelist(&key_bck_objects);
-    db_fldsfreelist(&key_bck_objects); 
-    db_fldsfreelist(&key_vol_obj);
-    return(dbh->status);
-}
-#endif /* db_clear_old_back_for_label */
 
 bcount_t db_count_volumes_in_backup_id(dbh_t *dbh, bckid_t bck_id)
 {
@@ -1705,7 +1676,7 @@ bcount_t db_count_volumes_in_backup_id(dbh_t *dbh, bckid_t bck_id)
     } else {
         replace_dynstr(&dbh->errmsg, newstr("#BLIB:  Error counting volumes in backup id %llu: %s\n",(llu_t) bck_id, dbh->errmsg));
         if (BLIB.debug > 2 ) db_fldsdump(flds);
-    }   
+    }
     
     db_fldsfreelist(&flds);
     sqlstack_pop(dbh);
@@ -1714,7 +1685,7 @@ bcount_t db_count_volumes_in_backup_id(dbh_t *dbh, bckid_t bck_id)
 
 int db_count_vol_obj_label(dbh_t *dbh, bckid_t bck_id, blabel_t *label)
 {
-    //   
+    //
     int 	rcount;
     list_t	*flds = (list_t *) NULL;
     
@@ -1728,7 +1699,7 @@ int db_count_vol_obj_label(dbh_t *dbh, bckid_t bck_id, blabel_t *label)
     } else {
         replace_dynstr(&dbh->errmsg, newstr("#BLIB:  Error inserting new vol_obj: %s\n", dbh->errmsg));
         if (BLIB.debug > 2 ) db_fldsdump(flds);
-    }   
+    }
     
     db_fldsfreelist(&flds);
     sqlstack_pop(dbh);
@@ -1749,11 +1720,11 @@ bcount_t db_vol_obj_sumsize(dbh_t *dbh, vol_obj_t *volobjrec)
         if (!dbcheck(dbh,NULL)) {
             fprintf(stderr, "#BLIB:  error summing totalsize for  object \"%s\"  %s!!\n", (char *) &volobjrec->objname, (char *) dbh->errmsg);
         }
-    } 
+    }
     
     db_fldsfreelist(&flds);
     sqlstack_pop(dbh);
-    return(totalsize);  
+    return(totalsize);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -1785,7 +1756,7 @@ int db_update_bck_object_size_end(dbh_t *dbh, bckid_t bckid, objname_t *objname,
     }
     
     db_fldsfreelist(&flds);
-    return(dbh->status);  
+    return(dbh->status);
 }
 
 
@@ -1811,8 +1782,8 @@ int	db_insert_bckerror(dbh_t *dbh, bck_errors_t *bckerror)
     db_fldsmklist(&flds , "errmsg"      , FLD_TEXT , (void *) &bckerror->errmsg);
     
     if (!db_exec_sql_flds_pushpop(dbh, sqltext, flds)) {
-	    replace_dynstr(&dbh->errmsg,newstr("#BLIB:  Error inserting into bck_errors: %s\n", dbh->errmsg));
-	    if (BLIB.debug > 2 ) db_fldsdump(flds);
+        replace_dynstr(&dbh->errmsg,newstr("#BLIB:  Error inserting into bck_errors: %s\n", dbh->errmsg));
+        if (BLIB.debug > 2 ) db_fldsdump(flds);
     }
     
     db_fldsfreelist(&flds);
@@ -1830,20 +1801,20 @@ blib_tim_t db_lookup_endofbackup(dbh_t *dbh,bckid_t bck_id)
     
     if (db_exec_sql_flds_push(dbh, "select max(end) from vol_obj where bck_id=?", flds))  {
         end = sqlite3_column_int(dbh->sqlcmd->stmt, 0);
-    } 
+    }
     
     db_fldsfreelist(&flds);
     sqlstack_pop(dbh);
-    return(end);  
+    return(end);
 }
 
 int db_inc_volume_usage(dbh_t *dbh, bckid_t bck_id)
-{    
+{
     sqlstack_push(dbh);
     db_exec_sql_bckid(dbh,  "update volumes set usage=usage+1  where volumes.bck_id=?", bck_id);
     
     sqlstack_pop(dbh);
-    return(dbh->status);  
+    return(dbh->status);
     
 }
 
@@ -1870,7 +1841,7 @@ int db_update_backups_end(dbh_t *dbh, bckid_t bck_id, blib_tim_t end)
     }
     db_fldsfreelist(&sqlcmd->putflds);
     sqlstack_pop(dbh);
-    return(dbh->status);  
+    return(dbh->status);
 }
 
 
@@ -1881,22 +1852,23 @@ int db_delete_backup_id(dbh_t *dbh, bckid_t bck_id)
      delete from bck_objects where bck_id=<bckid>;
      delete from vol_obj where bck_id=<bckid>;
      update volumes set bck_id=0 where bck_id=<bckid>;
-     */  
+     */
     if (BLIB.debug)  {
         fprintf(stderr, "Deleting backup %llu\n", (llu_t ) bck_id);
     }
     
     sqlstack_push(dbh);
-    db_exec_sql(dbh,     "begin transaction");    
-    db_exec_sql_bckid(dbh, "delete from bck_objects               where bck_id=?", bck_id);
-    db_exec_sql_bckid(dbh, "delete from vol_obj                   where bck_id=?", bck_id);
-    db_exec_sql_bckid(dbh, "delete from backups                   where bck_id=?", bck_id);
-    db_exec_sql_bckid(dbh, "update bck_errors set bck_id=0        where bck_id=?", bck_id);
-    db_exec_sql_bckid(dbh, "update volumes set bck_id=0,state='F' where bck_id=?", bck_id);
-    db_exec_sql(dbh,     "commit"); 
+    db_exec_sql(dbh,     "begin transaction");
+    db_exec_sql_bckid(     dbh, "delete from bck_objects               where bck_id=?", bck_id);
+    db_exec_sql_bckid(     dbh, "delete from vol_obj                   where bck_id=?", bck_id);
+    db_exec_sql_bckid(     dbh, "delete from backups                   where bck_id=?", bck_id);
+    db_exec_sql_bckid(     dbh, "update bck_errors set bck_id=0        where bck_id=?", bck_id);
+    db_exec_sql_change_state(dbh, bck_id, nowgm(), "F");
+    db_exec_sql_bckid(     dbh, "update volumes set bck_id=0           where bck_id=?", bck_id);
+    db_exec_sql(dbh,     "commit");
     
     sqlstack_pop(dbh);
-    return(dbh->status);      
+    return(dbh->status);
 }
 
 int	db_update_backups(dbh_t *dbh,backups_t *bckrec)
@@ -1963,7 +1935,7 @@ bcount_t db_count_bck_errors(dbh_t *dbh, vol_obj_t *key)
     db_fldsmklist(&flds,"label"         ,  FLD_TEXT , (void *) &key->label);
     db_fldsmklist(&flds,"obj_instance"  ,  FLD_INT , (void *) &key->obj_instance);
     
-    if (db_exec_sql_flds_push(dbh, "select count(*) from main.bck_errors where bck_id=? and objname=? and label=? and obj_instance=?", flds)) {	
+    if (db_exec_sql_flds_push(dbh, "select count(*) from main.bck_errors where bck_id=? and objname=? and label=? and obj_instance=?", flds)) {
         rcount = sqlite3_column_int64(dbh->sqlcmd->stmt, 0);
     }
     
@@ -1981,7 +1953,7 @@ bcount_t db_count_bck_errors_bck_id(dbh_t *dbh, bckid_t bck_id)
     
     db_fldsmklist(&flds,"bck_id"        ,  FLD_INT64, (void *) &bck_id);
     
-    if (db_exec_sql_flds_push(dbh, "select count(*) from main.bck_errors where bck_id=?", flds)) {	
+    if (db_exec_sql_flds_push(dbh, "select count(*) from main.bck_errors where bck_id=?", flds)) {
         rcount = sqlite3_column_int64(dbh->sqlcmd->stmt, 0);
     }
     
@@ -1999,12 +1971,12 @@ bcount_t db_count_notset(dbh_t *dbh, bckid_t bck_id)
     
     db_fldsmklist(&flds,"bck_id"        ,  FLD_INT64, (void *) &bck_id);
     
-    if (db_exec_sql_flds_push(dbh, "select count(*) from main.backups where bck_id=? and end=0" , flds)) {	
+    if (db_exec_sql_flds_push(dbh, "select count(*) from main.backups where bck_id=? and end=0" , flds)) {
         rcount = sqlite3_column_int64(dbh->sqlcmd->stmt, 0);
     }
     sqlstack_pop(dbh);
     
-    if (db_exec_sql_flds_push(dbh, "select count(*) from bck_objects where bck_id=? and end=0" , flds)) {	
+    if (db_exec_sql_flds_push(dbh, "select count(*) from bck_objects where bck_id=? and end=0" , flds)) {
         rcount += sqlite3_column_int64(dbh->sqlcmd->stmt, 0);
     }
     
@@ -2093,7 +2065,7 @@ bcount_t  db_count_sqltext(dbh_t *dbh, char *sqltext)
         rval = sqlite3_column_int64(dbh->sqlcmd->stmt, 0);
     } else {
         replace_dynstr(&dbh->errmsg, newstr("#BLIB:  Error counting %s\n",sqltext, dbh->errmsg));
-    } 
+    }
     
     sqlstack_pop(dbh);
     
@@ -2114,7 +2086,7 @@ int db_read_bck_objects_fault1(dbh_t *dbh, bckobj_t *bck_obj, find_type_t flag)
     // bck_objects (bck_id) -> backups
     
     sqltext = "select * from bck_objects where bck_id not in (select bck_id from backups)";
-
+    
     bzero(bck_obj, sizeof(bckobj_t));
     
     rval =  db_find(dbh, sqltext, NULL, (void *)bck_obj, copy_results_bck_objects , flag);
@@ -2162,20 +2134,20 @@ int	db_read_bck_errors_fault2(dbh_t *dbh, bck_errors_t *bckerrrec, find_type_t f
     char    *sqltext;
     
     // checking: (bck_id, objname, obj_instance) -> bck_objects
-   /*
-    
-    TODO: work out why this doesnt work
-    sqltext="select * from bck_errors e left outer  join bck_objects o on"
-            " e.bck_id        = o.bck_id and"
-            " e.obj_instance  = o.obj_instance"
-            " and e.objname   = o.objname"
-            " and o.bck_id is null";
-    // select e.* o.bckid as obckid from bck_errors e left outer  join bck_objects o on e.bck_id = o.bck_id and e.obj_instance  = o.obj_instance and e.objname   = o.objname and obck_id is null
-    */
+    /*
+     
+     TODO: work out why this doesnt work
+     sqltext="select * from bck_errors e left outer  join bck_objects o on"
+     " e.bck_id        = o.bck_id and"
+     " e.obj_instance  = o.obj_instance"
+     " and e.objname   = o.objname"
+     " and o.bck_id is null";
+     // select e.* o.bckid as obckid from bck_errors e left outer  join bck_objects o on e.bck_id = o.bck_id and e.obj_instance  = o.obj_instance and e.objname   = o.objname and obck_id is null
+     */
     
     sqltext = "select  * from (select e.*, o.bck_id as obck_id from bck_errors e left outer  join bck_objects o on e.bck_id = o.bck_id and e.obj_instance  = o.obj_instance and e.objname   = o.objname ) where obck_id is null";
     
-
+    
     bzero(bckerrrec, sizeof(bck_errors_t));
     
     rval =  db_find(dbh, sqltext, NULL, (void *)bckerrrec, copy_results_bck_errors , flag);
@@ -2189,7 +2161,7 @@ int db_read_vol_obj_fault1(dbh_t *dbh, vol_obj_t *vol_obj, find_type_t flag)
     char    *sqltext;
     
     // (bck_id, objname, obj_instance) -> bck_objects
-    sqltext = "select  * from (select vo.*, bo.bck_id as bobck_id from vol_obj vo left outer  join bck_objects bo on vo.bck_id = bo.bck_id and vo.obj_instance  = bo.obj_instance and vo.objname   = bo.objname ) where bobck_id is null";    
+    sqltext = "select  * from (select vo.*, bo.bck_id as bobck_id from vol_obj vo left outer  join bck_objects bo on vo.bck_id = bo.bck_id and vo.obj_instance  = bo.obj_instance and vo.objname   = bo.objname ) where bobck_id is null";
     bzero(vol_obj, sizeof(vol_obj_t));
     
     rval =  db_find(dbh, sqltext, NULL, (void *)vol_obj, copy_results_vol_obj , flag);
@@ -2203,7 +2175,7 @@ int db_read_vol_obj_fault2(dbh_t *dbh, vol_obj_t *vol_obj, find_type_t flag)
     char    *sqltext;
     
     // (bck_id, label) -> volumes
-    sqltext = "select  * from (select vo.*, v.bck_id as bobck_id from vol_obj vo left outer  join volumes v on vo.bck_id = v.bck_id and vo.label  = v.label ) where bobck_id is null";    
+    sqltext = "select  * from (select vo.*, v.bck_id as bobck_id from vol_obj vo left outer  join volumes v on vo.bck_id = v.bck_id and vo.label  = v.label ) where bobck_id is null";
     bzero(vol_obj, sizeof(vol_obj_t));
     
     rval =  db_find(dbh, sqltext, NULL, (void *)vol_obj, copy_results_vol_obj , flag);
@@ -2254,19 +2226,19 @@ void db_display_bck_errors(FILE *fd, bck_errors_t *bckerrrec)
 {
     datestr_t errtime;
     /*
-    1              test               test                0 NotSet             0
-
-    12345678901234567890123456789012345678901234567890123456789012345678901234567890
+     1              test               test                0 NotSet             0
+     
+     12345678901234567890123456789012345678901234567890123456789012345678901234567890
      */
-                    
+    
     copy_datestr(&errtime, (datestr_t *) time_cvt_blib_to_str(bckerrrec->errtime));
-    fprintf(fd, BCK_ERR_FMT_LINE, 
-                              (llu_t ) bckerrrec->bck_id
-                            , bckerrrec->label.str
-                            , bckerrrec->objname.str
-                            , bckerrrec->obj_instance
-                            , errtime.str
-                            , bckerrrec->errmsg.str);
+    fprintf(fd, BCK_ERR_FMT_LINE,
+            (llu_t ) bckerrrec->bck_id
+            , bckerrrec->label.str
+            , bckerrrec->objname.str
+            , bckerrrec->obj_instance
+            , errtime.str
+            , bckerrrec->errmsg.str);
     
 }
 
@@ -2277,15 +2249,15 @@ void db_display_bck_errors(FILE *fd, bck_errors_t *bckerrrec)
 void db_display_bck_object(FILE *fd, bckobj_t *bo)
 {
     datestr_t start, end;
-
+    
     copy_datestr(&start, (datestr_t *) time_cvt_blib_to_str(bo->start));
     copy_datestr(&end,   (datestr_t *) time_cvt_blib_to_str(bo->end));
-    fprintf(fd, BCKOBJ_FMT_LINE, 
-            (llu_t ) bo->bck_id, 
-            pstr(bo->objname.str,""), 
-            bo->obj_instance, 
-            start.str, 
-            end.str, 
+    fprintf(fd, BCKOBJ_FMT_LINE,
+            (llu_t ) bo->bck_id,
+            pstr(bo->objname.str,""),
+            bo->obj_instance,
+            start.str,
+            end.str,
             (llu_t) bo->size);
     
 }
@@ -2300,14 +2272,14 @@ void db_display_vol_obj(FILE *fd, vol_obj_t *vo)
     
     copy_datestr(&start, (datestr_t *) time_cvt_blib_to_str(vo->start));
     copy_datestr(&end,   (datestr_t *) time_cvt_blib_to_str(vo->end));
-    fprintf(fd, VOLOBJ_FMT_LINE, 
-            (llu_t ) vo->bck_id, 
-            pstr(vo->objname.str,""), 
-            vo->obj_instance, 
+    fprintf(fd, VOLOBJ_FMT_LINE,
+            (llu_t ) vo->bck_id,
+            pstr(vo->objname.str,""),
+            vo->obj_instance,
             pstr(vo->label.str,""),
             vo->fileno,
-            start.str, 
-            end.str, 
+            start.str,
+            end.str,
             (llu_t) vo->size);
     
 }
@@ -2321,11 +2293,11 @@ void db_display_volume(FILE *fd, vol_t *vol)
     datestr_t librarydate, offsitedate;
     copy_datestr(&librarydate, (datestr_t *) time_cvt_blib_to_str(vol->librarydate));
     copy_datestr(&offsitedate, (datestr_t *) time_cvt_blib_to_str(vol->offsitedate));
-    fprintf(fd, VOL_FMT_LINE, 
-            (llu_t ) vol->bck_id, 
+    fprintf(fd, VOL_FMT_LINE,
+            (llu_t ) vol->bck_id,
             pstr(vol->label.str,""),
             fmt_state((char *) &vol->state),
-            pstr(vol->media.str,""), 
+            pstr(vol->media.str,""),
             vol->usage,
             pstr(vol->groupname.str, ""),
             pstr(vol->location.str,""),
@@ -2362,12 +2334,12 @@ int     db_verify(fio_t *outfd, dbh_t *dbh)
     
     
     /*
-    bck_id maybe zero as we keep a history gainst label for a backup volume to track its errors
-    */
-/////////////////////////////
-// check table: BCK_ERRORS //
-/////////////////////////////
-        // (bck_id > 0 )   -> backups
+     bck_id maybe zero as we keep a history gainst label for a backup volume to track its errors
+     */
+    /////////////////////////////
+    // check table: BCK_ERRORS //
+    /////////////////////////////
+    // (bck_id > 0 )   -> backups
     fprintf(outfd->fd, "Verifying table: bck_errors\n");
     // total_rows = db_count_sqltext(dbh, "select count(*) from bck_errors");
     
@@ -2390,7 +2362,7 @@ int     db_verify(fio_t *outfd, dbh_t *dbh)
         fprintf(outfd->fd, "OK\n");
     }
     
-
+    
     
     // (bck_id, objname, obj_instance) -> bck_objects
     fprintf(outfd->fd, "  bck_errors(bck_id, objname, obj_instance) -> bck_objects: ");
@@ -2412,17 +2384,17 @@ int     db_verify(fio_t *outfd, dbh_t *dbh)
     if (bck_errors_errcount) fprintf(outfd->fd, "  bck_errors: Error count: %llu\n", (llu_t) bck_errors_errcount);
     total_errcount += bck_errors_errcount;
     bck_errors_errcount=0;
-
-   
-//////////////////////////////
-// check table: BCK_OBJECTS //
-//////////////////////////////
-
- /*
- bck_objects      [bck_id|objname|obj_instance   |start|end|size]
-    bck_objects (bck_id>0) -> backups 
-    bck_objects (bck_id, objname, obj_instance) -> vol_obj
- */
+    
+    
+    //////////////////////////////
+    // check table: BCK_OBJECTS //
+    //////////////////////////////
+    
+    /*
+     bck_objects      [bck_id|objname|obj_instance   |start|end|size]
+     bck_objects (bck_id>0) -> backups
+     bck_objects (bck_id, objname, obj_instance) -> vol_obj
+     */
     fprintf(outfd->fd, "\nVerifying table: bck_objects\n");
     fprintf(outfd->fd, "  bck_objects(bck_id>0) -> vol_obj: ");
     fnd_sts = db_read_bck_objects_fault1(dbh, &bck_objects, FND_FIRST);
@@ -2441,7 +2413,7 @@ int     db_verify(fio_t *outfd, dbh_t *dbh)
     } else {
         fprintf(outfd->fd, "OK\n");
     }
-
+    
     
     fprintf(outfd->fd, "  bck_objects(bck_id, objname, obj_instance) -> vol_obj: ");
     fnd_sts = db_read_bck_objects_fault2(dbh, &bck_objects, FND_FIRST);
@@ -2465,16 +2437,16 @@ int     db_verify(fio_t *outfd, dbh_t *dbh)
     if (bck_objects_errcount) fprintf(outfd->fd, "  bck_objects: Error count: %llu\n", (llu_t) bck_objects_errcount);
     total_errcount += bck_objects_errcount;
     bck_objects_errcount=0;
-
     
-//////////////////////////////
-// check table: VOL_OBJ     //
-//////////////////////////////
- /* 
- vol_obj    [bck_id|objname|obj_instance      |label|fileno|start|end|size]
-    (bck_id, objname, obj_instance) -> bck_objects
-    (bck_id, label) -> volumes
- */
+    
+    //////////////////////////////
+    // check table: VOL_OBJ     //
+    //////////////////////////////
+    /*
+     vol_obj    [bck_id|objname|obj_instance      |label|fileno|start|end|size]
+     (bck_id, objname, obj_instance) -> bck_objects
+     (bck_id, label) -> volumes
+     */
     
     fprintf(outfd->fd, "\nVerifying table: vol_obj\n");
     fprintf(outfd->fd, "  vol_obj(bck_id, objname, obj_instance) -> bck_objects: ");
@@ -2513,21 +2485,21 @@ int     db_verify(fio_t *outfd, dbh_t *dbh)
         fprintf(outfd->fd, "OK\n");
     }
     
-
+    
     if (vol_objs_errcount) fprintf(outfd->fd, "  vol_obj: Error count: %llu\n", (llu_t) vol_objs_errcount);
     total_errcount += vol_objs_errcount;
     vol_objs_errcount=0;
-
     
-//////////////////////////////
-// check table: VOLUMES     //
-//////////////////////////////
     
- /*
- volumes    [bck_id|label|state|media|usage|groupname|location|librarydate|recorddate|offsitedate|change_date]
-    (bck_id>0, label) -> vol_obj
-    (bck_id > 0 )   -> backups
- */
+    //////////////////////////////
+    // check table: VOLUMES     //
+    //////////////////////////////
+    
+    /*
+     volumes    [bck_id|label|state|media|usage|groupname|location|librarydate|recorddate|offsitedate|changedate]
+     (bck_id>0, label) -> vol_obj
+     (bck_id > 0 )   -> backups
+     */
     
     fprintf(outfd->fd, "\nVerifying table: volumes\n");
     fprintf(outfd->fd, "  volumes(bck_id>0, label) -> vol_obj: ");
@@ -2567,23 +2539,23 @@ int     db_verify(fio_t *outfd, dbh_t *dbh)
     }
     
     
-//////////////////////////////
-// check table: BACKUPS     //
-//////////////////////////////
-
-/*
- backups    [bck_id|node|start|end|expiredate|desc]
-Nothing we havent already checked 
- */
+    //////////////////////////////
+    // check table: BACKUPS     //
+    //////////////////////////////
     
-     
+    /*
+     backups    [bck_id|node|start|end|expiredate|desc]
+     Nothing we havent already checked
+     */
+    
+    
     
     if (vol_objs_errcount) fprintf(outfd->fd, "  volumes: Error count: %llu\n", (llu_t) volumes_errcount);
     total_errcount += volumes_errcount;
     volumes_errcount=0;
     
     
-/////////////////////////////////////// 
+    ///////////////////////////////////////
     
     if (total_errcount) fprintf(outfd->fd, "TOTAL ERRORS: %llu\n",(llu_t) total_errcount);
     

@@ -1,21 +1,21 @@
-static const char *rcsid="@(#) $Id: copycheck.c,v 1.3 2013/01/20 10:01:14 mark Exp $";
+static const char *rcsid="@(#) $Id: copycheck.c,v 1.3 2013/01/20 10:01:14 mark Exp mark $";
 /*
-//  copycheck.c
-//  blib
-//
-//  Created by mark on 18/10/2010.
-//  Copyright (c) 2010 Garetech Computer Solutions. All rights reserved.
-// $Log: copycheck.c,v $
-// Revision 1.3  2013/01/20 10:01:14  mark
-// MG tighten up the checking for null parameters before using them.
-//
-// Revision 1.2  2011/04/11 03:51:27  mark
-// add fmt_state
-//
-// Revision 1.1  2010/11/16 04:05:32  root
-// Initial revision
-//
-*/
+ //  copycheck.c
+ //  blib
+ //
+ //  Created by mark on 18/10/2010.
+ //  Copyright (c) 2010 Garetech Computer Solutions. All rights reserved.
+ // $Log: copycheck.c,v $
+ // Revision 1.3  2013/01/20 10:01:14  mark
+ // MG tighten up the checking for null parameters before using them.
+ //
+ // Revision 1.2  2011/04/11 03:51:27  mark
+ // add fmt_state
+ //
+ // Revision 1.1  2010/11/16 04:05:32  root
+ // Initial revision
+ //
+ */
 
 #include "copycheck.h"
 #include "timefunc.h"
@@ -29,8 +29,8 @@ static const char *version()
 char	*copy_label(blabel_t *dst, char *src)
 {
     if (src && dst ) {
-    	strncpy(dst->str, src,LABEL_SIZ);
-    	dst->str[LABEL_SIZ]='\0';
+        strncpy(dst->str, src,LABEL_SIZ);
+        dst->str[LABEL_SIZ]='\0';
     }
     return(dst->str);
 }
@@ -42,7 +42,7 @@ int	cmp_labels(blabel_t *l1, blabel_t *l2)
 
 int	cmp_objname(objname_t *l1, objname_t *l2)
 {
-    return(strncmp(l1->str, l2->str, sizeof(blabel_t)));	   
+    return(strncmp(l1->str, l2->str, sizeof(blabel_t)));
 }
 
 char	*copy_desc(desc_t *dst, char *src)
@@ -68,7 +68,7 @@ char	*copy_media(media_t *dst, char *src)
 {
     if (src && dst ) {
         strncpy(dst->str, src, MEDIA_NAM_SIZ);
-    	dst->str[MEDIA_NAM_SIZ]='\0';
+        dst->str[MEDIA_NAM_SIZ]='\0';
     }
     return(dst->str);
 }
@@ -77,7 +77,7 @@ char	*copy_state(state_t *dst, char *src)
 {
     if (src && dst ) {
         strncpy(dst->str, src, STATE_SIZ);
-    	dst->str[STATE_SIZ]='\0';
+        dst->str[STATE_SIZ]='\0';
     }
     return(dst->str);
 }
@@ -121,7 +121,7 @@ char	*copy_errmsg(errmsg_t *dst, char *src)
 {
     if (src && dst ) {
         strncpy(dst->str, src, ERRMSG_SIZ);
-    	dst->str[ERRMSG_SIZ]='\0';
+        dst->str[ERRMSG_SIZ]='\0';
     }
     return(dst->str);
 }
@@ -132,12 +132,15 @@ vol_t	*default_volume(vol_t *rec)
         bzero(rec,sizeof(vol_t));
         // set up default values
         copy_state(&rec->state,  "F");
+        volume_setChangeDate(rec);
+        
         copy_media(&rec->media, get_default(QUAL_MEDIA));
         rec->usage		= 0;
         copy_groupname(&rec->groupname, get_default(QUAL_GROUP));
         copy_location(&rec->location, get_default(QUAL_LOCATION));
-        rec->librarydate	= nowgm();;
+        rec->librarydate	= nowgm();
         rec->offsitedate	= 0;
+        
     }
     return(rec);
     
@@ -158,6 +161,6 @@ const char    *fmt_state(char *state)
             rval = "UNKNOWN";
             break;
     }
-    return(rval);    
+    return(rval);
 }
 

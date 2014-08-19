@@ -113,7 +113,7 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/reportbackup=1302571581 /includelog=?/log/backups/1302607560.backup.log.tue /html /mail=markg@garetech.com.au"
+            argument = "/reportbackup=1372989932 /includelog=?/log/backups/1302607560.backup.log.tue /html /mail=markg@garetech.com.au"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
@@ -122,7 +122,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/runexpiration=1"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/listobjects"
@@ -158,7 +158,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/reportexpired=2"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
       <EnvironmentVariables>

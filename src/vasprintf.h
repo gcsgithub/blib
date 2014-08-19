@@ -2,7 +2,7 @@
 #define __VASPRINTF_H__
 
 /*
- * @(#) $Id: vasprintf.h,v 1.2 2010/11/16 04:11:18 mark Exp $
+ * @(#) $Id: vasprintf.h,v 1.2 2010/11/16 04:11:18 mark Exp mark $
  *
  * $Log: vasprintf.h,v $
  * Revision 1.2  2010/11/16 04:11:18  mark

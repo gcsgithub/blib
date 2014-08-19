@@ -1,4 +1,4 @@
-static char *rcsid="@(#) $Id: split.c,v 1.2 2010/11/16 04:10:23 mark Exp $";
+static char *rcsid="@(#) $Id: split.c,v 1.2 2010/11/16 04:10:23 mark Exp mark $";
 /*
  * $Log: split.c,v $
  * Revision 1.2  2010/11/16 04:10:23  mark
@@ -25,13 +25,13 @@ static char *ver()
 }
 
 int split(char *buf, char *sep,list_t **flds)
-{    
+{
     int		rval, eol;
     char        *sp, qchar, *fldptr, *fld;
     entry_t	*ent;
     
     qchar ='\0';
-    sp = buf; 
+    sp = buf;
     eol= FALSE;
     rval = SPLIT_OK;
     fldptr = sp;
@@ -39,45 +39,45 @@ int split(char *buf, char *sep,list_t **flds)
         switch(*sp) {
             case '\"':
                 if ( qchar == '\"' ) { // this must be a closing quote
-		    qchar = '\0'; // stop quote
-		} else { // not already in a quote
-		    qchar = '\"';	 // set quote char
-		}
+                    qchar = '\0'; // stop quote
+                } else { // not already in a quote
+                    qchar = '\"';	 // set quote char
+                }
                 break;
-		
+                
             case '\'':
                 if ( qchar == '\"' ) { // this must be a closing quote
-		    qchar = '\0'; /* no longer quote */
-		} else { // not already in a quote
-		    qchar = '\"';	 // set quote char
-		}
+                    qchar = '\0'; /* no longer quote */
+                } else { // not already in a quote
+                    qchar = '\"';	 // set quote char
+                }
                 break;
-		
-	    case '\n':
-	    case '\r':
-		*sp='\0'; /* null it and fall through */
-            case '\0': 
+                
+            case '\n':
+            case '\r':
+                *sp='\0'; /* null it and fall through */
+            case '\0':
                 if ( qchar != '\0' ) { // have a start of quoted text but found eol before closing
-			rval=SPLIT_MISSQUOT;
-		}
-		fld = newfld(fldptr);
-		ent = new_entry(fld);
-		list_insert_tail(flds, ent);
-		eol = TRUE; // and we done
-		break;
-		
-	    default: /* anything else must be start of non quoted field */
-		 if ( qchar == '\0' ) { // if not quoting then we can look for sep
-			if (index(sep,*sp) != (char *) NULL ) { 
-			    *sp='\0';	// null terminate it as a C String
-			    fld = newfld(fldptr);
-			    ent = new_entry(fld);
-			    list_insert_tail(flds, ent);
-			    
-			    fldptr = (sp+1); // set a point to the start
-			} 
-		}
-		break;
+                    rval=SPLIT_MISSQUOT;
+                }
+                fld = newfld(fldptr);
+                ent = new_entry(fld);
+                list_insert_tail(flds, ent);
+                eol = TRUE; // and we done
+                break;
+                
+            default: /* anything else must be start of non quoted field */
+                if ( qchar == '\0' ) { // if not quoting then we can look for sep
+                    if (index(sep,*sp) != (char *) NULL ) {
+                        *sp='\0';	// null terminate it as a C String
+                        fld = newfld(fldptr);
+                        ent = new_entry(fld);
+                        list_insert_tail(flds, ent);
+                        
+                        fldptr = (sp+1); // set a point to the start
+                    }
+                }
+                break;
         }
         sp++; /* next char */
     }
@@ -89,7 +89,7 @@ char *newfld(char *fldptr)
     char *rval;
     
     if ( (rval = strdup(rtrim(fldptr, strlen(fldptr)))) == (char *) NULL ) {
-	fprintf(stderr, "#BLIB:  outof memory in " __ATLINE__ "\n");
+        fprintf(stderr, "#BLIB:  outof memory in " __ATLINE__ "\n");
     }
     return(rval);
 }

@@ -1,6 +1,6 @@
 #ifdef NEED_STRSEP
 /*
- * @(#) $Id: strsep.h,v 1.3 2008/10/20 13:01:38 mark Exp $
+ * @(#) $Id: strsep.h,v 1.3 2008/10/20 13:01:38 mark Exp mark $
  * $Log: strsep.h,v $
  * Revision 1.3  2008/10/20 13:01:38  mark
  * checkpoint

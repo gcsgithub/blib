@@ -1,4 +1,4 @@
-static char *rcsid="@(#) $Id: parseslashcmd.c,v 1.12 2014/06/17 05:08:54 mark Exp $";
+static char *rcsid="@(#) $Id: parseslashcmd.c,v 1.12 2014/06/17 05:08:54 mark Exp mark $";
 /*
  * $Log: parseslashcmd.c,v $
  * Revision 1.12  2014/06/17 05:08:54  mark
@@ -596,7 +596,7 @@ cmd_t  *cmd_new(cmdqual_t   *param, cmp_e	cmpflg)
         exit(ENOMEM);
     }
     bzero(rval, sizeof(cmd_t));
-
+    
     rval->param  = param;
     rval->cmpflg = cmpflg;
     
@@ -651,8 +651,12 @@ cmd_t *newcmd(cmdqual_t *cmdqual, char *val, cmp_e cmpflg)
             rval->val = newstr(val);
             break;
         case    VT_STATE:
-            if (strcasecmp((char *) val, "ALLOCATED") == 0 ) state_char = 'A';
-            else if (strcasecmp((char *) val, "FREE") == 0 ) state_char = 'F';
+            if (strcasecmp((char *) val, "ALLOCATED") == 0 ) {
+                state_char = 'A';
+            }
+            else if (strcasecmp((char *) val, "FREE") == 0 ) {
+                state_char = 'F';
+            }
             else {
                 fprintf(stderr, "#BLIB:  Syntax Error: state must be either \"ALLOCATED\" or \"FREE\" not %s\n", val);
                 rval->param = &CMDQUALS[CMD_ERR];
@@ -1021,7 +1025,7 @@ void	do_cmd_help(FILE *fd)
         cmdp=&CMDQUALS[idx];
         if (cmdp->defval) 	defval = cmdp->defval;
         else			defval = cmdp->sql_fldnam;
-		
+        
         fprintf(fd, " %s", cmdp->cmdtxt);
         switch(cmdp->val_opt) {
             case REQVAL_NONE:
@@ -1116,9 +1120,15 @@ char	*get_state(char *statestr)
 {
     char    *state;
     
-    if      (strcasecmp(statestr, "ALLOCATED" ) == 0)	state = "A";
-    else if (strcasecmp(statestr, "FREE"      ) == 0)	state = "F";
-    else						state = "";
+    if      (strcasecmp(statestr, "ALLOCATED" ) == 0) {
+        state = "A";
+    }
+    else if (strcasecmp(statestr, "FREE"      ) == 0) {
+        state = "F";\
+    }
+    else {
+        state = "";
+    }
     
     return(state);
 }

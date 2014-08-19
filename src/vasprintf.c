@@ -1,6 +1,6 @@
 #include "vasprintf.h"
 #ifdef NEED_ASPRINTF
-static const char *rcsid = "@(#)$Id: vasprintf.c,v 1.2 2010/11/16 04:10:30 mark Exp $";
+static const char *rcsid = "@(#)$Id: vasprintf.c,v 1.2 2010/11/16 04:10:30 mark Exp mark $";
 /*
  * $Log: vasprintf.c,v $
  * Revision 1.2  2010/11/16 04:10:30  mark
@@ -100,7 +100,7 @@ int my_vasprintf(char **ret, char *fmt, va_list args)
         if (rlen == -1 ) {
             err=errno;
             fprintf(stderr, "Internal error in asprintf() error vfprintf /dev/null %d:%s\n", err, strerror(err));
-            return(-1);	    
+            return(-1);
         }
         if ((rval = (char *) malloc(rlen+1)) == (char *) NULL ) {
             rlen = -1;

@@ -1,4 +1,4 @@
-static char *rcsid="@(#) $Id: fileio.c,v 1.4 2013/01/20 10:12:23 mark Exp $";
+static char *rcsid="@(#) $Id: fileio.c,v 1.4 2013/01/20 10:12:23 mark Exp mark $";
 /*
  *  fileio.c
  *  fmtbckrep_xcode
@@ -152,16 +152,26 @@ char *fio_fgets(fio_t *fio)
 
 fio_t *fio_open_temp(char *prefix, char *ext, size_t bufsiz)
 {
-    char    *tmpfnam, *tmpfnam_ext;
     fio_t   *rval;
+    int     fd;
+    char    *fnm_dyn;
     
-    tmpfnam = tempnam("/tmp", prefix);
     if (ext) {
-        tmpfnam_ext = newstr("%s.%s", tmpfnam, ext);
-        replace_dynstr(&tmpfnam, tmpfnam_ext);
+        fnm_dyn = newstr("/tmp/%sXXXXXXXXX.%s",prefix, ext);
+        fd      = mkstemps(fnm_dyn, strlen(ext)+1);
     }
-	
-    rval = fio_alloc_open(tmpfnam, NULL, "w", bufsiz);
+    else {
+        fnm_dyn = newstr("/tmp/%sXXXXXXXXX");
+        fd      = mkstemp(fnm_dyn);
+    }
+    
+    rval = fio_from_fd(fd);
+    replace_dynstr(&rval->fnm, fnm_dyn);
+    rval->buf = malloc(bufsiz);
+    if (rval->buf) {
+        rval->bufsiz = bufsiz;
+    }
+    
     return(rval);
 }
 
@@ -205,19 +215,50 @@ fio_t	*fio_dup(fio_t *fio)
                 break;
         }
         if ((rval->open_mode) && (fileno >= 0)) {
-    		rval->fd   = fdopen(filenum,rval->open_mode);
+            rval->fd   = fdopen(filenum,rval->open_mode);
         }
     }
     return(rval);
 }
 
-fio_t	*fio_fd(FILE *fd)
+fio_t   *fio_from_fd(int fd)
 {
     fio_t	*fio;
     char	*filename;
     char 	*ext;
     
-    fio = fio_new(MAX_BUF);    
+    fio = fio_new(MAX_BUF);
+    ext="";
+    switch(fd) {
+        case 0:
+            filename="stdin";
+            break;
+        case 1:
+            filename="stdout";
+            break;
+        case 2:
+            filename="stderr";
+            break;
+        default:
+            filename="unknown";
+            break;
+    }
+    fio->ext = newstr(ext);
+    fio->fnm = newstr(filename);
+    fio->open=1;	// its open
+    fio->useropenflag = 1; // not our job to open/close this fd
+    fio->fd = fd;
+    return(fio);
+    
+}
+
+fio_t	*fio_from_file(FILE *fd)
+{
+    fio_t	*fio;
+    char	*filename;
+    char 	*ext;
+    
+    fio = fio_new(MAX_BUF);
     ext="";
     switch(fileno(fd)) {
         case 0:
@@ -304,9 +345,9 @@ int fio_open(fio_t *fio)
         fio->open = 1;	/* make it open */
         fio->reads = fio->writes = 0;
     }
-	
+    
     return(fio->status);
-}    
+}
 
 
 char *replace_ext(char *base, char *new_ext)
@@ -357,7 +398,7 @@ int fio_rewind(fio_t *fio)
         rewind(fio->fd);
         if (old_errno != errno) {
             rval = fio->status = errno;
-    	}
+        }
     }
     return(rval);
 }
@@ -399,6 +440,15 @@ files_t *make_files_ent(char *fnm)
     return(files_ent);
 }
 
+int file_isavailable(char *fnm)
+{
+    if (access(fnm, "r") == -1) {
+        return(0);
+    }
+    else {
+        return(1); // file is readable and so exists
+    }
+}
 
 files_t *new_files(files_t **head, char *fnm)
 {
@@ -441,9 +491,9 @@ files_t	*files_insert_head(files_t **head, fio_t *fio)
     next = *head;
     *head = newfile;
     
-    if (next != NULL ) { 
+    if (next != NULL ) {
         newfile->next = next; // previous head is now next
-    } 
+    }
     
     return(newfile);
 }

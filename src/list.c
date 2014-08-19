@@ -1,4 +1,4 @@
-static const char *rcsid="@(#) $Id: list.c,v 1.3 2013/01/20 10:14:42 mark Exp $";
+static const char *rcsid="@(#) $Id: list.c,v 1.3 2013/01/20 10:14:42 mark Exp mark $";
 /*
  * $Log: list.c,v $
  * Revision 1.3  2013/01/20 10:14:42  mark
@@ -124,17 +124,17 @@ int	free_list(list_t **lis,int (*free_entry)(entry_t *ent))
         return(0);  // all done
     }
     
-    if (list->head != (entry_t *) NULL) { 
+    if (list->head != (entry_t *) NULL) {
         pp = list->tail;
         while (pp) {
             ent=pp;
             pp=ent->pp;
             if (free_entry) (free_entry)(ent); // run the users free program
-	    else 		free(ent);	// or just free then entry assumes the user has grabed the ->e pointer
+            else 		free(ent);	// or just free then entry assumes the user has grabed the ->e pointer
         }
         free(list);
         *lis = (list_t *) NULL;
-    } 
+    }
     return(0);
 }
 
@@ -158,7 +158,7 @@ entry_t *new_entry(void *val)
         ent->e = val;
         ent->np = ent->pp = (entry_t *) NULL;
     }
-    return(ent);	
+    return(ent);
 }
 
 

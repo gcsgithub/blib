@@ -1,4 +1,4 @@
-static const char *rcsid="@(#) $Id: timefunc.c,v 1.3 2013/01/20 10:15:46 mark Exp $";
+static const char *rcsid="@(#) $Id: timefunc.c,v 1.3 2013/01/20 10:15:46 mark Exp mark $";
 /*
  *  timefunc.c
  *  blib
@@ -20,7 +20,7 @@ static const char *ver()
 void	printlitdate(FILE *fd, blib_tim_t ctim)
 {
     
-	fprintf(fd, "%s%f",TIMELIT , ctim);
+    fprintf(fd, "%s%f",TIMELIT , ctim);
     
 }
 
@@ -52,15 +52,31 @@ blib_tim_t	nowgm(void)
     struct timeval  tv;
     struct timezone tz;
     int err;
+    static  blib_tim_t  debug_time      = -1;
+    static  char        *debug_time_str = NULL;
     
-    if (gettimeofday(&tv, &tz) < 0 ) { // value is in GMT
-        err = errno;
-        fprintf(stderr, "# gettimeofday failed: %d:%s\n",err, strerror(err));
-        exit(err);
+    if (debug_time_str == NULL) {
+        debug_time_str = getenv("BLIB_DEBUG_TIME");
+        fprintf(stderr, "# Using BLIB_DEBUG_TIME=\"%s\"\n", debug_time_str);
     }
     
-    rval = time_cvt_tv_to_blib(&tv);
-    
+    if (debug_time_str) {
+        if (debug_time < 0) {
+            debug_time = time_cvt_str_to_blib((datestr_t *) debug_time_str);
+        }
+        rval = debug_time;
+        
+    }
+    else {
+        debug_time_str = "systemtime";
+        if (gettimeofday(&tv, &tz) < 0 ) { // value is in GMT
+            err = errno;
+            fprintf(stderr, "# gettimeofday failed: %d:%s\n",err, strerror(err));
+            exit(err);
+        }
+        rval = time_cvt_tv_to_blib(&tv);
+    }
+
     return(rval);
 }
 
@@ -145,7 +161,7 @@ datestr_t *time_cvt_blib_to_str(blib_tim_t tod)
     
     
     if (tod == 0 ) {
-    	snprintf(timestr.str,sizeof(timestr), D_NEVER);
+        snprintf(timestr.str,sizeof(timestr), D_NEVER);
     }
     else {
         

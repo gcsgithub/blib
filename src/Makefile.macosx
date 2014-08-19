@@ -1,4 +1,4 @@
-# @(#) $Id: Makefile.macosx,v 1.1 2014/06/17 04:36:49 mark Exp $
+# @(#) $Id: Makefile.macosx,v 1.1 2014/06/17 04:36:49 mark Exp mark $
 # $Log: Makefile.macosx,v $
 # Revision 1.1  2014/06/17 04:36:49  mark
 # Initial revision
@@ -57,10 +57,15 @@ blib: $(OBJS)
 install: all
 	install -c -g tape -m 750 blib /usr/local/etc
 
+blib: $(OBJS)
+	$(CC) $(CFLAGS)	 $(OBJS) -o $@ $(LDFLAGS)
 
 
-.c.o:
-	$(CC) $(CFLAGS) -c $*.c
+#$(OBJS): $(SRC)
+
+#########################################
+install: all
+	install -c -g tape -m 750 blib /usr/local/etc
 
 clean:
 	rm -f *.o $(TARGETS)
@@ -71,5 +76,5 @@ veryclean:
 tags: $(SRCS) $(HDRS)
 	ctags -wt $(SRCS) $(HDRS)
 
-depend:	$(SRCS) $(HDRS)
+depend:	$(SRCS) $(HDRS) sqlite/shell.c          sqlite/sqlite3.c        sqlite/sqlite3.h        sqlite/sqlite3ext.h
 	mkdep $(CFLAGS_DEPEND) $(SRCS)

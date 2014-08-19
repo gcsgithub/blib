@@ -1,4 +1,4 @@
-static char *rcsid="@(#) $Id: blib.c,v 1.6 2013/01/21 16:52:21 mark Exp $";
+static char *rcsid="@(#) $Id: blib.c,v 1.6 2013/01/21 16:52:21 mark Exp mark $";
 /*
  * $Log: blib.c,v $
  * Revision 1.6  2013/01/21 16:52:21  mark
@@ -35,16 +35,16 @@ void    usage(const char *prg)
     fprintf(stderr,"#BLIB:  Usage: %s\t[/cmd [/arg] \n", prg);
     do_cmd_help(stderr);
     exit(EINVAL);
-}   
+}
 
 int main(int argc,  char *argv[] /* , char *envp[] */)
-{   
+{
     int             err;
     int             dousage=0;
     char            c;
     extern char     *optarg;
-    extern int      optind; 
-
+    extern int      optind;
+    
     
     dbh_t	    *execdb;
     char	    *cmdline;
@@ -121,7 +121,7 @@ int main(int argc,  char *argv[] /* , char *envp[] */)
                 if ((BLIB.debug) || (execdb->errmsg )) fputc('\n', stderr);
             }
         }
-    	if (execdb->open == YES ) {
+        if (execdb->open == YES ) {
             db_close(execdb);
         }
     }

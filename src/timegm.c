@@ -1,4 +1,4 @@
-static const char *rcsid="@(#) $Id: timegm.c,v 1.1 2010/11/22 06:00:31 mark Exp $";
+static const char *rcsid="@(#) $Id: timegm.c,v 1.1 2010/11/22 06:00:31 mark Exp mark $";
 
 /* 
 ** $Log: timegm.c,v $

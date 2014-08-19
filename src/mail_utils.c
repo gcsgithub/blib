@@ -1,4 +1,4 @@
-static char *rcsid="@(#) $Id: mail_utils.c,v 1.3 2011/04/14 02:33:06 mark Exp $";
+static char *rcsid="@(#) $Id: mail_utils.c,v 1.3 2011/04/14 02:33:06 mark Exp mark $";
 /*
  *  mail_utils.c
  *  fmtbckrep_xcode
