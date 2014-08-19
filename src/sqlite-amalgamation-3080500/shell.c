@@ -352,7 +352,7 @@ static void shellstaticFunc(
   sqlite3_value **argv
 ){
   assert( 0==argc );
-  assert( zShellStatic );
+  assert(  zShellStatic != NULL );
   UNUSED_PARAMETER(argc);
   UNUSED_PARAMETER(argv);
   sqlite3_result_text(context, zShellStatic, -1, SQLITE_STATIC);

@@ -34,7 +34,7 @@ static const char *rcsid="@(#)$Id: caltime.c,v 1.3 2008/05/13 04:40:25 root Exp 
 #include <time.h>
 #include <sys/time.h>
 
-typedef __int64_t     usecs_t;
+typedef long long     usecs_t;
 
 typedef struct {
     struct timeval  tv;
@@ -197,15 +197,15 @@ char *fmt_timeval(fmt_time_e fmt, timeofday_t *tod)
             case TF_DAY_DDmmm_YYYY_HHMMSS:
 #ifdef __alpha__
                 sprintf(timebuf,"%3s, %02d %3s %04d %02d:%02d:%02d %+04d (%s)",
-                        days[tm->tm_wday],
-                        tm->tm_mday,
-                        mths[tm->tm_mon],
-                        tm->tm_year+1900,
-                        tm->tm_hour,
-                        tm->tm_min,
-                        tm->tm_sec,
-                        (tm->tm_gmtoff/36),
-                        tm->tm_zone
+                        days[tmp->tm_wday],
+                        tmp->tm_mday,
+                        mths[tmp->tm_mon],
+                        tmp->tm_year+1900,
+                        tmp->tm_hour,
+                        tmp->tm_min,
+                        tmp->tm_sec,
+                        (tmp->tm_gmtoff/36),
+                        tmp->tm_zone
                         );
 #else
                 sprintf(timebuf,"%3s, %02d %3s %04d %02d:%02d:%02d",

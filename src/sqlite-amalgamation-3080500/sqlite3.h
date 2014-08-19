@@ -243,7 +243,12 @@ typedef struct sqlite3 sqlite3;
 ** sqlite3_uint64 and sqlite_uint64 types can store integer values 
 ** between 0 and +18446744073709551615 inclusive.
 */
-#ifdef SQLITE_INT64_TYPE
+/* #if defined(__alpha__)
+  typedef long	sqlite_int64;
+  typedef unsigned long	sqlite_uint64;
+#elif SQLITE_INT64_TYPE
+*/
+#if SQLITE_INT64_TYPE
   typedef SQLITE_INT64_TYPE sqlite_int64;
   typedef unsigned SQLITE_INT64_TYPE sqlite_uint64;
 #elif defined(_MSC_VER) || defined(__BORLANDC__)
@@ -7400,7 +7405,10 @@ typedef struct sqlite3_rtree_query_info sqlite3_rtree_query_info;
 **
 **   SELECT ... FROM <rtree> WHERE <rtree col> MATCH $zGeom(... params ...)
 */
-SQLITE_API int sqlite3_rtree_geometry_callback(
+#ifdef SQLITE_API
+SQLITE_API
+#endif
+int sqlite3_rtree_geometry_callback(
   sqlite3 *db,
   const char *zGeom,
   int (*xGeom)(sqlite3_rtree_geometry*, int, sqlite3_rtree_dbl*,int*),
@@ -7426,7 +7434,10 @@ struct sqlite3_rtree_geometry {
 **
 **   SELECT ... FROM <rtree> WHERE <rtree col> MATCH $zQueryFunc(... params ...)
 */
-SQLITE_API int sqlite3_rtree_query_callback(
+#ifdef SQLITE_API
+SQLITE_API
+#endif
+int sqlite3_rtree_query_callback(
   sqlite3 *db,
   const char *zQueryFunc,
   int (*xQueryFunc)(sqlite3_rtree_query_info*),

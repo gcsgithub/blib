@@ -61,6 +61,7 @@ static const char *rcsid="@(#) $Id: data_access.c,v 1.14 2014/06/17 04:59:06 mar
 #include "data_access.h"
 #include "copycheck.h"
 #include "timefunc.h"
+#include "sqlite/sqlite3.h"
 
 
 extern blib_global_t BLIB;

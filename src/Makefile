@@ -1,16 +1,21 @@
 #
 #
-#CFLAGS = -I. -g -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED
-#CFLAGS = -I. -g -D_XOPEN_SOURCE=500
-
 # Tru64
-#CFLAGS = -I. -I/usr/local/include -g -DNEED_ASPRINTF -pthread -D_OSF_SOURCE -D_XOPEN_SOURCE_EXTENDED
-#LDFLAGS = -lm -pthread
+#DEFS=-DNEED_ASPRINTF -DNEED_STRSEP  -DNEED_TIMEGM
+DEFS=
 
-DEFS=-DNEED_ASPRINTF -DNEED_STRSEP  -DNEED_TIMEGM
+# HPUX
+#DEFS=-DHAVE_NO_MKSTEMPS
+
+#CFLAGS = -I. -I/usr/local/include -g -DNEED_ASPRINTF -pthread -D_OSF_SOURCE -D_XOPEN_SOURCE_EXTENDED $(DEFS)
+#LDFLAGS = -lm -lcurses -pthread
+
+# MacosX
+DEFS=
 CFLAGS = -I. -I/usr/local/include -g -arch i386 -arch x86_64 $(DEFS)
-CFLAGS_DEPEND = -I. -I/usr/local/include -g  $(DEFS)
 LDFLAGS = -lm
+
+CFLAGS_DEPEND = -I. -I/usr/local/include -g  $(DEFS)
 
 TARGETS = blib sqlite3 caltime ctime
 

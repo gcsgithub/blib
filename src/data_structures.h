@@ -26,7 +26,7 @@
  //
  */
 
-#include    <sqlite3.h>
+#include    "sqlite/sqlite3.h"
 #include    <strings.h>
 #include    <string.h>
 #include    "list.h"

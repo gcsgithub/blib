@@ -727,3 +727,4 @@ void text_row(FILE *fd, char *path, char *barcode, char *start_end, char *durati
  #define ROW_TEXT_FMT "| %-27.27s| %-13s| %-41s|%8s|%20s |%14s |%11s |%4s|\n"
  #define ERR_TEXT_FMT "| %-27.27s| %-13s| %-106s|\n"
  */
+

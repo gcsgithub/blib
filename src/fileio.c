@@ -152,6 +152,7 @@ char *fio_fgets(fio_t *fio)
 
 fio_t *fio_open_temp(char *prefix, char *ext, size_t bufsiz)
 {
+#ifndef HAVE_NO_MKSTEMPS
     fio_t   *rval;
     int     fd;
     char    *fnm_dyn;
@@ -173,6 +174,19 @@ fio_t *fio_open_temp(char *prefix, char *ext, size_t bufsiz)
     }
     
     return(rval);
+#else
+    char    *tmpfnam, *tmpfnam_ext;
+    fio_t   *rval;
+    
+    tmpfnam = tempnam("/tmp", prefix);
+    if (ext) {
+        tmpfnam_ext = newstr("%s.%s", tmpfnam, ext);
+        replace_dynstr(&tmpfnam, tmpfnam_ext);
+    }
+    
+    rval = fio_alloc_open(tmpfnam, NULL, "w", bufsiz);
+    return(rval);
+#endif
 }
 
 fio_t	*fio_dup(fio_t *fio)
