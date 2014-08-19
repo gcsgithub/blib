@@ -2650,9 +2650,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "2048"
-            endingLineNumber = "2048"
-            landmarkName = "do_cmd_listbackups()"
-            landmarkType = "7">
+            endingLineNumber = "2048">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -2666,9 +2664,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "928"
-            endingLineNumber = "928"
-            landmarkName = "do_cmd_report_exp()"
-            landmarkType = "7">
+            endingLineNumber = "928">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -2682,9 +2678,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "946"
-            endingLineNumber = "946"
-            landmarkName = "do_cmd_report_exp()"
-            landmarkType = "7">
+            endingLineNumber = "946">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
