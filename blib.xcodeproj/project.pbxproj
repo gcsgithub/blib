@@ -102,8 +102,6 @@
 				4D3447F0127D7F66006C98F7 /* timefunc.c */,
 				4D0C5DD60E8CA5D000041271 /* blib.h */,
 				08FB7796FE84155DC02AAC07 /* blib.c */,
-				4D0C5DDD0E8CA72B00041271 /* strsep.h */,
-				4D0C5DDE0E8CA72B00041271 /* strsep.c */,
 				4D0C5DF30E8CAAC200041271 /* util.h */,
 				4D0C5DF40E8CAAC200041271 /* util.c */,
 				4D0C5E320E8CE51000041271 /* parseslashcmd.h */,
@@ -123,12 +121,14 @@
 				4D7E4EDE1276512D008DE13E /* mkargv.c */,
 				4D9156020E9D19A400C878CD /* list.h */,
 				4D9156030E9D19A400C878CD /* list.c */,
-				4D753DF1125EE4360046D190 /* fileio.c */,
 				4D753DF2125EE4360046D190 /* fileio.h */,
-				4D753DF3125EE4360046D190 /* mail_utils.c */,
+				4D753DF1125EE4360046D190 /* fileio.c */,
 				4D753DF4125EE4360046D190 /* mail_utils.h */,
+				4D753DF3125EE4360046D190 /* mail_utils.c */,
 				4D22A92A0EA6048400D0D3CF /* vasprintf.h */,
 				4D22A92B0EA6048400D0D3CF /* vasprintf.c */,
+				4D0C5DDD0E8CA72B00041271 /* strsep.h */,
+				4D0C5DDE0E8CA72B00041271 /* strsep.c */,
 			);
 			path = src;
 			sourceTree = SOURCE_ROOT;
@@ -240,10 +240,7 @@
 				GCC_WARN_UNUSED_PARAMETER = YES;
 				GCC_WARN_UNUSED_VALUE = YES;
 				INSTALL_PATH = /usr/local/etc;
-				OTHER_CFLAGS = (
-					"-DDEBUG_ONMAC",
-					"-DNEEDASPRINTF",
-				);
+				OTHER_CFLAGS = "";
 				PRODUCT_NAME = blib;
 				SDKROOT = macosx;
 			};

@@ -39,10 +39,6 @@ blib_tim_t    time_cvt_str_to_blib(datestr_t *str);
 blib_tim_t	  now(void);
 blib_tim_t	  nowgm(void);
 
-#ifdef __NEED_TIMEGM__
-blib_tim_t    timegm(struct tm *tm)
-#endif /* __NEED_TIMEGM__ */
-
 datestr_t   *copy_datestr(datestr_t *dst, datestr_t *src);
 datestr_t   *copy_datestr_time(datestr_t *dst, datestr_t *src);
 void        printlitdate(FILE *fd, blib_tim_t ctim);

@@ -1,4 +1,4 @@
-#ifndef __APPLE__
+#ifdef NEED_STRSEP
 static char *rcsid="@(#) $Id: strsep.c,v 1.3 2008/10/20 13:01:38 mark Exp $";
 /*
  *  * $Log: strsep.c,v $
@@ -87,4 +87,4 @@ char *strsep(char **stringp, const char *delim)
     /* NOTREACHED */
 }
 
-#endif // __APPLE__
+#endif // NEED_STRSEP

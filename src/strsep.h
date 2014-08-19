@@ -1,4 +1,4 @@
-#ifndef __APPLE__
+#ifdef NEED_STRSEP
 /*
  * @(#) $Id: strsep.h,v 1.3 2008/10/20 13:01:38 mark Exp $
  * $Log: strsep.h,v $
@@ -20,4 +20,4 @@
 #include <stdlib.h>
 #include <strings.h>
 
-#endif /*  __APPLE__ */
+#endif /*  NEED_STRSEP */
