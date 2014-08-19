@@ -1,7 +1,7 @@
 #ifndef __MKARGV_H__
 #define __MKARGV_H__
 /*
- * @(#) $Id: mkargv.h,v 1.1 2010/11/16 04:03:46 root Exp $
+ * @(#) $Id: mkargv.h,v 1.1 2010/11/16 04:03:46 root Exp mark $
  *
  *  mkargv.h
  *  blib

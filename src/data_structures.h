@@ -1,7 +1,7 @@
 #ifndef __DATA_STRUCTURE_H__
 #define __DATA_STRUCTURE_H__
 /*
- // @(#) $Id: data_structures.h,v 1.5 2014/06/17 05:07:57 mark Exp $
+ // @(#) $Id: data_structures.h,v 1.5 2014/06/17 05:07:57 mark Exp mark $
  //  data_structures.h
  //  blib
  //
@@ -9,7 +9,7 @@
  //  Copyright (c) 2010 Garetech Computer Solutions. All rights reserved.
  // $Log: data_structures.h,v $
  // Revision 1.5  2014/06/17 05:07:57  mark
- // seems I had added change_date, offsite date since last ci
+ // seems I had added changedate, offsite date since last ci
  //
  // Revision 1.4  2013/01/21 16:46:45  mark
  // MG add missing recorddate to vol_t structure
@@ -164,7 +164,7 @@ struct backups_s {
 
 typedef struct vol_s vol_t;
 struct vol_s {
-    // bck_id|label|state|media|usage|groupname|location|librarydate|recorddate|offsitedate|change_date
+    // bck_id|label|state|media|usage|groupname|location|librarydate|recorddate|offsitedate|changedate
     bckid_t     bck_id;			// what ever was written onto the tape last
     blabel_t	label;			// the volume label eg ABC123D
     state_t     state;
@@ -175,7 +175,7 @@ struct vol_s {
     blib_tim_t	librarydate;
     blib_tim_t  recorddate;
     blib_tim_t	offsitedate;
-    blib_tim_t  change_date;    // Status Change date
+    blib_tim_t  changedate;    // State Change date
 };
 
 typedef struct bckobj_s	bckobj_t;

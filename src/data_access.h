@@ -1,7 +1,7 @@
 #ifndef __DATA_ACCESS_H__
 #define	__DATA_ACCESS_H__
 /*
- * @(#) $Id: data_access.h,v 1.7 2013/01/20 10:05:33 mark Exp $
+ * @(#) $Id: data_access.h,v 1.7 2013/01/20 10:05:33 mark Exp mark $
  * $Log: data_access.h,v $
  * Revision 1.7  2013/01/20 10:05:33  mark
  * MG changes from time_t to blib_tim_t for decimal time 100th second
@@ -99,6 +99,7 @@ int     db_exec_sql_flds_pushpop(dbh_t *dbh, char *sqltext, list_t *flds);
 int     db_exec_sql_flds_pop(dbh_t *dbh, char *sqltext, list_t *flds);
 
 int     db_exec_sql_bckid(dbh_t *dbh, char *sqltext, bckid_t bck_id);
+int     db_exec_sql_change_state(dbh_t *dbh, bckid_t bck_id, blib_tim_t thetime, char *state);
 
 dbfld_t *db_fldsmklist(list_t **fldhead,const char *fldname,  fld_type_t fldtype, void *fldptr);
 void	 db_fldsfreelist(list_t **listp);
@@ -164,10 +165,6 @@ int 	db_count_vol_obj_label(dbh_t *dbh, bckid_t bck_id, blabel_t *label);
 
 bcount_t db_count_volumes_in_backup_id(dbh_t *dbh, bckid_t bck_id);
 bcount_t db_count_bck_errors(dbh_t *dbh, vol_obj_t *key);
-
-#ifdef db_clear_old_back_for_label_tmp
-int     db_clear_old_back_for_label(dbh_t *dbh, vol_obj_t *volobjrec);
-#endif /* db_clear_old_back_for_label */
 
 int     copy_results_volume(dbh_t      *dbh, void *recp);
 int     copy_results_backup(dbh_t      *dbh, void *recp);

@@ -1,7 +1,7 @@
 #ifndef __UTIL_H__
 #define __UTIL_H__
 /*
- * @(#) $Id: util.h,v 1.4 2010/11/16 04:10:54 mark Exp $
+ * @(#) $Id: util.h,v 1.4 2010/11/16 04:10:54 mark Exp mark $
  * $Log: util.h,v $
  * Revision 1.4  2010/11/16 04:10:54  mark
  * rc1
@@ -56,8 +56,8 @@ typedef unsigned long	lu_t;
 
 char    *zapcrlf(char *bp);
 char    *newstr(char *fmt,...);
-int	*newintstr(char *val);
-int	*newint(int val);
+int     *newintstr(char *val);
+int     *newint(int val);
 
 uint64_t *newuint64(uint64_t val);
 uint64_t *newuint64str(char *val);
@@ -66,12 +66,12 @@ char	*skipwspace(char *str);
 void    nzfree(char **p2ptr);
 char	*ltrim(char *,int);
 char	*rtrim(char *,int);
-int	replace_dynstr(char **dynptr, char *newval);
+int     replace_dynstr(char **dynptr, char *newval);
 char	invalidchars(char *str, const char *validchars);
 char	*cvt2uppercase(char *str);
 char	*pstr(char *str, char *def);
 void	dodbg(void);
-int	safe_inc_int(int *iptr);
+int     safe_inc_int(int *iptr);
 char	*shrink_string_by_middle(char *dst, int dstlen, char *src);
 char	*strdupz(char *str);
 

@@ -1,7 +1,7 @@
 #ifndef __PARSESLASHCMD_H__
 #define __PARSESLASHCMD_H__
 /*
- * @(#) $Id: parseslashcmd.h,v 1.8 2014/06/17 05:09:12 mark Exp $
+ * @(#) $Id: parseslashcmd.h,v 1.8 2014/06/17 05:09:12 mark Exp mark $
  *  $Log: parseslashcmd.h,v $
  *  Revision 1.8  2014/06/17 05:09:12  mark
  *  formating
@@ -80,24 +80,24 @@ typedef enum  {
     CMD_REPLAY,
     
     CMD_NEWBCK,
-    CMD_STARTBCK, 
+    CMD_STARTBCK,
     CMD_CHG_VOL,
     CMD_ENDBCK,
-    CMD_ERRBCK, 
+    CMD_ERRBCK,
     CMD_FINBCK,
-    CMD_DELBCK, 
-    CMD_MODBCK, 
-    CMD_REPBCK, 
+    CMD_DELBCK,
+    CMD_MODBCK,
+    CMD_REPBCK,
     CMD_LISTBCK,
-    CMD_LISTOBJ, 
+    CMD_LISTOBJ,
     CMD_VERIFY,
     CMD_ERRCOUNT,
     
     QUAL_NEW,
     QUAL_NOLOG,
     QUAL_LOG,
-    QUAL_SINCE, 
-    QUAL_UNTIL, 
+    QUAL_SINCE,
+    QUAL_UNTIL,
     QUAL_STATE,
     QUAL_MEDIA,
     QUAL_USAGE,
@@ -113,7 +113,7 @@ typedef enum  {
     QUAL_NODE,
     QUAL_OBJINS,
     QUAL_BCKID,
-    QUAL_LABEL, 
+    QUAL_LABEL,
     QUAL_ENDBCK,	// pecullar to /modifybackup and /change_volume
     QUAL_HTML,		// report in html instead of plain text - mostly for reports especially daily
     QUAL_XML,		// TODO: xml
@@ -132,7 +132,7 @@ typedef enum  {
     VT_FILENAM,
     VT_STATE,	// single char coded as A = ALLOCATED, F = FREE
     VT_INT,
-    VT_INT64, 
+    VT_INT64,
     VT_DATE
 } valtype_e;
 
@@ -222,7 +222,7 @@ void	    dump_cmd(cmd_t *hd);
 void	    display_cmd(FILE *fd, cmd_t *cmd);
 cmd_t	    *have_qual_unlink(cmd_t **hd, cmdqual_e qual);
 cmd_t	    *have_qual(cmd_t **hd, cmdqual_e qual);
-int	    addqual(cmd_t **qualptr, cmdqual_e qtype, void *val);
+int         addqual(cmd_t **qualptr, cmdqual_e qtype, void *val);
 cmd_t	    *checksyntax(cmd_t *hd);
 cmp_e	    get_cmp(char **cmdp);
 void	    do_cmd_help(FILE *fd);

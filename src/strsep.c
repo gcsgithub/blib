@@ -1,5 +1,5 @@
 #ifndef __APPLE__
-static char *rcsid="@(#) $Id: strsep.c,v 1.3 2008/10/20 13:01:38 mark Exp $";
+static char *rcsid="@(#) $Id: strsep.c,v 1.3 2008/10/20 13:01:38 mark Exp mark $";
 /*
  *  * $Log: strsep.c,v $
  *  * Revision 1.3  2008/10/20 13:01:38  mark

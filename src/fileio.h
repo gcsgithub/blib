@@ -1,7 +1,7 @@
 #ifndef __FILEIO_H__
 #define __FILEIO_H__
 /*
- * @(#) $Id: fileio.h,v 1.3 2011/04/14 02:32:56 mark Exp $
+ * @(#) $Id: fileio.h,v 1.3 2011/04/14 02:32:56 mark Exp mark $
  *
  *  fileio.h
  *  fmtbckrep_xcode
@@ -59,6 +59,8 @@ struct files_s {
     files_t	*next;
 };
 
+files_t *make_files_ent(char *fnm);
+int file_isavailable(char *fnm);
 files_t *new_files(files_t **head, char *fnm);
 files_t	*files_insert_head(files_t **head, fio_t *fio);
 files_t *alloc_files_ent(void);
@@ -77,7 +79,8 @@ char	*replace_ext(char *base, char *new_ext);
 char	*fio_basename(fio_t *fio);
 int	fio_copy_file(fio_t *src, fio_t *outfd);
 int	fio_rewind(fio_t *fio);
-fio_t	*fio_fd(FILE *fd);
+fio_t   *fio_from_fd(int fd);
+fio_t	*fio_from_file(FILE *fd);
 fio_t	*fio_dup(fio_t *fio);
 
 
