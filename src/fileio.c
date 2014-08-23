@@ -28,17 +28,28 @@ static char *rcsid="@(#) $Id: fileio.c,v 1.4 2013/01/20 10:12:23 mark Exp mark $
  *
  */
 #include "fileio.h"
+#include "timefunc.h"
+
+static char *version();
+static int fio_setup_stdio(fio_t *fio, int srcfd);
 
 
+//////////////////////
 static char *version()
+//////////////////////
 {
     return(rcsid);
 }
 
+
+
 /*//////////////////////////////////////////////////////////////////////////////
  //////////// FILE IO FUNCTIONS /////////////////////////////////////////////////
  //////////////////////////////////////////////////////////////////////////////*/
-fio_t    *fio_new(size_t    bufsiz)
+
+////////////////////////////////
+fio_t *fio_new(size_t    bufsiz)
+////////////////////////////////
 {
     fio_t	*new;
     
@@ -56,7 +67,9 @@ fio_t    *fio_new(size_t    bufsiz)
     return(new);
 }
 
-void	fio_close_and_free(fio_t **fiop)
+/////////////////////////////////////
+void fio_close_and_free(fio_t **fiop)
+/////////////////////////////////////
 {
     fio_t *fio;
     
@@ -79,7 +92,9 @@ void	fio_close_and_free(fio_t **fiop)
     }
 }
 
-void	fio_close_and_free_unlink(fio_t **fiop)
+///////////////////////////////////////////////
+void fio_close_and_free_unlink(fio_t **fiop)
+///////////////////////////////////////////////
 {
     fio_t *fio;
     
@@ -96,12 +111,14 @@ void	fio_close_and_free_unlink(fio_t **fiop)
     }
 }
 
+/////////////////////////
 int fio_close(fio_t *fio)
+/////////////////////////
 {
     if (fio) {
         if (!fio->useropenflag) {
             if (fio->open) {
-                if (fclose(fio->fd)) {
+                if (fclose(fio->file)) {
                     fio->status = errno;
                 } else {
                     fio->open = 0;
@@ -117,18 +134,22 @@ int fio_close(fio_t *fio)
     }
 }
 
+///////////////////////////////////////////
 int fio_reopen(fio_t *fio, char *open_mode)
+///////////////////////////////////////////
 {
     if (fio->open_mode) {
         free(fio->open_mode);
     }
-    fio_close(fio);
+    // fio_close(fio); fio_open() will close it if its open!
     fio->open_mode = newstr(open_mode);
     fio_open(fio);
     return(fio->status);
 }
 
+///////////////////////////
 char *fio_fgets(fio_t *fio)
+///////////////////////////
 {
     char    *rval;
     
@@ -136,174 +157,215 @@ char *fio_fgets(fio_t *fio)
     if (fio) {
         bzero(fio->buf, fio->bufsiz);
         if (fio->open) {
-            rval = fgets(fio->buf, fio->bufsiz, fio->fd);
+            rval = fgets(fio->buf, fio->bufsiz, fio->file);
             if (rval) {
                 zapcrlf(fio->buf);
                 fio->reads++;
-            } else {
+            }
+            else {
                 fio->status = errno;
             }
-        } else {
+        }
+        else {
             fio->status = ENXIO;
         }
     }
     return(rval);
 }
 
+////////////////////////////////////////////////////////////
 fio_t *fio_open_temp(char *prefix, char *ext, size_t bufsiz)
+////////////////////////////////////////////////////////////
 {
-#ifndef HAVE_NO_MKSTEMPS
-    fio_t   *rval;
-    int     fd;
-    char    *fnm_dyn;
+    fio_t       *fio;
+    int         fd;
+    char        *fnm_dyn, *fnmfmt_dyn;
+    blib_tim_t	now;
+    pid_t       pid;
+    int         trycount;
+    int         err;
     
     if (ext) {
-        fnm_dyn = newstr("/tmp/%sXXXXXXXXX.%s",prefix, ext);
-        fd      = mkstemps(fnm_dyn, strlen(ext)+1);
+        fnmfmt_dyn = newstr("/tmp/%s%%d%%04f.%s",prefix, ext);
+        
     }
     else {
-        fnm_dyn = newstr("/tmp/%sXXXXXXXXX");
-        fd      = mkstemp(fnm_dyn);
+        fnmfmt_dyn = newstr("/tmp/%s%%d%%04f", prefix);
     }
     
-    rval = fio_from_fd(fd);
-    replace_dynstr(&rval->fnm, fnm_dyn);
-    rval->buf = malloc(bufsiz);
-    if (rval->buf) {
-        rval->bufsiz = bufsiz;
+    pid      = getpid();
+    fd       = -1;
+    trycount = 0;
+    err      = 0;
+    fnm_dyn  = newstr("");
+    
+    while ((fd<0) && (trycount < 50)) { // 50 is not infinite but if we don't get it by then giveup
+        now = nowgm();
+        replace_dynstr(&fnm_dyn, newstr(fnmfmt_dyn, pid, now));
+        fd  = open(fnm_dyn, O_CREAT|O_EXCL|O_WRONLY, 0664); // O_EXLOCK
+        if (fd<0) {
+            err = errno;
+        }
+        trycount++;
     }
     
-    return(rval);
-#else
-    char    *tmpfnam, *tmpfnam_ext;
-    fio_t   *rval;
-    
-    tmpfnam = tempnam("/tmp", prefix);
-    if (ext) {
-        tmpfnam_ext = newstr("%s.%s", tmpfnam, ext);
-        replace_dynstr(&tmpfnam, tmpfnam_ext);
+    if (err) {
+        fprintf(stderr, "# Impossible exceeded 50 retries to get a temp file last try was: \"%s\"\n", fnm_dyn);
+        exit(err);
     }
     
-    rval = fio_alloc_open(tmpfnam, NULL, "w", bufsiz);
-    return(rval);
-#endif
+    fio = fio_new(bufsiz);
+    
+    replace_dynstr(&fio->fnm, fnm_dyn);
+    fio->file = fdopen(fd, "w");
+    if (fio->file != (FILE *) NULL) {
+        fio->open_mode = newstr("w");
+        fio->open   = 1;
+        fio->status = 0;
+    }
+    else {
+        fio->open   = 0;
+        fio->status = errno;
+        fprintf(stderr, "# Error opening temp file from fd: %d:%s\n", fio->status, strerror(fio->status));
+        exit(fio->status);
+    }
+    
+    return(fio);
 }
 
-fio_t	*fio_dup(fio_t *fio)
+/////////////////////////////
+fio_t *fio_dup(fio_t *srcfio)
+/////////////////////////////
 {
     fio_t *rval;
     int   filenum;
     
     rval = (fio_t *) NULL;
-    if (!fio) {
+    if (!srcfio) {
         return(rval);
     }
     
-    rval               = fio_new(fio->bufsiz);
-    rval->debug        = fio->debug;
-    rval->open         = fio->open;
-    rval->status       = fio->status;
-    rval->useropenflag = fio->useropenflag;
-    rval->open_mode    = strdupz(fio->open_mode);
-    rval->fnm          = strdupz(fio->fnm);
-    rval->ext          = strdupz(fio->ext);
+    rval               = fio_new(srcfio->bufsiz);
+    rval->debug        = srcfio->debug;
+    rval->open         = 0; // let fdopen decide
+    rval->status       = srcfio->status;
+    rval->useropenflag = srcfio->useropenflag;
+    rval->open_mode    = strdupz(srcfio->open_mode);
+    rval->fnm          = strdupz(srcfio->fnm);
+    rval->ext          = strdupz(srcfio->ext);
     rval->reads        = 0;
     rval->writes       = 0;
     
-    if (fio->open) {
-        filenum = fileno(fio->fd);
-        switch(filenum) {
-            case 0:
-                replace_dynstr(&rval->open_mode, newstr("r"));
-                replace_dynstr(&rval->fnm, newstr("stdin"));
-                break;
-            case 1:
-                replace_dynstr(&rval->open_mode, newstr("a"));
-                replace_dynstr(&rval->fnm, newstr("stdout"));
-                break;
-            case 2:
-                replace_dynstr(&rval->open_mode, newstr("a"));
-                replace_dynstr(&rval->fnm, newstr("stderr"));
-                break;
-            default:
-                break;
-        }
-        if ((rval->open_mode) && (fileno >= 0)) {
-            rval->fd   = fdopen(filenum,rval->open_mode);
+    if (srcfio->open) {
+        filenum = fio_setup_stdio(rval, fileno(srcfio->file));
+
+        if ((rval->open_mode) && (filenum >= 0)) {
+            rval->file   = fdopen(filenum, rval->open_mode);
+            if (rval->file != (FILE *) NULL) {
+                rval->open = 1;
+            }
+            else {
+                rval->status = errno;
+            }
         }
     }
     return(rval);
 }
 
-fio_t   *fio_from_fd(int fd)
+////////////////////////////////////////////////////
+static int fio_setup_stdio(fio_t *dstfio, int srcfd)
+////////////////////////////////////////////////////
+{
+    int dstfileno;
+    
+    dstfileno = -1;
+    
+    if (dstfio) {
+
+        switch(srcfd) {
+            case 0:
+                replace_dynstr(&dstfio->open_mode, newstr("r"));
+                replace_dynstr(&dstfio->fnm, newstr("stdin"));
+                dstfio->open         = 1;
+                dstfio->useropenflag = 1;
+                break;
+            case 1:
+                replace_dynstr(&dstfio->open_mode, newstr("a"));
+                replace_dynstr(&dstfio->fnm, newstr("stdout"));
+                dstfio->open         = 1;
+                dstfio->useropenflag = 1;
+                break;
+            case 2:
+                replace_dynstr(&dstfio->open_mode, newstr("a"));
+                replace_dynstr(&dstfio->fnm, newstr("stderr"));
+                dstfio->open         = 1;
+                dstfio->useropenflag = 1;
+                break;
+            default:
+                // otherwise a user file leave the names and mode alone
+                break;
+        }
+        
+        if (dstfio->file) {
+            dstfileno = fileno(dstfio->file);
+        }
+    }
+    return (dstfileno);
+}
+
+/////////////////////////////////////////
+fio_t *fio_from_fd(int fd,  char *mode)
+/////////////////////////////////////////
 {
     fio_t	*fio;
-    char	*filename;
-    char 	*ext;
     FILE    *file;
     
     file = NULL;
+    
     fio = fio_new(MAX_BUF);
-    ext="";
-    switch(fd) {
-        case 0:
-            filename="stdin";
-            file = stdin;
-            break;
-        case 1:
-            filename="stdout";
-            file = stdout;
-            break;
-        case 2:
-            filename="stderr";
-            file = stderr;
-            break;
-        default:
-            filename="unknown";
-            file = fdopen(fd, fio->open_mode);
-            break;
+    
+    replace_dynstr(&fio->open_mode,  newstr(mode));
+    
+    if (fd >=0 && fd <= 2 ) {
+        fio_setup_stdio(fio, fileno(fio->file));
     }
-    fio->ext = newstr(ext);
-    fio->fnm = newstr(filename);
-    fio->open=1;	// its open
-    fio->useropenflag = 1; // not our job to open/close this fd
-    fio->fd = file;
+    
+    fio->file = fdopen(fd, fio->open_mode);
+    if (fio->file != (FILE *) NULL) {
+        fio->open = 1;	// its open
+    }
+    
     return(fio);
     
 }
 
-fio_t	*fio_from_file(FILE *fd)
+////////////////////////////////
+fio_t *fio_from_file(FILE *file)
+////////////////////////////////
 {
     fio_t	*fio;
-    char	*filename;
-    char 	*ext;
+    int     fd;
     
     fio = fio_new(MAX_BUF);
-    ext="";
-    switch(fileno(fd)) {
-        case 0:
-            filename="stdin";
-            break;
-        case 1:
-            filename="stdout";
-            break;
-        case 2:
-            filename="stderr";
-            break;
-        default:
-            filename="unknown";
-            break;
-    }
-    fio->ext = newstr(ext);
-    fio->fnm = newstr(filename);
-    fio->open=1;	// its open
-    fio->useropenflag = 1; // not our job to open/close this fd
-    fio->fd = fd;
-    return(fio);
     
+    fio->file = file;
+    if (file != (FILE *) NULL) {
+        fio->open = 1;
+    }
+    
+    fd = fileno(file);
+    if (fd >=0 && fd <= 2 ) {
+            fio_setup_stdio(fio, fd);
+    }
+    
+
+    
+    return(fio);
 }
 
-fio_t    *fio_alloc_open(char *filename, char *new_ext, char *open_mode, size_t bufsiz)
+///////////////////////////////////////////////////////////////////////////////
+fio_t *fio_open_alloc(char *filename, char *new_ext, char *open_mode, size_t bufsiz)
+///////////////////////////////////////////////////////////////////////////////
 {
     fio_t	*fio;
     
@@ -312,7 +374,8 @@ fio_t    *fio_alloc_open(char *filename, char *new_ext, char *open_mode, size_t 
     if (new_ext) {
         fio->ext = newstr(new_ext);
         fio->fnm = replace_ext(filename, new_ext);
-    } else {
+    }
+    else {
         fio->ext = newstr("");
         fio->fnm = newstr(filename);
     }
@@ -323,14 +386,17 @@ fio_t    *fio_alloc_open(char *filename, char *new_ext, char *open_mode, size_t 
     replace_dynstr(&fio->encoding, newstr("7bit"));
     if (open_mode) {
         fio->open_mode = newstr(open_mode);
-    } else {
+    }
+    else {
         fio->open_mode = newstr("r");
     }
     fio_open(fio);
     return(fio);
 }
 
+////////////////////////
 int fio_open(fio_t *fio)
+////////////////////////
 {
     if (!fio->useropenflag) {
         if (fio->open) {
@@ -338,22 +404,25 @@ int fio_open(fio_t *fio)
         }
         
         if (strcmp(fio->fnm, "stdin")==0) {
-            fio->fd = stdin;
+            fio->file = stdin;
             fio->open = 1;
             fio->useropenflag = 1;
             
-        } else if (strcmp(fio->fnm, "stdout")==0) {
-            fio->fd = stdout;
+        }
+        else if (strcmp(fio->fnm, "stdout")==0) {
+            fio->file = stdout;
             fio->open = 1;
             fio->useropenflag = 1;
             
-        } else if (strcmp(fio->fnm, "stderr")==0) {
-            fio->fd = stderr;
+        }
+        else if (strcmp(fio->fnm, "stderr")==0) {
+            fio->file = stderr;
             fio->open = 1;
             fio->useropenflag = 1;
             
-        } else {
-            if ((fio->fd = fopen(fio->fnm, fio->open_mode)) == (FILE *) NULL ) {
+        }
+        else {
+            if ((fio->file = fopen(fio->fnm, fio->open_mode)) == (FILE *) NULL ) {
                 fio->status = errno;
                 fprintf(stderr,"#BLIB:  Error opening file \"%s\" mode: \"%s\" %d:%s\n", fio->fnm, fio->open_mode, fio->status, strerror(fio->status));
             } else {
@@ -361,7 +430,8 @@ int fio_open(fio_t *fio)
                 fio->reads = fio->writes = 0;
             }
         }
-    } else {
+    }
+    else {
         fio->open = 1;	/* make it open */
         fio->reads = fio->writes = 0;
     }
@@ -369,8 +439,9 @@ int fio_open(fio_t *fio)
     return(fio->status);
 }
 
-
+////////////////////////////////////////////
 char *replace_ext(char *base, char *new_ext)
+////////////////////////////////////////////
 {
     /* given a base name strip off any .old_ext and return a newstr() malloc'd with the new_ext */
     char *fnamstr;
@@ -389,57 +460,99 @@ char *replace_ext(char *base, char *new_ext)
     return(fnamstr);
 }
 
-char	    *fio_basename(fio_t *fio)
+//////////////////////////////
+char *fio_basename(fio_t *fio)
+//////////////////////////////
 { // return a pointer to the base file name since we dont need to modify fio->fnm we will just return the pointer or ""
     char *basefnm;
     basefnm = (char *) NULL;
     if (fio) {
         if (fio->fnm) {
             basefnm = rindex(fio->fnm, '/');
-            
         }
     }
     if (basefnm) {
         basefnm++; // skip to the 1st char after the slash
-    } else {
+    }
+    else {
         basefnm="";
     }
     return(basefnm);
 }
 
-
+//////////////////////////
 int fio_rewind(fio_t *fio)
+//////////////////////////
 {
-    int rval = EBADF;
-    int   old_errno;
+    int     rval = EBADF;
     
-    if (fio) {
-        old_errno=errno;
-        rewind(fio->fd);
-        if (old_errno != errno) {
+    if (fio && fio->file) {
+        rval = fseek(fio->file, 0L, SEEK_SET);
+        if (rval) {
             rval = fio->status = errno;
+        }
+        else {
+            clearerr(fio->file);
         }
     }
     return(rval);
 }
 
-int  fio_copy_file(fio_t *src, fio_t *outfd)
+///////////////////////
+int fio_eof(fio_t *fio)
+///////////////////////
 {
-    if (src && outfd) {
-        fio_rewind(src);
-        fio_fgets(src);
-        
-        while(!feof(src->fd)) {
-            fprintf(outfd->fd, "%s\n", src->buf);
-            fio_fgets(src);
-        }
-        fio_close(src);
-        fio_close(outfd);
+    int eof = 1;
+    if (fio) {
+        eof = feof(fio->file);
     }
-    return(errno);
+    return(eof);
 }
 
+////////////////////////////////////////////
+int  fio_copy_file(fio_t *src, fio_t *outfd)
+////////////////////////////////////////////
+{
+    int rval, r0, r1;
+    
+    rval = -1;
+    if (src && outfd) {
+        rval = fio_rewind(src);
+        if (rval) {
+            return(rval);
+        }
+        
+        fio_fgets(src);
+        if (src->status) {
+            return(src->status);
+        }
+        
+        while(!fio_eof(src) && !src->status && !outfd->status) {
+            fprintf(outfd->file, "%s\n", src->buf);
+            fio_fgets(src);
+        }
+        if (src->status) {
+            rval = src->status;
+        }
+        if (outfd->status) {
+            rval = outfd->status;
+        }
+        
+        r0 = fio_close(src);
+        if (r0) {
+            rval = r0;
+        }
+        r1 = fio_close(outfd);
+        if (r1) {
+            rval = r1;
+        }
+    }
+    return(rval);
+}
+
+//////////////////////////
 files_t *alloc_files_ent()
+//////////////////////////
 {
     files_t *files_ent;
     
@@ -447,6 +560,7 @@ files_t *alloc_files_ent()
         fprintf(stderr, "# Out of memory allocating space for a new files entry\n");
         exit(ENOMEM);
     }
+    
     bzero(files_ent,sizeof(files_t));
     return(files_ent);
 }
@@ -456,7 +570,7 @@ files_t *make_files_ent(char *fnm)
     files_t *files_ent;
     
     files_ent = alloc_files_ent();
-    files_ent->fio = fio_alloc_open(fnm, NULL, "r", MAX_BUF);
+    files_ent->fio = fio_open_alloc(fnm, NULL, "r", MAX_BUF);
     return(files_ent);
 }
 

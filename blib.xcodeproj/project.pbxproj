@@ -202,7 +202,7 @@
 			children = (
 				4D0A84BE19A233D800688888 /* ctime */,
 				4D0A84BB19A233A600688888 /* caltime */,
-				4DC4EF6B1998970A00C473C9 /* sqlite-amalgamation-3080500 */,
+				4DC4EF6B1998970A00C473C9 /* sqlite */,
 				08FB7795FE84155DC02AAC07 /* src */,
 				C6A0FF2B0290797F04C91782 /* Documentation */,
 				4D0A84C519A2343000688888 /* ctime */,
@@ -293,7 +293,7 @@
 			path = caltime;
 			sourceTree = "<group>";
 		};
-		4DC4EF6B1998970A00C473C9 /* sqlite-amalgamation-3080500 */ = {
+		4DC4EF6B1998970A00C473C9 /* sqlite */ = {
 			isa = PBXGroup;
 			children = (
 				4DC4EF6C1998970A00C473C9 /* shell.c */,
@@ -301,9 +301,9 @@
 				4DC4EF6F1998970A00C473C9 /* sqlite3.h */,
 				4DC4EF701998970A00C473C9 /* sqlite3ext.h */,
 			);
-			name = "sqlite-amalgamation-3080500";
-			path = "src/sqlite-amalgamation-3080500";
-			sourceTree = "<group>";
+			name = sqlite;
+			path = "src/sqlite-amalgamation-3080600";
+			sourceTree = SOURCE_ROOT;
 		};
 		C6A0FF2B0290797F04C91782 /* Documentation */ = {
 			isa = PBXGroup;

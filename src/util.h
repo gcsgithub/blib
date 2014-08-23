@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <strings.h>
+#include <string.h>
 #include <sys/param.h>
 #include <unistd.h>
 #include <ctype.h>

@@ -43,7 +43,11 @@ static const char *version(void)
 
 void    usage(const char *prg)
 {
-    fprintf(stderr,"# Usage: %s [-g] <ctime>\n", prg);
+    fprintf(stderr,"# Usage: %s [-c] [-g] [-l] <ctime>\n", prg);
+    fprintf(stderr,
+            "#  -c  show the ctime value\n"
+            "#  -g  show the time in GMT\n"
+            "#  -l  show the localtime which is the default so this is only relevant to add to -g\n");
     exit(EINVAL);
 }
 

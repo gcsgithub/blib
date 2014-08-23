@@ -65,20 +65,36 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/verify"
+            argument = "-d /verify"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/listbackups=1302038695"
+            argument = "/reportbackup=1408366822"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/modify=AAQ970 /usage"
+            argument = "/change_volume=/usr /bck_id=1408786687 /objinstance=1 /label=TST002 /end=23-Aug-2014:19:38:19.51 /size=22974"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/display=AAQ970"
+            argument = "/newbackup &quot;/desc=New backup test 1&quot; /record=23-Aug-2014:19:38:07.35 /expire=30-Aug-2014:19:38:07.35"
             isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/reportbackup=1325809592"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/newbackup &apos;/desc=New backup test 1&apos; &apos;/record=20-Aug-2014:21:36:48.81&apos; &apos;/expire=27-Aug-2014:21:36:48.82&apos;"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/startbackup=/usr /bck_id=1408787681 /label=TST003 /record=23-Aug-2014:20:02:25.46"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/change_volume=/usr /bck_id=1408787681 /objinstance=1 /label=TST004 /end=23-Aug-2014:20:20:20.37 /size=26144"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/add=MG0001 /group=TEST"
@@ -122,7 +138,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/runexpiration=1"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/listobjects"
@@ -169,7 +185,7 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "BLIBDBS"
-            value = "/usr/local/etc/dat/blib/blib_ZED.sqlite3"
+            value = "/usr/local/etc/dat/blib/blib_CENTS7.sqlite3"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
@@ -179,7 +195,7 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "MYBLIB_GROUP"
-            value = "NEWPROD"
+            value = "CENTS7"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>

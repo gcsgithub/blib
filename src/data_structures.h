@@ -202,6 +202,19 @@ struct vol_obj_s {
     bcount_t	size;		// how much written in this segment
 };
 
+typedef struct vol_obj_id_s vol_obj_id_t;
+struct vol_obj_id_s {
+    bckid_t     bck_id;
+    objname_t   objname;
+    objid_t     obj_instance;
+    blabel_t    label;
+    int         fileno;
+    blib_tim_t  start;
+    blib_tim_t  end;
+    bcount_t    size;
+    bckid_t     bobck_id;
+};
+
 typedef struct bck_errors_s bck_errors_t;
 struct bck_errors_s {
     // bck_id|label|objname|obj_instance|errtime|errmsg

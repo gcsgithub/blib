@@ -127,10 +127,13 @@ int main(int argc,char *argv[])
             }
         }
         else {
-            if (isdigit(arg[0])) {
+            if (
+                ((arg[0] == '+') && (isdigit(arg[1]))) ||
+                (isdigit(arg[0])) ) {
                 daydelta= atoi(arg);
                 found_delta++;
             }
+            
         }
     }
 

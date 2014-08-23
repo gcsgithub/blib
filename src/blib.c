@@ -29,7 +29,9 @@ static char *rcsid="@(#) $Id: blib.c,v 1.6 2013/01/21 16:52:21 mark Exp mark $";
 
 blib_global_t BLIB;
 
+//////////////////////////////
 void    usage(const char *prg)
+//////////////////////////////
 {
     fprintf(stderr, "#BLIB:  Backup LIBrary (blib) %s\n", COPYRIGHT);
     fprintf(stderr,"#BLIB:  Usage: %s\t[/cmd [/arg] \n", prg);
@@ -37,7 +39,9 @@ void    usage(const char *prg)
     exit(EINVAL);
 }
 
+//////////////////////////////////////////////////////
 int main(int argc,  char *argv[] /* , char *envp[] */)
+//////////////////////////////////////////////////////
 {
     int             err;
     int             dousage=0;
@@ -127,7 +131,8 @@ int main(int argc,  char *argv[] /* , char *envp[] */)
     }
     if ((err == BLIBDB_DONE) || (err == BLIBDB_ROW) || (err == BLIBDB_OK)) {
         exit(0);
-    } else {
+    }
+    else {
         exit(err);
     }
 }

@@ -806,13 +806,13 @@ void	log_cmd(fio_t *logfd, cmd_t *hd)
     
     if (logfd && logfd->open ) {
         if (hd && hd->param && (hd->param->cmdid != CMD_REPLAY)) {
-            fprintf(logfd->fd, "%f: ", nowgm());
+            fprintf(logfd->file, "%f: ", nowgm());
             ptr=hd;
             while(ptr) {
-                display_cmd(logfd->fd, ptr);
+                display_cmd(logfd->file, ptr);
                 ptr = ptr->next;
             }
-            fputs("\n", logfd->fd);
+            fputs("\n", logfd->file);
         }
     }
 }
@@ -1084,7 +1084,7 @@ void	do_cmd_help(FILE *fd)
     fprintf(fd, "\n\n\tWhen using command /report results can be filtered by most of the volume qualifiers eg. /state=FREE\n"
             "\tcomparisons other than equal are allowed to simplify keyboard input , can be used for < and . for >\n"
             "\t\totherwise < and > need to be escaped from the shell using them as input/output redireciton\n"
-            "\tNOT is the symbol !  ie NOT equal  /state!=FREE for state not equal to free this can also be just /state!FREE\n"
+            "\tNOTE is the symbol !  ie NOT equal  /state!=FREE for state not equal to free this can also be just /state!FREE\n"
             "\tLess Than   ,  or <   /expire,$( caltime 0)  or \"/expire<$(caltime 0)\"\n"
             "\tLess than or Equal  ,= or <=\n"
             "\tEqual  = or ==\n"

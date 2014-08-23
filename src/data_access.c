@@ -66,12 +66,16 @@ static const char *rcsid="@(#) $Id: data_access.c,v 1.14 2014/06/17 04:59:06 mar
 
 extern blib_global_t BLIB;
 
+////////////////////////////
 static const char *version()
+////////////////////////////
 {
     return(rcsid);
 }
 
+///////////////////////////
 int load_schema(dbh_t *dbh)
+///////////////////////////
 { // create tables and indexes
   // bck_id|node|start|end|expiredate|desc
     char *create_table_backups =
@@ -175,8 +179,9 @@ int load_schema(dbh_t *dbh)
     return(dbh->status);
 }
 
-///////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 int db_exec_sql_bckid(dbh_t *dbh, char *sqltext, bckid_t bck_id)
+////////////////////////////////////////////////////////////////
 {
     int rval;
     list_t	*flds = (list_t *) NULL;
@@ -189,8 +194,9 @@ int db_exec_sql_bckid(dbh_t *dbh, char *sqltext, bckid_t bck_id)
     return(rval);
 }
 
-///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 int db_exec_sql_change_state(dbh_t *dbh, bckid_t bck_id, blib_tim_t thetime, char *state)
+///////////////////////////////////////////////////////////////////////////////
 {
     int rval;
     list_t	*flds = (list_t *) NULL;
@@ -206,9 +212,11 @@ int db_exec_sql_change_state(dbh_t *dbh, bckid_t bck_id, blib_tim_t thetime, cha
 }
 
 
-//////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////
 int db_exec_sql_flds_push(dbh_t *dbh, char *sqltext, list_t *flds)
+//////////////////////////////////////////////////////////////////
 {
     int rval;
     sqlstack_push(dbh);
@@ -216,7 +224,9 @@ int db_exec_sql_flds_push(dbh_t *dbh, char *sqltext, list_t *flds)
     return(rval);
 }
 
+/////////////////////////////////////////////////////////////////
 int db_exec_sql_flds_pop(dbh_t *dbh, char *sqltext, list_t *flds)
+/////////////////////////////////////////////////////////////////
 {
     int rval;
     
@@ -226,7 +236,9 @@ int db_exec_sql_flds_pop(dbh_t *dbh, char *sqltext, list_t *flds)
     return(rval);
 }
 
+/////////////////////////////////////////////////////////////////////
 int db_exec_sql_flds_pushpop(dbh_t *dbh, char *sqltext, list_t *flds)
+/////////////////////////////////////////////////////////////////////
 {
     int rval;
     sqlstack_push(dbh);
@@ -234,7 +246,9 @@ int db_exec_sql_flds_pushpop(dbh_t *dbh, char *sqltext, list_t *flds)
     return(rval);
 }
 
+/////////////////////////////////////////////////////////////
 int db_exec_sql_flds(dbh_t *dbh, char *sqltext, list_t *flds)
+/////////////////////////////////////////////////////////////
 {
     int rval;
     
@@ -260,8 +274,9 @@ int db_exec_sql_flds(dbh_t *dbh, char *sqltext, list_t *flds)
     return(rval);
 }
 
-//////////////////////////////////////////////////////////////////////
+////////////////////////////////
 int db_finalize_stmt(dbh_t *dbh)
+////////////////////////////////
 {
     int rval=0;
     if (dbh->sqlcmd && dbh->sqlcmd->stmt) {
@@ -273,8 +288,10 @@ int db_finalize_stmt(dbh_t *dbh)
     }
     return(rval);
 }
-/////////////////////////////////////////////////
+
+///////////////////////////////////////////
 int db_exec_sql(dbh_t *dbh,  char *sqltext)
+///////////////////////////////////////////
 {
     char *errmsg;
     dbh->status = sqlite3_exec(dbh->dbf,sqltext, NULL, NULL, &errmsg);
@@ -285,8 +302,9 @@ int db_exec_sql(dbh_t *dbh,  char *sqltext)
     return(dbh->status);
 }
 
-////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
 int db_prepare_sql(dbh_t *dbh, sqlcmd_t *sqlcmd, char *sqltextfmt, ...)
+///////////////////////////////////////////////////////////////////////
 {
     va_list args;
     int sts;
@@ -313,8 +331,10 @@ int db_prepare_sql(dbh_t *dbh, sqlcmd_t *sqlcmd, char *sqltextfmt, ...)
     }
     return(sts);
 }
+
 ///////////////////////////////////
 sqlcmd_t *sqlstack_push(dbh_t *dbh)
+///////////////////////////////////
 {
     sqlcmd_t *rval;
     if (++dbh->sqlidx == SQL_MAX) {
@@ -326,8 +346,10 @@ sqlcmd_t *sqlstack_push(dbh_t *dbh)
     
     return(rval);
 }
-///////////////////////////////////
+
+//////////////////////////////////
 sqlcmd_t *sqlstack_pop(dbh_t *dbh)
+//////////////////////////////////
 {
     sqlcmd_t *rval;
     
@@ -352,7 +374,9 @@ sqlcmd_t *sqlstack_pop(dbh_t *dbh)
     
 }
 
+////////////////////////////////////////////////////////////////////////////
 objid_t db_get_obj_instance(dbh_t *dbh, bckid_t bck_id, objname_t *objname )
+////////////////////////////////////////////////////////////////////////////
 {
     list_t      *flds = (list_t *) NULL;
     objid_t     obj_instance=0;
@@ -369,9 +393,9 @@ objid_t db_get_obj_instance(dbh_t *dbh, bckid_t bck_id, objname_t *objname )
     return(obj_instance);
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////
 int db_newdb(dbh_t **dbh, char *fnm)
+////////////////////////////////////
 {
     int status, err;
     char    ans[80];
@@ -415,8 +439,9 @@ int db_newdb(dbh_t **dbh, char *fnm)
     return(status);
 }
 
-
+////////////////////
 dbh_t *new_dbh(void)
+////////////////////
 {
     dbh_t *rval;
     
@@ -430,7 +455,9 @@ dbh_t *new_dbh(void)
     
 }
 
+////////////////////////////////////////////////////////
 dbh_t *dbh_set(dbh_t **dbh_ptr, char *fnm, char *errmsg)
+////////////////////////////////////////////////////////
 {
     dbh_t *dbh;
     if (dbh_ptr) {
@@ -444,7 +471,9 @@ dbh_t *dbh_set(dbh_t **dbh_ptr, char *fnm, char *errmsg)
     return(dbh);
 }
 
+//////////////////////////////
 void dbh_free(dbh_t **dbh_ptr)
+//////////////////////////////
 {
     dbh_t *dbh;
     if (dbh_ptr) {
@@ -460,7 +489,9 @@ void dbh_free(dbh_t **dbh_ptr)
     
 }
 
+///////////////////////////////////////
 int db_open(dbh_t **dbh_ptr, char *fnm)
+///////////////////////////////////////
 {
     dbh_t   *rval;
     stat_t  db_stat;
@@ -525,7 +556,9 @@ int db_open(dbh_t **dbh_ptr, char *fnm)
     return(rval->status);
 }
 
+////////////////////////////////////////////////
 int db_busy_handler(void *tag,int lockoccurence)
+////////////////////////////////////////////////
 {
     int div;
     long rnd;
@@ -552,7 +585,9 @@ int db_busy_handler(void *tag,int lockoccurence)
     return(1); // tell them to try again, bumpers...
 }
 
+////////////////////////
 int db_close(dbh_t *dbh)
+////////////////////////
 {
     if (!dbh) {
         fprintf(stderr, "#BLIB:  Internal error %s called with null database pointer\n", __PRETTY_FUNCTION__);
@@ -577,7 +612,9 @@ int db_close(dbh_t *dbh)
     return(dbh->status);
 }
 
+/////////////////////////////
 void	db_finish(dbh_t *dbh)
+/////////////////////////////
 {
     if (!dbh) return;
     if (dbh->open == YES ) db_close(dbh);
@@ -586,7 +623,9 @@ void	db_finish(dbh_t *dbh)
     free(dbh);
 }
 
+//////////////////////////////////////////
 int	dbcheck(dbh_t *dbh, char *errmsg, ...)
+//////////////////////////////////////////
 {
     va_list args;
     char    *errstr;
@@ -653,9 +692,9 @@ int	dbcheck(dbh_t *dbh, char *errmsg, ...)
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////
 int  copy_results_volume(dbh_t *dbh, void *recp)
+////////////////////////////////////////////////
 {
     vol_t 	*rec;
     list_t	*flds = (list_t *) NULL;
@@ -683,7 +722,37 @@ int  copy_results_volume(dbh_t *dbh, void *recp)
     return(dbh->status);
 }
 
+/////////////////////////////////////////////////
+int  copy_results_vol_obj_id(dbh_t *dbh, void *recp)
+/////////////////////////////////////////////////
+{
+    vol_obj_id_t 	*rec;
+    list_t	*flds = (list_t *) NULL;
+    
+    rec = (vol_obj_id_t *) recp;
+    
+    bzero(rec,sizeof(vol_t));
+    // bck_id|objname|obj_instance|label|fileno|start|end|size|bobck_id
+    db_fldsmklist(&flds, "bck_id",        FLD_INT64, &rec->bck_id);
+    db_fldsmklist(&flds, "objname" ,      FLD_TEXT , &rec->objname);
+    db_fldsmklist(&flds, "obj_instance",  FLD_TEXT , &rec->obj_instance);
+    db_fldsmklist(&flds, "label",         FLD_TEXT , &rec->label);
+    db_fldsmklist(&flds, "fileno",        FLD_INT  , &rec->fileno);
+    db_fldsmklist(&flds, "start",         FLD_DATE , &rec->start);
+    db_fldsmklist(&flds, "end",           FLD_DATE , &rec->end);
+    db_fldsmklist(&flds, "size",          FLD_INT64, &rec->size);
+    db_fldsmklist(&flds, "bobck_id",      FLD_INT64, &rec->bobck_id);
+
+    dbh->sqlcmd->getflds = flds;
+    db_columns(dbh);
+    db_fldsfreelist(&dbh->sqlcmd->getflds);
+    return(dbh->status);
+}
+
+
+////////////////////////////////////////////////
 int  copy_results_backup(dbh_t *dbh, void *recp)
+////////////////////////////////////////////////
 {
     list_t	*flds = (list_t *) NULL;
     
@@ -693,9 +762,9 @@ int  copy_results_backup(dbh_t *dbh, void *recp)
     
     db_fldsmklist(&flds, "bck_id"    , FLD_INT64, &rec->bck_id);
     db_fldsmklist(&flds, "node"      , FLD_TEXT , &rec->node);
-    db_fldsmklist(&flds, "start"     , FLD_DATE  , &rec->start);
-    db_fldsmklist(&flds, "end"       , FLD_DATE  , &rec->end);
-    db_fldsmklist(&flds, "expiredate", FLD_DATE  , &rec->expiredate);
+    db_fldsmklist(&flds, "start"     , FLD_DATE , &rec->start);
+    db_fldsmklist(&flds, "end"       , FLD_DATE , &rec->end);
+    db_fldsmklist(&flds, "expiredate", FLD_DATE , &rec->expiredate);
     db_fldsmklist(&flds, "desc"      , FLD_TEXT , &rec->desc);
     
     dbh->sqlcmd->getflds = flds;
@@ -704,7 +773,9 @@ int  copy_results_backup(dbh_t *dbh, void *recp)
     return(dbh->status);
 }
 
+/////////////////////////////////////////////////////
 int  copy_results_bck_objects(dbh_t *dbh, void *recp)
+/////////////////////////////////////////////////////
 {
     list_t	*flds = (list_t *) NULL;
     bckobj_t *rec;
@@ -715,8 +786,8 @@ int  copy_results_bck_objects(dbh_t *dbh, void *recp)
     db_fldsmklist(&flds, "bck_id"      , FLD_INT64, &rec->bck_id);
     db_fldsmklist(&flds, "objname"     , FLD_TEXT , &rec->objname);
     db_fldsmklist(&flds, "obj_instance", FLD_INT  , &rec->obj_instance);
-    db_fldsmklist(&flds, "start"       , FLD_DATE  , &rec->start);
-    db_fldsmklist(&flds, "end"         , FLD_DATE  , &rec->end);
+    db_fldsmklist(&flds, "start"       , FLD_DATE , &rec->start);
+    db_fldsmklist(&flds, "end"         , FLD_DATE , &rec->end);
     db_fldsmklist(&flds, "size"        , FLD_INT64, &rec->size);
     
     dbh->sqlcmd->getflds = flds;
@@ -725,7 +796,9 @@ int  copy_results_bck_objects(dbh_t *dbh, void *recp)
     return(dbh->status);
 }
 
+////////////////////////////////////////////////
 int copy_results_vol_obj(dbh_t *dbh, void *recp)
+////////////////////////////////////////////////
 {
     list_t	*flds = (list_t *) NULL;
     vol_obj_t *rec;
@@ -739,8 +812,8 @@ int copy_results_vol_obj(dbh_t *dbh, void *recp)
     db_fldsmklist(&flds, "obj_instance", FLD_INT  , &rec->obj_instance);
     db_fldsmklist(&flds, "label"       , FLD_TEXT , &rec->label);
     db_fldsmklist(&flds, "fileno"      , FLD_INT  , &rec->fileno);
-    db_fldsmklist(&flds, "start"       , FLD_DATE  , &rec->start);
-    db_fldsmklist(&flds, "end"         , FLD_DATE  , &rec->end);
+    db_fldsmklist(&flds, "start"       , FLD_DATE , &rec->start);
+    db_fldsmklist(&flds, "end"         , FLD_DATE , &rec->end);
     db_fldsmklist(&flds, "size"        , FLD_INT64, &rec->size);
     
     dbh->sqlcmd->getflds = flds;
@@ -749,7 +822,9 @@ int copy_results_vol_obj(dbh_t *dbh, void *recp)
     return(dbh->status);
 }
 
+////////////////////////////////////////////////////
 int	copy_results_bck_errors(dbh_t  *dbh, void *recp)
+////////////////////////////////////////////////////
 {
     list_t	 *flds = (list_t *) NULL;
     bck_errors_t *rec;
@@ -773,9 +848,9 @@ int	copy_results_bck_errors(dbh_t  *dbh, void *recp)
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////
-
+//////////////////////////////////////////////
 int db_flds_bind(dbh_t *dbh, sqlcmd_t *sqlcmd)
+//////////////////////////////////////////////
 {
     int	db_status=-1;
     dbfld_t  *fld;
@@ -814,7 +889,9 @@ int db_flds_bind(dbh_t *dbh, sqlcmd_t *sqlcmd)
     return(db_status);
 }
 
-int 	db_columns(dbh_t *dbh)
+//////////////////////////
+int db_columns(dbh_t *dbh)
+//////////////////////////
 {
     dbfld_t  *fld;
     entry_t   *fld_ent;
@@ -856,7 +933,9 @@ int 	db_columns(dbh_t *dbh)
     return(dbh->status);
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////
 dbfld_t *db_fldsmklist(list_t **fldhead,const char *fldname,  fld_type_t fldtype, void *fldptr)
+///////////////////////////////////////////////////////////////////////////////////////////////
 {
     // create a chain of flds to be used by db_flds_bind()
     dbfld_t	*fld;
@@ -908,7 +987,9 @@ dbfld_t *db_fldsmklist(list_t **fldhead,const char *fldname,  fld_type_t fldtype
     return(fld); // give back the fld so they can update as they need
 }
 
+////////////////////////////////
 int db_fldsdump(list_t *fldhead)
+////////////////////////////////
 {
     // create a chain of flds to be used by db_flds_bind()
     dbfld_t	*fld;
@@ -925,7 +1006,9 @@ int db_fldsdump(list_t *fldhead)
     return(0);
 }
 
+//////////////////////////////////
 void db_flds_display(dbfld_t *fld)
+//////////////////////////////////
 {
     FILE *outfd=stderr;
     datestr_t   adate;
@@ -958,8 +1041,9 @@ void db_flds_display(dbfld_t *fld)
 }
 
 
-
+////////////////////////////////////////////
 const char *fldtype_name(fld_type_t fldtype)
+////////////////////////////////////////////
 {
     const char *rval;
     static char buf[64];
@@ -988,7 +1072,9 @@ const char *fldtype_name(fld_type_t fldtype)
     return(rval);
 }
 
+//////////////////////////////////////////////////////////
 dbfld_t *db_flds_byname(list_t *flds, const char *fldname)
+//////////////////////////////////////////////////////////
 {
     dbfld_t	*fld;
     entry_t	*ent;
@@ -1010,9 +1096,9 @@ dbfld_t *db_flds_byname(list_t *flds, const char *fldname)
     
 }
 
-
-
+///////////////////////////////////////////////////////////////
 uint64_t db_flds_int64byname(list_t *flds, const char *fldname)
+///////////////////////////////////////////////////////////////
 {
     uint64_t rval;
     dbfld_t *fld;
@@ -1029,7 +1115,9 @@ uint64_t db_flds_int64byname(list_t *flds, const char *fldname)
     return(rval);
 }
 
+///////////////////////////////////////////////////////////
 char *db_flds_textbyname(list_t *flds, const char *fldname)
+///////////////////////////////////////////////////////////
 {
     char *rval;
     dbfld_t *fld;
@@ -1047,7 +1135,9 @@ char *db_flds_textbyname(list_t *flds, const char *fldname)
 }
 
 
+//////////////////////
 dbfld_t *db_flds_new()
+//////////////////////
 {
     dbfld_t *db_flds_new;
     if ((db_flds_new = malloc(sizeof(dbfld_t))) == (dbfld_t *) NULL ) {
@@ -1058,13 +1148,16 @@ dbfld_t *db_flds_new()
     return(db_flds_new);
 }
 
+////////////////////////////////////
 void db_fldsfreelist(list_t **listp)
+////////////////////////////////////
 {
     if (listp) free_list(listp, NULL);
 }
 
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int db_find(dbh_t *dbh, char *sqltext,list_t *key, void *results, int (*copyresult)(dbh_t *dbh, void *rsp), find_type_t flag)
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 {
     int rval=0;
     // return true while no error and a row available
@@ -1122,9 +1215,9 @@ int db_find(dbh_t *dbh, char *sqltext,list_t *key, void *results, int (*copyresu
     return(rval);
 }
 
-////////////////////////////////////////////////////////////////////////////////////
-
+/////////////////////////////////////////////////////////////////////////////////
 int db_find_volumes_label(dbh_t *dbh,vol_t *volkey, vol_t *rec, find_type_t flag)
+/////////////////////////////////////////////////////////////////////////////////
 {
     int rval;
     char *sqltext;
@@ -1142,7 +1235,9 @@ int db_find_volumes_label(dbh_t *dbh,vol_t *volkey, vol_t *rec, find_type_t flag
     return(rval);
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////
 int db_find_volume_bylabel(dbh_t *dbh,blabel_t *label, vol_t *resultrec, find_type_t flag)
+//////////////////////////////////////////////////////////////////////////////////////////
 {
     int rval;
     list_t *key = (list_t *) NULL;
@@ -1161,7 +1256,9 @@ int db_find_volume_bylabel(dbh_t *dbh,blabel_t *label, vol_t *resultrec, find_ty
     return(rval);
 }
 
+//////////////////////////////////////////////////////////////////////////////
 int	db_find_backups_by_expire(dbh_t *dbh, backups_t *bckrec, find_type_t flag)
+//////////////////////////////////////////////////////////////////////////////
 {
     int		rval;
     char	*sqltext;
@@ -1175,7 +1272,9 @@ int	db_find_backups_by_expire(dbh_t *dbh, backups_t *bckrec, find_type_t flag)
     return(rval);
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////
 int db_find_volume_for_vol_obj(dbh_t *dbh, vol_obj_t *volobjrec, vol_t *volrec, find_type_t flag)
+/////////////////////////////////////////////////////////////////////////////////////////////////
 {
     int		rval;
     char	*sqltext;
@@ -1191,8 +1290,9 @@ int db_find_volume_for_vol_obj(dbh_t *dbh, vol_obj_t *volobjrec, vol_t *volrec, 
     return(rval);
 }
 
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
 int	db_find_vol_obj_for_bck_object(dbh_t *dbh, bckobj_t *bckobjrec, vol_obj_t *volobjrec, find_type_t flag)
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
 {
     int		rval;
     char	*sqltext;
@@ -1212,8 +1312,9 @@ int	db_find_vol_obj_for_bck_object(dbh_t *dbh, bckobj_t *bckobjrec, vol_obj_t *v
     return(rval);
 }
 
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////
 int	db_find_bck_objects_by_name(dbh_t *dbh, objname_t *objname, bckobj_t *bckobjrec, find_type_t flag)
+//////////////////////////////////////////////////////////////////////////////////////////////////////
 {
     int		rval;
     char	*sqltext;
@@ -1236,7 +1337,9 @@ int	db_find_bck_objects_by_name(dbh_t *dbh, objname_t *objname, bckobj_t *bckobj
     return(rval);
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////
 int	db_find_backups_orderbckid(dbh_t *dbh, backups_t *bckrec, bckid_t bckid, find_type_t flag)
+//////////////////////////////////////////////////////////////////////////////////////////////
 {
     int		rval;
     char	*sqltext;
@@ -1257,8 +1360,9 @@ int	db_find_backups_orderbckid(dbh_t *dbh, backups_t *bckrec, bckid_t bckid, fin
     return(rval);
 }
 
-
+////////////////////////////////////////////////////////////////////
 int db_find_volume_free(dbh_t *dbh, vol_t *volrec, find_type_t flag)
+////////////////////////////////////////////////////////////////////
 {
     int rval;
     
@@ -1267,7 +1371,9 @@ int db_find_volume_free(dbh_t *dbh, vol_t *volrec, find_type_t flag)
     return(rval);
 }
 
+////////////////////////////////////////////////////////////////////
 int db_find_volume_expired(dbh_t *dbh, vol_t *rec, find_type_t flag)
+////////////////////////////////////////////////////////////////////
 {
     int rval;
     
@@ -1278,8 +1384,9 @@ int db_find_volume_expired(dbh_t *dbh, vol_t *rec, find_type_t flag)
     return(rval);
 }
 
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 int db_find_vol_obj_id_notbckid_label(dbh_t *dbh, list_t *key, vol_obj_t *volobj2del, find_type_t flag)
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 {
     
     int rval;
@@ -1291,7 +1398,9 @@ int db_find_vol_obj_id_notbckid_label(dbh_t *dbh, list_t *key, vol_obj_t *volobj
     return(rval);
 }
 
+////////////////////////////////////////////////////////////
 int db_find_current_volobj(dbh_t *dbh, vol_obj_t *volobjrec)
+////////////////////////////////////////////////////////////
 {
     
     int		rval;
@@ -1308,8 +1417,9 @@ int db_find_current_volobj(dbh_t *dbh, vol_obj_t *volobjrec)
     return(rval);
 }
 
-///////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////
 int	db_setvolume_free(dbh_t *dbh, char *label)
+//////////////////////////////////////////////
 {
     list_t	*flds= (list_t *) NULL;
     blib_tim_t  now;
@@ -1329,7 +1439,9 @@ int	db_setvolume_free(dbh_t *dbh, char *label)
     return(dbh->status);
 }
 
+/////////////////////////////////////////////////////////////////
 int db_setvolume_used(dbh_t *dbh, blabel_t *label, bckid_t bckid)
+/////////////////////////////////////////////////////////////////
 {
     list_t	*flds= (list_t *) NULL;
     int	rval;
@@ -1356,7 +1468,9 @@ int db_setvolume_used(dbh_t *dbh, blabel_t *label, bckid_t bckid)
     return(rval);
 }
 
+////////////////////////////////////////////////////
 int	db_end_vol_obj(dbh_t *dbh, vol_obj_t *volobjrec)
+////////////////////////////////////////////////////
 {
     list_t	*flds = (list_t *) NULL;
     int	rval;
@@ -1386,7 +1500,9 @@ int	db_end_vol_obj(dbh_t *dbh, vol_obj_t *volobjrec)
     return(rval);
 }
 
+/////////////////////////////////////////////////////
 fld_type_t db_fldtype_from_valtype(valtype_e valtype)
+/////////////////////////////////////////////////////
 {
     fld_type_t rval;
     
@@ -1416,7 +1532,9 @@ fld_type_t db_fldtype_from_valtype(valtype_e valtype)
     return(rval);
 }
 
+////////////////////////////////////////////////////
 int do_upd_vol(dbh_t *dbh, char *label, cmd_t *cmd )
+////////////////////////////////////////////////////
 {
     sqlcmd_t 	*sqlcmd;
     list_t      *flds = (list_t *) NULL;
@@ -1465,8 +1583,9 @@ int do_upd_vol(dbh_t *dbh, char *label, cmd_t *cmd )
     return(dbh->status);
 }
 
-
+/////////////////////////////////////////////////////////////
 void db_update_volume(dbh_t *dbh,filt_t *filtrec, vol_t *rec)
+/////////////////////////////////////////////////////////////
 {
     do_upd_vol(dbh,rec->label.str,filtrec->label);
     do_upd_vol(dbh,rec->label.str,filtrec->state);
@@ -1478,7 +1597,9 @@ void db_update_volume(dbh_t *dbh,filt_t *filtrec, vol_t *rec)
     // TODO: does this require more ???
 }
 
+////////////////////////////////////////////////
 int db_delete_volume(dbh_t *dbh, vol_t *vol2del)
+////////////////////////////////////////////////
 {
     backups_t	bckrec;
     list_t      *flds = (list_t *) NULL;
@@ -1504,8 +1625,9 @@ int db_delete_volume(dbh_t *dbh, vol_t *vol2del)
     return(dbh->status);
 }
 
-///////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
 int db_find_backups_by_bck_id(dbh_t *dbh, bckid_t key_bck_id_val, backups_t *bck_rec)
+/////////////////////////////////////////////////////////////////////////////////////
 {
     
     list_t *flds = (list_t *) NULL;
@@ -1525,9 +1647,9 @@ int db_find_backups_by_bck_id(dbh_t *dbh, bckid_t key_bck_id_val, backups_t *bck
     return(rval);
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-
+/////////////////////////////////////////////
 int db_insert_volumes(dbh_t *dbh, vol_t *vol)
+/////////////////////////////////////////////
 {
     list_t	*flds = (list_t *) NULL;
     
@@ -1557,18 +1679,20 @@ int db_insert_volumes(dbh_t *dbh, vol_t *vol)
     return(dbh->status);
 }
 
+/////////////////////////////////////////////////////
 int db_insert_backups(dbh_t *dbh, backups_t *bck_rec)
+/////////////////////////////////////////////////////
 {
     list_t	*flds = (list_t *) NULL;
     
     char *sqltext="insert into backups ("
-    "bck_id,"
-    "node,"
-    "start,"
-    "end,"
-    "expiredate,"
-    "desc"
-    ") values ( ?,?,?,?,?,?)";
+                                "bck_id,"
+                                "node,"
+                                "start,"
+                                "end,"
+                                "expiredate,"
+                                "desc"
+                    ") values ( ?,?,?,?,?,?)";
     
     db_fldsmklist(&flds , "bck_id"     , FLD_INT64, (void *) &bck_rec->bck_id);
     db_fldsmklist(&flds , "node"       , FLD_TEXT , (void *) &bck_rec->node);
@@ -1587,7 +1711,9 @@ int db_insert_backups(dbh_t *dbh, backups_t *bck_rec)
     
 }
 
+//////////////////////////////////////////////////////////////
 objid_t db_insert_bck_objects(dbh_t *dbh, bckobj_t *bckobjrec)
+//////////////////////////////////////////////////////////////
 {
     list_t	*flds = (list_t *) NULL;
     objid_t	obj_instance;
@@ -1619,7 +1745,8 @@ objid_t db_insert_bck_objects(dbh_t *dbh, bckobj_t *bckobjrec)
     if (db_exec_sql_flds_pushpop(dbh, sqltext, flds)) {
         db_exec_sql(dbh, "commit");
         dbcheck(dbh, "commit error");
-    } else {
+    }
+    else {
         replace_dynstr(&dbh->errmsg, newstr("#BLIB:  Error inserting new backup object: %s\n", dbh->errmsg));
         db_exec_sql(dbh, "rollback transaction");
     }
@@ -1628,7 +1755,9 @@ objid_t db_insert_bck_objects(dbh_t *dbh, bckobj_t *bckobjrec)
     return(obj_instance);
 }
 
+///////////////////////////////////////////////////////
 int db_insert_vol_obj(dbh_t *dbh, vol_obj_t *volobjrec)
+///////////////////////////////////////////////////////
 {
     list_t	*flds = (list_t *) NULL;
     int rval;
@@ -1663,7 +1792,9 @@ int db_insert_vol_obj(dbh_t *dbh, vol_obj_t *volobjrec)
     return(rval);
 }
 
+//////////////////////////////////////////////////////////////////
 bcount_t db_count_volumes_in_backup_id(dbh_t *dbh, bckid_t bck_id)
+//////////////////////////////////////////////////////////////////
 {
     bcount_t 	rcount;
     list_t	*flds = (list_t *) NULL;
@@ -1684,7 +1815,9 @@ bcount_t db_count_volumes_in_backup_id(dbh_t *dbh, bckid_t bck_id)
     return(rcount);
 }
 
+///////////////////////////////////////////////////////////////////////
 int db_count_vol_obj_label(dbh_t *dbh, bckid_t bck_id, blabel_t *label)
+///////////////////////////////////////////////////////////////////////
 {
     //
     int 	rcount;
@@ -1707,8 +1840,9 @@ int db_count_vol_obj_label(dbh_t *dbh, bckid_t bck_id, blabel_t *label)
     return(rcount);
 }
 
-
+/////////////////////////////////////////////////////////////
 bcount_t db_vol_obj_sumsize(dbh_t *dbh, vol_obj_t *volobjrec)
+/////////////////////////////////////////////////////////////
 {
     list_t   *flds = (list_t *) NULL;
     bcount_t	totalsize = 0;
@@ -1728,9 +1862,9 @@ bcount_t db_vol_obj_sumsize(dbh_t *dbh, vol_obj_t *volobjrec)
     return(totalsize);
 }
 
-//////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////////////////
 int db_update_bck_object_size_end(dbh_t *dbh, bckid_t bckid, objname_t *objname, objid_t obj_instance,  blib_tim_t end, bcount_t totalsize)
+////////////////////////////////////////////////////////////////////////////////
 {
     list_t	*flds = (list_t *) NULL;
     
@@ -1760,8 +1894,9 @@ int db_update_bck_object_size_end(dbh_t *dbh, bckid_t bckid, objname_t *objname,
     return(dbh->status);
 }
 
-
+//////////////////////////////////////////////////////////
 int	db_insert_bckerror(dbh_t *dbh, bck_errors_t *bckerror)
+//////////////////////////////////////////////////////////
 {
     list_t	*flds = (list_t *) NULL;
     
@@ -1791,9 +1926,9 @@ int	db_insert_bckerror(dbh_t *dbh, bck_errors_t *bckerror)
     return(dbh->status);
 }
 
-
-
+///////////////////////////////////////////////////////////
 blib_tim_t db_lookup_endofbackup(dbh_t *dbh,bckid_t bck_id)
+///////////////////////////////////////////////////////////
 {
     list_t   *flds = (list_t *) NULL;
     blib_tim_t	end = 0;
@@ -1809,7 +1944,9 @@ blib_tim_t db_lookup_endofbackup(dbh_t *dbh,bckid_t bck_id)
     return(end);
 }
 
+///////////////////////////////////////////////////
 int db_inc_volume_usage(dbh_t *dbh, bckid_t bck_id)
+///////////////////////////////////////////////////
 {
     sqlstack_push(dbh);
     db_exec_sql_bckid(dbh,  "update volumes set usage=usage+1  where volumes.bck_id=?", bck_id);
@@ -1819,7 +1956,9 @@ int db_inc_volume_usage(dbh_t *dbh, bckid_t bck_id)
     
 }
 
+/////////////////////////////////////////////////////////////////////
 int db_update_backups_end(dbh_t *dbh, bckid_t bck_id, blib_tim_t end)
+/////////////////////////////////////////////////////////////////////
 {
     list_t	*flds = (list_t *) NULL;
     sqlcmd_t *sqlcmd = (sqlcmd_t *) NULL;
@@ -1845,8 +1984,9 @@ int db_update_backups_end(dbh_t *dbh, bckid_t bck_id, blib_tim_t end)
     return(dbh->status);
 }
 
-
+///////////////////////////////////////////////////
 int db_delete_backup_id(dbh_t *dbh, bckid_t bck_id)
+///////////////////////////////////////////////////
 {
     
     /*
@@ -1872,7 +2012,9 @@ int db_delete_backup_id(dbh_t *dbh, bckid_t bck_id)
     return(dbh->status);
 }
 
+///////////////////////////////////////////////////
 int	db_update_backups(dbh_t *dbh,backups_t *bckrec)
+///////////////////////////////////////////////////
 {
     list_t	*flds = (list_t *) NULL;
     
@@ -1889,7 +2031,9 @@ int	db_update_backups(dbh_t *dbh,backups_t *bckrec)
     return(dbh->status);
 }
 
+///////////////////////////////////////////////////////////////////////////////
 int	db_find_bck_objects_by_bckid(dbh_t *dbh, bckid_t bck_id,bckobj_t *bckobjrec, find_type_t flag)
+///////////////////////////////////////////////////////////////////////////////
 {
     int 	rval;
     list_t	*key_bckid= (list_t *) NULL;
@@ -1905,7 +2049,9 @@ int	db_find_bck_objects_by_bckid(dbh_t *dbh, bckid_t bck_id,bckobj_t *bckobjrec,
     return(rval);
 }
 
+///////////////////////////////////////////////////////////////////////////////
 int	db_find_vol_obj_from_objects(dbh_t *dbh, bckobj_t *key, vol_obj_t *volobjrec, find_type_t flag)
+///////////////////////////////////////////////////////////////////////////////
 {
     int 	rval;
     list_t	*keylist= (list_t *) NULL;
@@ -1924,7 +2070,9 @@ int	db_find_vol_obj_from_objects(dbh_t *dbh, bckobj_t *key, vol_obj_t *volobjrec
     
 }
 
+////////////////////////////////////////////////////////
 bcount_t db_count_bck_errors(dbh_t *dbh, vol_obj_t *key)
+////////////////////////////////////////////////////////
 {
     bcount_t	rcount;
     list_t	*flds = (list_t *) NULL;
@@ -1945,7 +2093,9 @@ bcount_t db_count_bck_errors(dbh_t *dbh, vol_obj_t *key)
     return(rcount);
 }
 
+///////////////////////////////////////////////////////////////
 bcount_t db_count_bck_errors_bck_id(dbh_t *dbh, bckid_t bck_id)
+///////////////////////////////////////////////////////////////
 {
     bcount_t	rcount;
     list_t	*flds = (list_t *) NULL;
@@ -1963,7 +2113,9 @@ bcount_t db_count_bck_errors_bck_id(dbh_t *dbh, bckid_t bck_id)
     return(rcount);
 }
 
+////////////////////////////////////////////////////
 bcount_t db_count_notset(dbh_t *dbh, bckid_t bck_id)
+////////////////////////////////////////////////////
 {
     bcount_t	rcount;
     list_t	*flds = (list_t *) NULL;
@@ -1986,8 +2138,9 @@ bcount_t db_count_notset(dbh_t *dbh, bckid_t bck_id)
     return(rcount);
 }
 
-
+///////////////////////////////////////////////////////////////////////////////
 int	db_find_bck_errors(dbh_t *dbh, vol_obj_t *volobjkey, bck_errors_t *bckerrrec, find_type_t flag)
+///////////////////////////////////////////////////////////////////////////////
 {
     int 	rval;
     list_t	*keylist= (list_t *) NULL;
@@ -2004,7 +2157,9 @@ int	db_find_bck_errors(dbh_t *dbh, vol_obj_t *volobjkey, bck_errors_t *bckerrrec
     return(rval);
 }
 
+///////////////////////////////////////////////////////////////////////////////
 int	db_find_volumes_by_bckid(dbh_t *dbh, bckid_t bck_id, vol_t *volrec, find_type_t flag)
+///////////////////////////////////////////////////////////////////////////////
 {
     int 	rval;
     list_t	*keylist= (list_t *) NULL;
@@ -2018,9 +2173,9 @@ int	db_find_volumes_by_bckid(dbh_t *dbh, bckid_t bck_id, vol_t *volrec, find_typ
     return(rval);
 }
 
-
-
+///////////////////////////////////////////////
 bcount_t db_get_size(dbh_t *dbh, vol_t *volrec)
+///////////////////////////////////////////////
 {
     // get the size of data written to the given label
     list_t      *flds = (list_t *) NULL;
@@ -2038,8 +2193,9 @@ bcount_t db_get_size(dbh_t *dbh, vol_t *volrec)
     return(rval);
 }
 
-
+///////////////////////////////////////////////
 int  db_get_duration(dbh_t *dbh, vol_t *volrec)
+///////////////////////////////////////////////
 {
     // get the size of data written to the given label
     list_t      *flds = (list_t *) NULL;
@@ -2057,7 +2213,9 @@ int  db_get_duration(dbh_t *dbh, vol_t *volrec)
     return(rval);
 }
 
+/////////////////////////////////////////////////////
 bcount_t  db_count_sqltext(dbh_t *dbh, char *sqltext)
+/////////////////////////////////////////////////////
 {
     bcount_t rval;
     
@@ -2074,12 +2232,13 @@ bcount_t  db_count_sqltext(dbh_t *dbh, char *sqltext)
 }
 
 
-
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////// VERIFY //////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////////////////////////////////////////////
 int db_read_bck_objects_fault1(dbh_t *dbh, bckobj_t *bck_obj, find_type_t flag)
+///////////////////////////////////////////////////////////////////////////////
 {
     int 	rval;
     char 	*sqltext;
@@ -2095,9 +2254,9 @@ int db_read_bck_objects_fault1(dbh_t *dbh, bckobj_t *bck_obj, find_type_t flag)
     return(rval);
 }
 
-
-
+///////////////////////////////////////////////////////////////////////////////
 int db_read_bck_objects_fault2(dbh_t *dbh, bckobj_t *bck_obj, find_type_t flag)
+///////////////////////////////////////////////////////////////////////////////
 {
     int 	rval;
     char 	*sqltext;
@@ -2113,9 +2272,9 @@ int db_read_bck_objects_fault2(dbh_t *dbh, bckobj_t *bck_obj, find_type_t flag)
     return(rval);
 }
 
-
-
+///////////////////////////////////////////////////////////////////////////////
 int	db_read_bck_errors_fault1(dbh_t *dbh, bck_errors_t *bckerrrec, find_type_t flag)
+///////////////////////////////////////////////////////////////////////////////
 {
     int 	rval;
     
@@ -2129,7 +2288,9 @@ int	db_read_bck_errors_fault1(dbh_t *dbh, bck_errors_t *bckerrrec, find_type_t f
     return(rval);
 }
 
+///////////////////////////////////////////////////////////////////////////////
 int	db_read_bck_errors_fault2(dbh_t *dbh, bck_errors_t *bckerrrec, find_type_t flag)
+///////////////////////////////////////////////////////////////////////////////
 {
     int 	rval;
     char    *sqltext;
@@ -2156,13 +2317,35 @@ int	db_read_bck_errors_fault2(dbh_t *dbh, bck_errors_t *bckerrrec, find_type_t f
     return(rval);
 }
 
+////////////////////////////////////////////////////////////////////////////
 int db_read_vol_obj_fault1(dbh_t *dbh, vol_obj_t *vol_obj, find_type_t flag)
+////////////////////////////////////////////////////////////////////////////
 {
     int 	rval;
     char    *sqltext;
     
     // (bck_id, objname, obj_instance) -> bck_objects
-    sqltext = "select  * from (select vo.*, bo.bck_id as bobck_id from vol_obj vo left outer  join bck_objects bo on vo.bck_id = bo.bck_id and vo.obj_instance  = bo.obj_instance and vo.objname   = bo.objname ) where bobck_id is null";
+    sqltext = "select  * from "
+                    "(select vo.*, bo.bck_id as bobck_id"
+                    " from             vol_obj vo"
+                    " left outer join  bck_objects bo"
+                    " on               vo.bck_id = bo.bck_id"
+                    " and       vo.obj_instance  = bo.obj_instance"
+                    " and           vo.objname   = bo.objname )"
+                    " where bobck_id is null";
+    /*
+     select  * from
+    (select vo.*, bo.bck_id as bobck_id
+     from             vol_obj vo
+     left outer join  bck_objects bo
+     on               vo.bck_id = bo.bck_id
+     and       vo.obj_instance  = bo.obj_instance
+     and           vo.objname   = bo.objname )
+    where bobck_id is null;
+     
+     bck_id|objname|obj_instance|label|fileno|start|end|size|bobck_id
+    */
+    
     bzero(vol_obj, sizeof(vol_obj_t));
     
     rval =  db_find(dbh, sqltext, NULL, (void *)vol_obj, copy_results_vol_obj , flag);
@@ -2170,13 +2353,15 @@ int db_read_vol_obj_fault1(dbh_t *dbh, vol_obj_t *vol_obj, find_type_t flag)
     return(rval);
 }
 
+////////////////////////////////////////////////////////////////////////////
 int db_read_vol_obj_fault2(dbh_t *dbh, vol_obj_t *vol_obj, find_type_t flag)
+////////////////////////////////////////////////////////////////////////////
 {
     int 	rval;
     char    *sqltext;
     
-    // (bck_id, label) -> volumes
-    sqltext = "select  * from (select vo.*, v.bck_id as bobck_id from vol_obj vo left outer  join volumes v on vo.bck_id = v.bck_id and vo.label  = v.label ) where bobck_id is null";
+    // vol_obj(bck_id, label) -> volumes
+    sqltext = "select  vo.* from vol_obj vo left outer join volumes v on vo.bck_id = v.bck_id where vo.label = v.label and v.bck_id is null";
     bzero(vol_obj, sizeof(vol_obj_t));
     
     rval =  db_find(dbh, sqltext, NULL, (void *)vol_obj, copy_results_vol_obj , flag);
@@ -2184,14 +2369,16 @@ int db_read_vol_obj_fault2(dbh_t *dbh, vol_obj_t *vol_obj, find_type_t flag)
     return(rval);
 }
 
-
-int db_read_vol_volumes1(dbh_t *dbh, vol_t *volume, find_type_t flag)
+/////////////////////////////////////////////////////////////////////
+int db_read_vol_obj_id(dbh_t *dbh, vol_t *volume, find_type_t flag)
+/////////////////////////////////////////////////////////////////////
 {
     int 	rval;
     char    *sqltext;
     
     // (bck_id>0, label) -> vol_obj
-    sqltext = "select  * from (select vo.*, vo.bck_id as vobck_id from volumes v left outer  join vol_obj vo on v.bck_id = v.bck_id and v.label  = vo.label where v.bck_id > 0 ) where vobck_id is null";
+    // if volume has a bck_id then check we have entries in vol_obj
+    sqltext = "select  v.* from volumes v left outer  join vol_obj vo on v.bck_id = vo.bck_id and v.label  = vo.label where v.bck_id > 0 and vo.bck_id is null";
     
     bzero(volume, sizeof(vol_t));
     
@@ -2200,7 +2387,9 @@ int db_read_vol_volumes1(dbh_t *dbh, vol_t *volume, find_type_t flag)
     return(rval);
 }
 
+/////////////////////////////////////////////////////////////////////
 int db_read_vol_volumes2(dbh_t *dbh, vol_t *volume, find_type_t flag)
+/////////////////////////////////////////////////////////////////////
 {
     int 	rval;
     char    *sqltext;
@@ -2216,14 +2405,15 @@ int db_read_vol_volumes2(dbh_t *dbh, vol_t *volume, find_type_t flag)
 }
 
 
-
 /////////////////////////////////////////////////////////////////
 /////////////////// DISPLAY RECORDS /////////////////////////////
 /////////////////////////////////////////////////////////////////
 #define BCK_ERR_HDR     "[bck_id       |label|             objname| obj_instance|errtime|errmsg]"
 #define BCK_ERR_FMT_LINE    "%-13llu  %-23.23s  %-17s %3d %-23.23s  %s\n"
 
+/////////////////////////////////////////////////////////////
 void db_display_bck_errors(FILE *fd, bck_errors_t *bckerrrec)
+/////////////////////////////////////////////////////////////
 {
     datestr_t errtime;
     /*
@@ -2247,7 +2437,9 @@ void db_display_bck_errors(FILE *fd, bck_errors_t *bckerrrec)
 #define BCKOBJ_FMT_HDR  "[bck_id       |objname        |obj_instance  |start          |end|   size]"
 #define BCKOBJ_FMT_LINE "%-13llu    %-23.23s %3d %s %s %-13llu\n"
 
+//////////////////////////////////////////////////
 void db_display_bck_object(FILE *fd, bckobj_t *bo)
+//////////////////////////////////////////////////
 {
     datestr_t start, end;
     
@@ -2267,7 +2459,9 @@ void db_display_bck_object(FILE *fd, bckobj_t *bo)
 #define VOLOBJ_FMT_HDR  "[bck_id       |objname|obj_instance|label|fileno|start|end|size]"
 #define VOLOBJ_FMT_LINE     "%-13llu  %-17s %3d %-23.23s %3d %s %s %llu\n"
 
+////////////////////////////////////////////////
 void db_display_vol_obj(FILE *fd, vol_obj_t *vo)
+////////////////////////////////////////////////
 {
     datestr_t start, end;
     
@@ -2285,15 +2479,17 @@ void db_display_vol_obj(FILE *fd, vol_obj_t *vo)
     
 }
 
-#define VOL_FMT_HDR  "[bck_id|label|state|media|usage|groupname|location|librarydate|offsitedate]"
-#define VOL_FMT_LINE "%-13llu  %-17s %s %s %3d %-23.23s %s %s %s\n"
+#define VOL_FMT_HDR  "[bck_id|label|state|media|usage|groupname|location|librarydate|offsitedate|changedate]"
+#define VOL_FMT_LINE "%-13llu  %-17s %s %s %3d %-23.23s %s %s %s %s\n"
 
-
+////////////////////////////////////////////
 void db_display_volume(FILE *fd, vol_t *vol)
+////////////////////////////////////////////
 {
-    datestr_t librarydate, offsitedate;
+    datestr_t librarydate, offsitedate, changedate;
     copy_datestr(&librarydate, (datestr_t *) time_cvt_blib_to_str(vol->librarydate));
     copy_datestr(&offsitedate, (datestr_t *) time_cvt_blib_to_str(vol->offsitedate));
+    copy_datestr(&changedate, (datestr_t *) time_cvt_blib_to_str(vol->changedate));
     fprintf(fd, VOL_FMT_LINE,
             (llu_t ) vol->bck_id,
             pstr(vol->label.str,""),
@@ -2303,13 +2499,14 @@ void db_display_volume(FILE *fd, vol_t *vol)
             pstr(vol->groupname.str, ""),
             pstr(vol->location.str,""),
             librarydate.str,
-            offsitedate.str
+            offsitedate.str,
+            changedate.str
             );
 }
 
-
-///////////////////////////////////////////////
-int     db_verify(fio_t *outfd, dbh_t *dbh)
+///////////////////////////////////////
+int db_verify(fio_t *outfd, dbh_t *dbh)
+///////////////////////////////////////
 {
     
     // bcount_t total_rows;
@@ -2320,18 +2517,19 @@ int     db_verify(fio_t *outfd, dbh_t *dbh)
      backups      bck_errors   bck_objects  vol_obj      volumes
      */
     // backups_t    backups;
-    bck_errors_t bck_errors;
-    bckobj_t     bck_objects;
-    vol_obj_t    vol_objs;
-    vol_t        volumes;
+    bck_errors_t    bck_errors;
+    bckobj_t        bck_objects;
+    vol_obj_t       vol_objs;
+    vol_t           volumes;
+    // vol_obj_id_t    vol_obj_id;
     
     // uint64_t    backups_errcount=0;
-    uint64_t    bck_errors_errcount=0;
-    uint64_t    bck_objects_errcount=0;
-    uint64_t    vol_objs_errcount=0;
-    uint64_t    volumes_errcount=0;
-    uint64_t    errcount=0;
-    uint64_t    total_errcount=0;
+    uint64_t        bck_errors_errcount=0;
+    uint64_t        bck_objects_errcount=0;
+    uint64_t        vol_objs_errcount=0;
+    uint64_t        volumes_errcount=0;
+    uint64_t        errcount=0;
+    uint64_t        total_errcount=0;
     
     
     /*
@@ -2341,48 +2539,48 @@ int     db_verify(fio_t *outfd, dbh_t *dbh)
     // check table: BCK_ERRORS //
     /////////////////////////////
     // (bck_id > 0 )   -> backups
-    fprintf(outfd->fd, "Verifying table: bck_errors\n");
+    fprintf(outfd->file, "Verifying table: bck_errors\n");
     // total_rows = db_count_sqltext(dbh, "select count(*) from bck_errors");
     
-    fprintf(outfd->fd, "  bck_errors(bck_id>0) -> backups: ");
+    fprintf(outfd->file, "  bck_errors(bck_id>0) -> backups: ");
     fnd_sts = db_read_bck_errors_fault1(dbh, &bck_errors, FND_FIRST);
     if (fnd_sts) {
         
-        fprintf(outfd->fd, "ERROR\n");
-        if (BLIB.verbose) fprintf(outfd->fd, "%s\n", BCK_ERR_HDR);
+        fprintf(outfd->file, "ERROR\n");
+        if (BLIB.verbose) fprintf(outfd->file, "%s\n", BCK_ERR_HDR);
         while (fnd_sts) {
             errcount++;
-            if (BLIB.verbose) db_display_bck_errors(outfd->fd, &bck_errors);
+            if (BLIB.verbose) db_display_bck_errors(outfd->file, &bck_errors);
             fnd_sts = db_read_bck_errors_fault1(dbh, &bck_errors, FND_NEXT);
         }
-        fprintf(outfd->fd, "  Error count: %llu\n", (llu_t) errcount);
+        fprintf(outfd->file, "  Error count: %llu\n", (llu_t) errcount);
         bck_errors_errcount += errcount;
         errcount=0;
         
     } else {
-        fprintf(outfd->fd, "OK\n");
+        fprintf(outfd->file, "OK\n");
     }
     
     
     
     // (bck_id, objname, obj_instance) -> bck_objects
-    fprintf(outfd->fd, "  bck_errors(bck_id, objname, obj_instance) -> bck_objects: ");
+    fprintf(outfd->file, "  bck_errors(bck_id, objname, obj_instance) -> bck_objects: ");
     fnd_sts = db_read_bck_errors_fault2(dbh, &bck_errors, FND_FIRST);
     if (fnd_sts) {
-        fprintf(outfd->fd, "ERROR\n");
-        if (BLIB.verbose) fprintf(outfd->fd, "%s\n", BCK_ERR_HDR);
+        fprintf(outfd->file, "ERROR\n");
+        if (BLIB.verbose) fprintf(outfd->file, "%s\n", BCK_ERR_HDR);
         while (fnd_sts) {
             errcount++;
-            if (BLIB.verbose) db_display_bck_errors(outfd->fd, &bck_errors);
+            if (BLIB.verbose) db_display_bck_errors(outfd->file, &bck_errors);
             fnd_sts = db_read_bck_errors_fault2(dbh, &bck_errors, FND_NEXT);
         }
-        fprintf(outfd->fd, "  Error count: %llu\n", (llu_t) errcount);
+        fprintf(outfd->file, "  Error count: %llu\n", (llu_t) errcount);
         bck_errors_errcount += errcount;
         errcount=0;
     } else {
-        fprintf(outfd->fd, "OK\n");
+        fprintf(outfd->file, "OK\n");
     }
-    if (bck_errors_errcount) fprintf(outfd->fd, "  bck_errors: Error count: %llu\n", (llu_t) bck_errors_errcount);
+    if (bck_errors_errcount) fprintf(outfd->file, "  bck_errors: Error count: %llu\n", (llu_t) bck_errors_errcount);
     total_errcount += bck_errors_errcount;
     bck_errors_errcount=0;
     
@@ -2396,46 +2594,46 @@ int     db_verify(fio_t *outfd, dbh_t *dbh)
      bck_objects (bck_id>0) -> backups
      bck_objects (bck_id, objname, obj_instance) -> vol_obj
      */
-    fprintf(outfd->fd, "\nVerifying table: bck_objects\n");
-    fprintf(outfd->fd, "  bck_objects(bck_id>0) -> vol_obj: ");
+    fprintf(outfd->file, "\nVerifying table: bck_objects\n");
+    fprintf(outfd->file, "  bck_objects(bck_id>0) -> vol_obj: ");
     fnd_sts = db_read_bck_objects_fault1(dbh, &bck_objects, FND_FIRST);
     if (fnd_sts) {
-        fprintf(outfd->fd, "ERROR\n");
-        if (BLIB.verbose) fprintf(outfd->fd, "%s\n", BCKOBJ_FMT_HDR);
+        fprintf(outfd->file, "ERROR\n");
+        if (BLIB.verbose) fprintf(outfd->file, "%s\n", BCKOBJ_FMT_HDR);
         while (fnd_sts) {
             errcount++;
-            if (BLIB.verbose) db_display_bck_object(outfd->fd, &bck_objects);
+            if (BLIB.verbose) db_display_bck_object(outfd->file, &bck_objects);
             fnd_sts = db_read_bck_objects_fault1(dbh, &bck_objects, FND_NEXT);
         }
-        fprintf(outfd->fd, "  Error count: %llu\n", (llu_t) errcount);
+        fprintf(outfd->file, "  Error count: %llu\n", (llu_t) errcount);
         bck_objects_errcount += errcount;
         errcount=0;
         
     } else {
-        fprintf(outfd->fd, "OK\n");
+        fprintf(outfd->file, "OK\n");
     }
     
     
-    fprintf(outfd->fd, "  bck_objects(bck_id, objname, obj_instance) -> vol_obj: ");
+    fprintf(outfd->file, "  bck_objects(bck_id, objname, obj_instance) -> vol_obj: ");
     fnd_sts = db_read_bck_objects_fault2(dbh, &bck_objects, FND_FIRST);
     if (fnd_sts) {
-        fprintf(outfd->fd, "ERROR\n");
-        if (BLIB.verbose) fprintf(outfd->fd, "%s\n", BCKOBJ_FMT_HDR);
+        fprintf(outfd->file, "ERROR\n");
+        if (BLIB.verbose) fprintf(outfd->file, "%s\n", BCKOBJ_FMT_HDR);
         while (fnd_sts) {
             errcount++;
-            if (BLIB.verbose) db_display_bck_object(outfd->fd, &bck_objects);
+            if (BLIB.verbose) db_display_bck_object(outfd->file, &bck_objects);
             fnd_sts = db_read_bck_objects_fault2(dbh, &bck_objects, FND_NEXT);
         }
-        fprintf(outfd->fd, "  Error count: %llu\n", (llu_t) errcount);
+        fprintf(outfd->file, "  Error count: %llu\n", (llu_t) errcount);
         bck_objects_errcount += errcount;
         errcount=0;
         
     } else {
-        fprintf(outfd->fd, "OK\n");
+        fprintf(outfd->file, "OK\n");
     }
     
     
-    if (bck_objects_errcount) fprintf(outfd->fd, "  bck_objects: Error count: %llu\n", (llu_t) bck_objects_errcount);
+    if (bck_objects_errcount) fprintf(outfd->file, "  bck_objects: Error count: %llu\n", (llu_t) bck_objects_errcount);
     total_errcount += bck_objects_errcount;
     bck_objects_errcount=0;
     
@@ -2445,49 +2643,53 @@ int     db_verify(fio_t *outfd, dbh_t *dbh)
     //////////////////////////////
     /*
      vol_obj    [bck_id|objname|obj_instance      |label|fileno|start|end|size]
-     (bck_id, objname, obj_instance) -> bck_objects
-     (bck_id, label) -> volumes
+     
+     
      */
     
-    fprintf(outfd->fd, "\nVerifying table: vol_obj\n");
-    fprintf(outfd->fd, "  vol_obj(bck_id, objname, obj_instance) -> bck_objects: ");
+    // (bck_id, objname, obj_instance) -> bck_objects
+    fprintf(outfd->file, "\nVerifying table: vol_obj\n");
+    fprintf(outfd->file, "  vol_obj(bck_id, objname, obj_instance) -> bck_objects: ");
     fnd_sts = db_read_vol_obj_fault1(dbh, &vol_objs, FND_FIRST);
     if (fnd_sts) {
-        fprintf(outfd->fd, "ERROR\n");
-        if (BLIB.verbose) fprintf(outfd->fd, "%s\n", VOLOBJ_FMT_HDR);
+        fprintf(outfd->file, "ERROR\n");
+        if (BLIB.verbose) fprintf(outfd->file, "%s\n", VOLOBJ_FMT_HDR);
         while (fnd_sts) {
             errcount++;
-            if (BLIB.verbose) db_display_vol_obj(outfd->fd, &vol_objs);
+            if (BLIB.verbose) db_display_vol_obj(outfd->file, &vol_objs);
             fnd_sts = db_read_vol_obj_fault1(dbh, &vol_objs, FND_NEXT);
         }
-        fprintf(outfd->fd, "  Error count: %llu\n", (llu_t) errcount);
+        fprintf(outfd->file, "  Error count: %llu\n", (llu_t) errcount);
         vol_objs_errcount += errcount;
         errcount=0;
         
-    } else {
-        fprintf(outfd->fd, "OK\n");
+    }
+    else {
+        fprintf(outfd->file, "OK\n");
     }
     
-    fprintf(outfd->fd, "  vol_obj(bck_id, label) -> volumes: ");
+    // vol_obj(bck_id, label) -> volumes
+    fprintf(outfd->file, "  vol_obj(bck_id, label) -> volumes: ");
     fnd_sts = db_read_vol_obj_fault2(dbh, &vol_objs, FND_FIRST);
     if (fnd_sts) {
-        fprintf(outfd->fd, "ERROR\n");
-        if (BLIB.verbose) fprintf(outfd->fd, "%s\n", VOLOBJ_FMT_HDR);
+        fprintf(outfd->file, "ERROR\n");
+        if (BLIB.verbose) fprintf(outfd->file, "%s\n", VOLOBJ_FMT_HDR);
         while (fnd_sts) {
             errcount++;
-            if (BLIB.verbose) db_display_vol_obj(outfd->fd, &vol_objs);
+            if (BLIB.verbose) db_display_vol_obj(outfd->file, &vol_objs);
             fnd_sts = db_read_vol_obj_fault2(dbh, &vol_objs, FND_NEXT);
         }
-        fprintf(outfd->fd, "  Error count: %llu\n", (llu_t) errcount);
+        fprintf(outfd->file, "  Error count: %llu\n", (llu_t) errcount);
         vol_objs_errcount += errcount;
         errcount=0;
         
-    } else {
-        fprintf(outfd->fd, "OK\n");
+    }
+    else {
+        fprintf(outfd->file, "OK\n");
     }
     
     
-    if (vol_objs_errcount) fprintf(outfd->fd, "  vol_obj: Error count: %llu\n", (llu_t) vol_objs_errcount);
+    if (vol_objs_errcount) fprintf(outfd->file, "  vol_obj: Error count: %llu\n", (llu_t) vol_objs_errcount);
     total_errcount += vol_objs_errcount;
     vol_objs_errcount=0;
     
@@ -2500,43 +2702,51 @@ int     db_verify(fio_t *outfd, dbh_t *dbh)
      volumes    [bck_id|label|state|media|usage|groupname|location|librarydate|recorddate|offsitedate|changedate]
      (bck_id>0, label) -> vol_obj
      (bck_id > 0 )   -> backups
+     
+     if volume has a bck_id then check we have entries in vol_obj
      */
-    
-    fprintf(outfd->fd, "\nVerifying table: volumes\n");
-    fprintf(outfd->fd, "  volumes(bck_id>0, label) -> vol_obj: ");
-    fnd_sts = db_read_vol_volumes1(dbh, &volumes, FND_FIRST);
+
+    fprintf(outfd->file, "\nVerifying table: volumes\n");
+    fprintf(outfd->file, "  volumes(bck_id>0, label) -> vol_obj: ");
+    fnd_sts = db_read_vol_obj_id(dbh, &volumes, FND_FIRST);
     if (fnd_sts) {
-        fprintf(outfd->fd, "ERROR\n");
-        if (BLIB.verbose) fprintf(outfd->fd, "%s\n", VOLOBJ_FMT_HDR);
+        fprintf(outfd->file, "ERROR\n");
+        if (BLIB.verbose) fprintf(outfd->file, "%s\n", VOLOBJ_FMT_HDR);
         while (fnd_sts) {
             errcount++;
-            if (BLIB.verbose) db_display_volume(outfd->fd, &volumes);
-            fnd_sts = db_read_vol_volumes1(dbh, &volumes, FND_NEXT);
+            if (BLIB.verbose) {
+                    db_display_volume(outfd->file, &volumes);
+            }
+            fnd_sts = db_read_vol_obj_id(dbh, &volumes, FND_NEXT);
         }
-        fprintf(outfd->fd, "  Error count: %llu\n", (llu_t) errcount);
+        fprintf(outfd->file, "  Error count: %llu\n", (llu_t) errcount);
         volumes_errcount += errcount;
         errcount=0;
         
     } else {
-        fprintf(outfd->fd, "OK\n");
+        fprintf(outfd->file, "OK\n");
     }
     
-    fprintf(outfd->fd, "  volumes(bck_id>0 )   -> backups: ");
+    // Verify volumes with a bck_id have a backup listed in backups table
+    fprintf(outfd->file, "  volumes(bck_id>0 )   -> backups: ");
     fnd_sts = db_read_vol_volumes2(dbh, &volumes, FND_FIRST);
     if (fnd_sts) {
-        fprintf(outfd->fd, "ERROR\n");
-        if (BLIB.verbose) fprintf(outfd->fd, "%s\n", VOLOBJ_FMT_HDR);
+        fprintf(outfd->file, "ERROR\n");
+        if (BLIB.verbose) fprintf(outfd->file, "%s\n", VOLOBJ_FMT_HDR);
         while (fnd_sts) {
             errcount++;
-            if (BLIB.verbose) db_display_volume(outfd->fd, &volumes);
+            if (BLIB.verbose) {
+                db_display_volume(outfd->file, &volumes);
+            }
             fnd_sts = db_read_vol_volumes2(dbh, &volumes, FND_NEXT);
         }
-        fprintf(outfd->fd, "  Error count: %llu\n", (llu_t) errcount);
+        fprintf(outfd->file, "  Error count: %llu\n", (llu_t) errcount);
         volumes_errcount += errcount;
         errcount=0;
         
-    } else {
-        fprintf(outfd->fd, "OK\n");
+    }
+    else {
+        fprintf(outfd->file, "OK\n");
     }
     
     
@@ -2551,14 +2761,14 @@ int     db_verify(fio_t *outfd, dbh_t *dbh)
     
     
     
-    if (vol_objs_errcount) fprintf(outfd->fd, "  volumes: Error count: %llu\n", (llu_t) volumes_errcount);
+    if (vol_objs_errcount) fprintf(outfd->file, "  volumes: Error count: %llu\n", (llu_t) volumes_errcount);
     total_errcount += volumes_errcount;
     volumes_errcount=0;
     
     
     ///////////////////////////////////////
     
-    if (total_errcount) fprintf(outfd->fd, "TOTAL ERRORS: %llu\n",(llu_t) total_errcount);
+    if (total_errcount) fprintf(outfd->file, "TOTAL ERRORS: %llu\n",(llu_t) total_errcount);
     
     return(0);
 }

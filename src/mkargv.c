@@ -15,6 +15,7 @@ static const char *rcsid="@(#) $Id: mkargv.c,v 1.1 2010/11/16 04:04:59 root Exp 
 
 #include "mkargv.h"
 #include "list.h"
+#include <string.h>
 
 static const char *version(void)
 {

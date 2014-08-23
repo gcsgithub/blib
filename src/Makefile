@@ -66,6 +66,8 @@ install:
 	for exe in $(TARGETS) ; do \
 		install -c -m 755 $$exe /usr/local/bin ; \
 	done
+	-mkdir -p /usr/local/etc/dat/blib
+	install -c -m 444 fmtbckrep.stylesheet /usr/local/etc/dat/blib
 
 clean:
 	rm -f *.o $(TARGETS)

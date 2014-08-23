@@ -49,24 +49,27 @@ void	do_cmd_reportbackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_p
      */
     // int		reqval;
     backups_t	bckrec;
-    qual_t	qualval;
-    cmd_t	*qual;
+    qual_t      qualval;
+    cmd_t       *qual;
     fmt_type_e	fmtas = FMT_TEXT;
-    char	*mailtoaddress = (char *) NULL;
+    char        *mailtoaddress = (char *) NULL;
     fio_t       *report_tmp_fio;
-    int        bck_errs;
+    int         bck_errs;
+    const char  *ext;
     
     qual=qual_ptr;
     bzero(&qualval, sizeof(qual_t));
     bck_errs = 0;
     
-    qualval.bck_id = *(bckid_t *) thecmd->val;
+    qualval.bck_id     = *(bckid_t *) thecmd->val;
     qualval.stylesheet = get_default(QUAL_STYSHT);
     
+    ext = "txt";
     while(qual) {
         switch(qual->param->cmdid) {
             case QUAL_HTML:
                 fmtas = FMT_XHTML;
+                ext  = "xhtml";
                 break;
             case QUAL_MAIL:
                 mailtoaddress = (char *) qual->val;
@@ -79,7 +82,7 @@ void	do_cmd_reportbackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_p
                 break;
                 
             default:
-                fprintf(outfd->fd, "#BLIB:  Error invalid qualifier %s given to %s\n", qual->param->cmdtxt, thecmd->param->cmdtxt);
+                fprintf(outfd->file, "#BLIB:  Error invalid qualifier %s given to %s\n", qual->param->cmdtxt, thecmd->param->cmdtxt);
                 return;
                 break;
         }
@@ -91,7 +94,7 @@ void	do_cmd_reportbackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_p
         return;
     }
     
-    if ((report_tmp_fio = fio_open_temp("mailto", "xhtml" , MAX_BUF)) == (fio_t *) NULL ) {
+    if ((report_tmp_fio = fio_open_temp("mailto",(char *)  ext , MAX_BUF)) == (fio_t *) NULL ) {
         dbh->status=errno;
         replace_dynstr(&dbh->errmsg, newstr("#BLIB:  Error opening temp file for mailto %d:%s\n", dbh->status, strerror(dbh->status)));
         return;
@@ -111,7 +114,9 @@ void	do_cmd_reportbackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_p
             exit(EINVAL);
             break;
     }
+    
     fio_reopen(report_tmp_fio, "r");
+    
     if (report_tmp_fio->status != 0 ) {
         fprintf(stderr, "#BLIB:  Error reopening report temporary file %d:%s\n", report_tmp_fio->status, strerror(report_tmp_fio->status));
         exit(report_tmp_fio->status);
@@ -124,7 +129,8 @@ void	do_cmd_reportbackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_p
         if (mailto(&BLIB.includelogs, mailtoaddress, bckrec.desc.str, BLIB.debug, bck_errs) == -1 ) {
             fprintf(stderr, "#BLIB:  Failed to send email to \"%s\"\n", mailtoaddress);
         }
-    } else {
+    }
+    else {
         fio_copy_file(report_tmp_fio, outfd);
     }
 }
@@ -262,7 +268,7 @@ int read_bck_objects(dbh_t *dbh, fmt_type_e fmttype, fio_t *outfd, backups_t *bc
     tapecount=0;
     
     if (fmttype == FMT_XHTML) html_write(outfd,'O', "tfoot", NULL, NULL);
-    else			          text_div(outfd->fd);
+    else			          text_div(outfd->file);
     
     sp="Tape Summary";
     dbstatus_vol_obj = db_find_volumes_by_bckid(dbh, bckrec->bck_id, &volrec, FND_FIRST);
@@ -275,7 +281,7 @@ int read_bck_objects(dbh_t *dbh, fmt_type_e fmttype, fio_t *outfd, backups_t *bc
         dbstatus_vol_obj = db_find_volumes_by_bckid(dbh, bckrec->bck_id, &volrec, FND_NEXT);
     }
     if (fmttype == FMT_XHTML)   html_write(outfd,'C', "tfoot", NULL, NULL);
-    else                        text_div(outfd->fd);
+    else                        text_div(outfd->file);
     return(gtot_errs);
 }
 
@@ -467,17 +473,17 @@ void table_row(fio_t *outfd, fmt_type_e fmttype ,char *iclass,  char *path, char
     }  else {
         // FMT_TEXT
         if (errline ) {
-            text_err(outfd->fd, err_str,  // err line number
+            text_err(outfd->file, err_str,  // err line number
                      stime,   // when
                      etime    // error message string
                      );
         } else {
             if (last_was_err) {
-                text_div(outfd->fd);
+                text_div(outfd->file);
                 last_was_err=0;
             }
-            text_row(outfd->fd, path, bcode_str, time_str, duration_str,            bytes_str, mbytes_str, gbytes_str, err_str);
-            text_div(outfd->fd);
+            text_row(outfd->file, path, bcode_str, time_str, duration_str,            bytes_str, mbytes_str, gbytes_str, err_str);
+            text_div(outfd->file);
         }
     }
 }
@@ -515,31 +521,31 @@ int	html_write(fio_t *outfd, char flag, char *tag, char *class, char *val, ... )
         /* Open tag  */
         
         if ( class && *class  ) {
-            rval = fprintf(outfd->fd, "<%s class=\"%s\">",tag, class);
+            rval = fprintf(outfd->file, "<%s class=\"%s\">",tag, class);
         } else {
-            rval = fprintf(outfd->fd, "<%s>",tag);
+            rval = fprintf(outfd->file, "<%s>",tag);
         }
         
         if (flag == 'I') {	/* inline tag <tag>val</tag> with val and close val maybe null <tag></tag> */
             if (val) {
                 va_start(args, val);
-                vfprintf(outfd->fd, val, args);
+                vfprintf(outfd->file, val, args);
                 va_end(args);
             }
         }
     }
     if ((flag == 'C') || (flag == 'I')) {	/* closing tag only  */
-        rval = fprintf(outfd->fd, "</%s>", tag);
+        rval = fprintf(outfd->file, "</%s>", tag);
     }
     
     if (flag == 'L') { /* Literal value only no tags involved or they included in the string */
         va_start(args, val);
-        vfprintf(outfd->fd, val, args);
+        vfprintf(outfd->file, val, args);
         va_end(args);
     }
     
     if ((flag == 'C') || (flag == 'I') || (flag == 'L') || (flag == 'O')) {
-        fprintf(outfd->fd, "\n"); outfd->writes++;
+        fprintf(outfd->file, "\n"); outfd->writes++;
     }
     
     switch(flag) {
@@ -565,7 +571,7 @@ int tabout(fio_t *outfd, int offset)
     int rval, idx;
     rval = 0;
     for (idx=offset;idx> 0;idx--) {
-        rval = fprintf(outfd->fd, "\t");
+        rval = fprintf(outfd->file, "\t");
     }
     return(rval);
 }
@@ -580,18 +586,18 @@ void	style_sheet(char *base, fio_t *outfd)
     if (!base) return;
     if (!outfd) return;
     
-    stylesheet_fio = fio_alloc_open(base, ".stylesheet", "r", MAX_BUF);
+    stylesheet_fio = fio_open_alloc(base, ".stylesheet", "r", MAX_BUF);
     
     if ((stylesheet_fio->status == 0 ) && (stylesheet_fio->open)) {
         
         html_write(outfd,'O',"style type=\"text/css\"", NOCLASS, NOVAL);
         html_write(outfd,'L',NOTAG, NOCLASS, "/*<![CDATA[*/");
         
-        fgets(ibuf, sizeof(ibuf), stylesheet_fio->fd);
-        while(!feof(stylesheet_fio->fd)) {
+        fgets(ibuf, sizeof(ibuf), stylesheet_fio->file);
+        while(!fio_eof(stylesheet_fio)) {
             zapcrlf(ibuf);
             html_write(outfd, 'L', NOTAG, NOCLASS,  ibuf);
-            fgets(ibuf, sizeof(ibuf), stylesheet_fio->fd);
+            fgets(ibuf, sizeof(ibuf), stylesheet_fio->file);
         }
         fio_close_and_free(&stylesheet_fio);
         
@@ -613,19 +619,19 @@ void write_text_header(fio_t *outfd,backups_t *bckrec, char *title2)
              (char *) time_cvt_blib_to_str(bckrec->start),
              pstr(bckrec->node.str,""),
              pstr(bckrec->desc.str,""));
-    text_div(outfd->fd);
-    text_hdr(outfd->fd, hdr_str);
+    text_div(outfd->file);
+    text_hdr(outfd->file, hdr_str);
     if (title2) {
-        text_hdr(outfd->fd, title2);
+        text_hdr(outfd->file, title2);
     }
 }
 
 void write_text_table_header(fio_t *outfd)
 {
     
-    text_div(outfd->fd);
-    text_row(outfd->fd, "Pathname", "Barcode:file#", "Start-End Time", "Seconds", "Bytes", "MBytes", "GBytes", "Errs");
-    text_div(outfd->fd);
+    text_div(outfd->file);
+    text_row(outfd->file, "Pathname", "Barcode:file#", "Start-End Time", "Seconds", "Bytes", "MBytes", "GBytes", "Errs");
+    text_div(outfd->file);
 }
 
 

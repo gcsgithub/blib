@@ -25,6 +25,7 @@
  *
  */
 #include <stdio.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <strings.h>
@@ -38,7 +39,7 @@ struct fio_s {
     int	    debug;
     int	    open;
     int	    status;
-    FILE    *fd;
+    FILE    *file;
     int	    useropenflag;
     char    *open_mode;
     char    *fnm;
@@ -65,23 +66,24 @@ files_t *new_files(files_t **head, char *fnm);
 files_t	*files_insert_head(files_t **head, fio_t *fio);
 files_t *alloc_files_ent(void);
 
-int	fio_open(fio_t *fio);
-int	fio_reopen(fio_t *fio, char *open_mode);
+int     fio_open(fio_t *fio);
+int     fio_reopen(fio_t *fio, char *open_mode);
 char	*fio_fgets(fio_t *fio);
 fio_t	*fio_open_temp(char *prefix, char *ext, size_t bufsiz);
 void	fio_close_and_free_unlink(fio_t **fio);
 
 fio_t	*fio_new(size_t bufsiz);
 void	fio_close_and_free(fio_t **fiop);
-fio_t	*fio_alloc_open(char *base, char *new_ext, char *open_mode, size_t bufsiz);
-int	fio_close(fio_t *fio);
+fio_t	*fio_open_alloc(char *base, char *new_ext, char *open_mode, size_t bufsiz);
+int     fio_close(fio_t *fio);
 char	*replace_ext(char *base, char *new_ext);
 char	*fio_basename(fio_t *fio);
-int	fio_copy_file(fio_t *src, fio_t *outfd);
-int	fio_rewind(fio_t *fio);
-fio_t   *fio_from_fd(int fd);
+int     fio_copy_file(fio_t *src, fio_t *outfd);
+int     fio_rewind(fio_t *fio);
+int     fio_eof(fio_t *fio);
+fio_t   *fio_from_fd(int fd, char *mode);
 fio_t	*fio_from_file(FILE *fd);
-fio_t	*fio_dup(fio_t *fio);
+fio_t	*fio_dup(fio_t *srcfio);
 
 
 #endif /* __FILEIO_H__ */
