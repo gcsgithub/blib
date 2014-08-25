@@ -29,9 +29,6 @@
  *
  */
 
-#ifndef __APPLE__
-char *strsep(char **stringp, const char *delim);
-#endif /* ! __APPLE__ */
 
 #include    <arpa/inet.h>
 #include    <ctype.h>
@@ -55,7 +52,7 @@ char *strsep(char **stringp, const char *delim);
 #include    <syslog.h>
 #include    <unistd.h>
 #ifndef __hpux
-#include    <getopt.h>
+#   include    <getopt.h>
 #endif
 #include    <locale.h>
 #include    <sys/stat.h>
@@ -63,7 +60,6 @@ char *strsep(char **stringp, const char *delim);
 #include    <limits.h>
 
 
-#include "strsep.h"
 #include "util.h"
 #include "fileio.h"
 

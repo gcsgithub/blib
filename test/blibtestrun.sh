@@ -38,7 +38,7 @@ done
 function findfreetape # {MEDIA} {count} {rval}
 ###########################################
 {
-# not to the casual shell programmer typeset makes these local scope, -n is a named reference
+# note to the casual shell programmer typeset makes these local scope, -n is a named reference
 typeset    media="${1}"
 typeset -i count=${2}
 typeset -n rval="${3}"

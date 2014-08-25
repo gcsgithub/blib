@@ -5,7 +5,7 @@
 DEFS=
 
 # HPUX
-#DEFS=-DHAVE_NO_MKSTEMPS
+#DEFS=
 
 #CFLAGS = -I. -I/usr/local/include -g -DNEED_ASPRINTF -pthread -D_OSF_SOURCE -D_XOPEN_SOURCE_EXTENDED $(DEFS)
 #LDFLAGS = -lm -lcurses -pthread
@@ -25,12 +25,12 @@ CFLAGS_DEPEND = -I. -I/usr/local/include -g  $(DEFS)
 TARGETS = blib sqlite3 caltime ctime
 
 HDRS = blib.h data_access.h do_cmd_reportbackup.h execute_cmds.h fileio.h list.h mail_utils.h \
-              parseslashcmd.h split.h strsep.h util.h vasprintf.h copycheck.h mkargv.h timefunc.h
+              parseslashcmd.h split.h util.h vasprintf.h copycheck.h mkargv.h timefunc.h
 
-SRCS =  blib.c  data_access.c execute_cmds.c list.c parseslashcmd.c split.c strsep.c util.c vasprintf.c \
+SRCS =  blib.c  data_access.c execute_cmds.c list.c parseslashcmd.c split.c util.c vasprintf.c \
 	        do_cmd_reportbackup.c fileio.c mail_utils.c copycheck.c mkargv.c timefunc.c timegm.c
 
-OBJS =  blib.o  data_access.o execute_cmds.o list.o parseslashcmd.o split.o strsep.o util.o vasprintf.o \
+OBJS =  blib.o  data_access.o execute_cmds.o list.o parseslashcmd.o split.o util.o vasprintf.o \
 	do_cmd_reportbackup.o fileio.o mail_utils.o copycheck.o mkargv.o timefunc.o sqlite3.o timegm.o
 
 SQLITE_OBJS = sqlite3.o shell.o
