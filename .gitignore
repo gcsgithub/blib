@@ -24,7 +24,6 @@
 
 etc/
 old/
-test/
 bin/
 RCS/
 .depend

@@ -50,7 +50,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/env"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/errbackup=&quot;dr:/backup/dumps/ctsMonNZ-inc&quot; /objinstance=2 /bck_id=1302025662 /label=&quot;WEDINC&quot; /end=06-Apr-2011:16:03:41.00 /size=0 /desc=&quot;testerr&quot;"
@@ -94,7 +94,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/change_volume=/usr /bck_id=1408787681 /objinstance=1 /label=TST004 /end=23-Aug-2014:20:20:20.37 /size=26144"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/add=MG0001 /group=TEST"
@@ -182,6 +182,11 @@
             key = "BLIB_STYLE"
             value = "test"
             isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "BLIB_LOG"
+            value = "/usr/local/etc/dat/blib/blib_CENTS7.log"
+            isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "BLIBDBS"
