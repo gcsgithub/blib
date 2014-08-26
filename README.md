@@ -6,7 +6,7 @@ cpio,vxdump,vdump,dump etc but no other software how do I keep track of backups?
 A/ BLIB.
 
 blib will
- *  records backup events against a label with an expiration time
+ *  record backup events against a label with an expiration time
  *  manage the state of labels FREE or ALLOCATED
 a simple session would look like
 
