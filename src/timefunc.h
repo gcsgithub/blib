@@ -34,10 +34,10 @@ typedef struct {
     char str[64];
 } datestr_t;
 
-datestr_t     *time_cvt_blib_to_str(blib_tim_t ctime);
-blib_tim_t    time_cvt_str_to_blib(datestr_t *str);
-blib_tim_t	  now(void);
-blib_tim_t	  nowgm(void);
+datestr_t   *time_cvt_blib_to_str(blib_tim_t ctime);
+blib_tim_t  time_cvt_str_to_blib(datestr_t *str);
+blib_tim_t  now(void);
+blib_tim_t  nowgm(void);
 
 datestr_t   *copy_datestr(datestr_t *dst, datestr_t *src);
 datestr_t   *copy_datestr_time(datestr_t *dst, datestr_t *src);

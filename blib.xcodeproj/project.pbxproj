@@ -151,6 +151,9 @@
 		4D90B81319AAF40500E50327 /* README */ = {isa = PBXFileReference; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		4D90B81419AAFABE00E50327 /* Makefile.linux */ = {isa = PBXFileReference; lastKnownFileType = text; path = Makefile.linux; sourceTree = "<group>"; };
 		4D90B81519AAFABE00E50327 /* Makefile.osx */ = {isa = PBXFileReference; lastKnownFileType = text; path = Makefile.osx; sourceTree = "<group>"; };
+		4D90B81619AB47B000E50327 /* build */ = {isa = PBXFileReference; lastKnownFileType = text; path = build; sourceTree = "<group>"; };
+		4D90B81719AB47B000E50327 /* fmtbckrep.stylesheet */ = {isa = PBXFileReference; lastKnownFileType = text; path = fmtbckrep.stylesheet; sourceTree = "<group>"; };
+		4D90B81819AB47B000E50327 /* Makefile.hpux */ = {isa = PBXFileReference; lastKnownFileType = text; path = Makefile.hpux; sourceTree = "<group>"; };
 		4D9155FC0E9D15E600C878CD /* split.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = split.h; sourceTree = "<group>"; };
 		4D9155FD0E9D15E600C878CD /* split.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = split.c; sourceTree = "<group>"; };
 		4D9156020E9D19A400C878CD /* list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = list.h; sourceTree = "<group>"; };
@@ -217,6 +220,9 @@
 		08FB7795FE84155DC02AAC07 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				4D90B81619AB47B000E50327 /* build */,
+				4D90B81719AB47B000E50327 /* fmtbckrep.stylesheet */,
+				4D90B81819AB47B000E50327 /* Makefile.hpux */,
 				4D90B81419AAFABE00E50327 /* Makefile.linux */,
 				4D90B81519AAFABE00E50327 /* Makefile.osx */,
 				4D3447EF127D7F66006C98F7 /* timefunc.h */,

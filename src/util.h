@@ -27,9 +27,10 @@
 #include <sys/param.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <netdb.h> // for MAXHOSTNAMELEN
 
 #include <stdarg.h>
-#include <stdint.h>
+#include <inttypes.h>
 #include "vasprintf.h"
 
 #ifndef __PRETTY_FUNCTION__

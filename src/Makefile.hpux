@@ -1,0 +1,10 @@
+#
+#
+# HPUX
+DEFS=-DNEED_ASPRINTF
+CFLAGS = -I. -I/usr/local/include -pthread -D_OSF_SOURCE -D_XOPEN_SOURCE_EXTENDED $(DEFS)
+LDFLAGS = -lm -lcurses
+
+CFLAGS_DEPEND = -I. -I/usr/local/include -g  $(DEFS)
+
+-include Makefile.common

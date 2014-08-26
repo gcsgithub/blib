@@ -1,0 +1,10 @@
+#
+#
+# Tru64
+DEFS=-DNEED_ASPRINTF
+CFLAGS = -I. -I/usr/local/include -pthread -D_OSF_SOURCE $(DEFS)
+LDFLAGS = -lm -lcurses -pthread
+
+CFLAGS_DEPEND = -I. -I/usr/local/include -g  $(DEFS)
+
+-include Makefile.common

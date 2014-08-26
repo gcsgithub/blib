@@ -1,0 +1,35 @@
+#!/bin/ksh
+
+[ -e sqlite ] || ln -s sqlite-amalgamation-3080600 sqlite
+
+typeset -u OS="$( uname -s )-$( uname -m )"
+
+MAKE="gmake"
+
+rm -f Makefile
+case "${OS}" in
+LINUX-*)
+	ln -s Makefile.linux Makefile
+	${MAKE}
+;;
+DARWIN-*)
+	ln -s Makefile.osx Makefile
+	${MAKE}
+;;
+HP-UX-*)
+	ln -s Makefile.hpux Makefile
+	${MAKE}
+;;
+SUNOS-*)
+	ln -s Makefile.solaris Makefile
+	${MAKE}
+;;
+OSF1-ALPHA)
+	ln -s Makefile.tru64 Makefile
+	${MAKE}
+;;
+*)
+	echo "# As yet undefined OS: ${OS}"
+	exit 2
+;;
+esac

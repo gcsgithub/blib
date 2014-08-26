@@ -1,0 +1,12 @@
+#
+#
+# Solaris
+#CC=gcc -std=c99
+CC=gcc
+DEFS=  -D_OSF_SOURCE  -D_XOPEN_SOURCE_EXTENDED
+CFLAGS = -I. -I/usr/local/include $(DEFS)
+LDFLAGS = -lm -lcurses -lrt
+
+CFLAGS_DEPEND = -I. -I/usr/local/include -g  $(DEFS)
+
+-include Makefile.common
