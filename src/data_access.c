@@ -1323,7 +1323,8 @@ int	db_find_bck_objects_by_name(dbh_t *dbh, objname_t *objname, bckobj_t *bckobj
     // sqltext="select * from main.bck_objects where objname >=? order by objname,obj_instance desc";
     if (flag == FND_EQUAL) {
         sqltext="select * from main.bck_objects where objname =? order by objname, bck_id desc, obj_instance";
-    } else {
+    }
+    else {
         sqltext="select * from main.bck_objects where objname >=? order by objname, bck_id desc, obj_instance";
     }
     
@@ -2296,16 +2297,6 @@ int	db_read_bck_errors_fault2(dbh_t *dbh, bck_errors_t *bckerrrec, find_type_t f
     char    *sqltext;
     
     // checking: (bck_id, objname, obj_instance) -> bck_objects
-    /*
-     
-     TODO: work out why this doesnt work
-     sqltext="select * from bck_errors e left outer  join bck_objects o on"
-     " e.bck_id        = o.bck_id and"
-     " e.obj_instance  = o.obj_instance"
-     " and e.objname   = o.objname"
-     " and o.bck_id is null";
-     // select e.* o.bckid as obckid from bck_errors e left outer  join bck_objects o on e.bck_id = o.bck_id and e.obj_instance  = o.obj_instance and e.objname   = o.objname and obck_id is null
-     */
     
     sqltext = "select  * from (select e.*, o.bck_id as obck_id from bck_errors e left outer  join bck_objects o on e.bck_id = o.bck_id and e.obj_instance  = o.obj_instance and e.objname   = o.objname ) where obck_id is null";
     

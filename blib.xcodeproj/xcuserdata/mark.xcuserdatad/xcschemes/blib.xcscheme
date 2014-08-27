@@ -45,12 +45,12 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/display=TST001"
-            isEnabled = "NO">
+            argument = "/listobjects=&quot;/usr&quot;"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/env"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/errbackup=&quot;dr:/backup/dumps/ctsMonNZ-inc&quot; /objinstance=2 /bck_id=1302025662 /label=&quot;WEDINC&quot; /end=06-Apr-2011:16:03:41.00 /size=0 /desc=&quot;testerr&quot;"
@@ -184,24 +184,34 @@
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
+            key = "BLIBDBS"
+            value = "/usr/local/etc/dat/blib/blib_ZED.sqlite3"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "BLIB_LOG"
+            value = "/usr/local/etc/dat/blib/blib_ZED.log"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
             key = "BLIB_LOG"
             value = "/usr/local/etc/dat/blib/blib_CENTS7.log"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "BLIBDBS"
             value = "/usr/local/etc/dat/blib/blib_CENTS7.sqlite3"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "BLIBDBS"
-            value = "/usr/local/etc/dat/blib/blib_NEWPROD.sqlite3"
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "MYBLIB_GROUP"
             value = "CENTS7"
-            isEnabled = "YES">
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "BLIBDBS"
+            value = "/usr/local/etc/dat/blib/blib_NEWPROD.sqlite3"
+            isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>
       <AdditionalOptions>

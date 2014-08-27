@@ -1,4 +1,3 @@
 * in /finishbackup we need to check and complain if any of its obj_vol record are not yet closed
 	ie we missing either /changebackup or /endbackup for a given backup object
 
-* volumes.fileno not being updated 

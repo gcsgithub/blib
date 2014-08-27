@@ -1892,8 +1892,9 @@ void do_cmd_modifybackup(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_p
     
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 void	do_cmd_listobjects(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_ptr,dbh_t *dbh)
+///////////////////////////////////////////////////////////////////////////////
 {
     // /listobjects[=objname]
     
@@ -1922,7 +1923,9 @@ void	do_cmd_listobjects(fio_t *outfd,cmd_t **cmds, cmd_t *thecmd, cmd_t *qual_pt
     display_objects(outfd, &qualval.objname, dbh);
 }
 
+/////////////////////////////////////////////////////////////////
 void display_objects(fio_t *outfd, objname_t *objname, dbh_t *dbh)
+/////////////////////////////////////////////////////////////////
 {
     bckobj_t	bckobjrec;
     backups_t	bckrec;
@@ -1947,12 +1950,13 @@ void display_objects(fio_t *outfd, objname_t *objname, dbh_t *dbh)
     bzero(&bckrec, sizeof(backups_t));
     
     //    select * from bck_objects where objname > ? order by objname, bck_id desc, obj_instance;
-    if (!BLIB.quiet) fprintf(outfd->file, "=======================================================================================\n");
+    if (!BLIB.quiet) fprintf(outfd->file,
+                             "=========================================================================================================\n");
     fndsts = db_find_bck_objects_by_name(dbh, objname, &bckobjrec, FND_FIRST);
     while( fndsts) {
         if (!BLIB.quiet) {
             
-            fprintf(outfd->file, "bck_id         objname       ObjInstance Recorded          Expires           Description\n");
+            fprintf(outfd->file, "bck_id         objname       ObjInstance Recorded                Expires                 Description\n");
         }
         
         if (!db_find_backups_by_bck_id(dbh, bckobjrec.bck_id, &bckrec)) {
@@ -1963,7 +1967,7 @@ void display_objects(fio_t *outfd, objname_t *objname, dbh_t *dbh)
         copy_datestr(&end   , (datestr_t *) time_cvt_blib_to_str(bckrec.end));
         copy_datestr(&expire, (datestr_t *) time_cvt_blib_to_str(bckrec.expiredate));
         
-        fprintf(outfd->file, "%-13llu  %-20.20s %3u %-23.23s %-23.23s %s\n",
+        fprintf(outfd->file, "%-13llu  %-20.20s %-4u %-23.23s %-23.23s %s\n",
                 bckobjrec.bck_id,
                 shrink_string_by_middle(objnameshrink, 21, bckobjrec.objname.str),
                 bckobjrec.obj_instance,
@@ -1983,7 +1987,9 @@ void display_objects(fio_t *outfd, objname_t *objname, dbh_t *dbh)
     }
 }
 
+/////////////////////////////////////////////////////////////////////////////
 int display_backup_volumes_for_object(dbh_t *dbh, bckobj_t *bckobjrec,backups_t *bckrec , fio_t *outfd)
+/////////////////////////////////////////////////////////////////////////////
 {
     vol_t	    volrec;
     vol_obj_t	volobjrec;
@@ -2000,8 +2006,8 @@ int display_backup_volumes_for_object(dbh_t *dbh, bckobj_t *bckobjrec,backups_t 
     
     bzero(&volrec,sizeof(volrec));
     if (!BLIB.quiet) {
-        fprintf(outfd->file,"Volume:fileno   Media     State  Offsite           Size             Location\n"
-                "-------------   --------  -----  ----------------- ---------------- --------------------\n");
+        fprintf(outfd->file,"Volume:fileno   Media     State  Offsite              Size             Location\n"
+                            "-------------   --------  -----  -----------------    ---------------- --------------------\n");
         /*
          1287386866     /                 2                0   26-OCT-2010:04:27 NEWPROD backup Daily
          Volume:fileno   Media     State Offsite           Location
@@ -2022,7 +2028,8 @@ int display_backup_volumes_for_object(dbh_t *dbh, bckobj_t *bckobjrec,backups_t 
             if (volrec.bck_id != volobjrec.bck_id) {
                 fprintf(stderr, "#BLIB:  Internal database consitency error we found a volume record for the vol_obj yet the bck_id's do not match :%llu  %llu\n",
                         (llu_t) volrec.bck_id, (llu_t) volobjrec.bck_id);
-            } else {
+            }
+            else {
                 fprintf(stderr, "#BLIB:  Internal database consitency error we did not find the volume %s\n", volobjrec.label.str);
             }
             exit(EBADF);
@@ -2034,12 +2041,12 @@ int display_backup_volumes_for_object(dbh_t *dbh, bckobj_t *bckobjrec,backups_t 
         
         snprintf(volfileno, sizeof(volfileno), "%s:%d", volrec.label.str, volobjrec.fileno);
         
-        fprintf(outfd->file,"%-15s %-9.9s %-5.5s %16llu %-20.20s %-s\n",
+        fprintf(outfd->file,"%-15s %-9.9s %-5.5s  %-20.20s %16llu %-s\n",
                 volfileno,
                 (char *) &volrec.media,
                 lookup_state((char *) &volrec.state),
-                (llu_t) volobjrec.size,
                 offsitedate.str,
+                (llu_t) volobjrec.size,
                 volrec.location.str
                 );
         volcount++;
