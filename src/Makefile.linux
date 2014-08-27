@@ -3,7 +3,7 @@
 # Centos/RH
 DEFS= -D_XOPEN_SOURCE=500 -D_BSD_SOURCE
 CFLAGS = -g -I. -I/usr/local/include $(DEFS) -pthread
-LDFLAGS = -lm -pthread -ldl
+LDFLAGS = -lm -pthread -ldl -lncurses
 
 CFLAGS_DEPEND = -I. -I/usr/local/include -g  $(DEFS)
 

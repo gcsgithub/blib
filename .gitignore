@@ -27,7 +27,6 @@ old/
 bin/
 RCS/
 .depend
-.gitignore
 DerivedData/
 *.dSYM
 src/blib
@@ -37,5 +36,8 @@ src/sqlite
 src/sqlite3
 *.o
 *.xcuserstate
-blib.xcodeproj/project.xcworkspace/xcuserdata/mark.xcuserdatad/UserInterfaceState.xcuserstate
+UserInterfaceState.xcuserstate
+Breakpoints_v2.xcbkptlist
+Makefile
+tags
 
